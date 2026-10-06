@@ -1,226 +1,193 @@
 """
-diagram_generator.py — Event Chain Diagram Generator
-══════════════════════════════════════════════════════════════════
-Generates PlantUML activity diagrams from scenario event chains.
-Matches the paper's Fig. 3 style: activity diagrams with safety flaw markers.
-
-Novel: automated diagram generation from GenAI-produced event chains.
-Paper reference: PlantUML activity diagram notation (Section III-A),
-event chain extraction module.
+diagram_generator.py — Professional PlantUML Diagram Generator
+Generates research-paper quality activity diagrams like TUM paper Fig.3
 """
 
 import json
 import os
+import subprocess
 from pathlib import Path
-from llm_client import query_llm
 
 
-# ──────────────────────────────────────────────────────────────────────
-# PlantUML Templates
-# ──────────────────────────────────────────────────────────────────────
+class DiagramGenerator:
+    """Generates PlantUML activity diagrams for SDV safety scenarios"""
+    
+    def __init__(self, output_dir="outputs/diagrams"):
+        self.output_dir = output_dir
+        os.makedirs(output_dir, exist_ok=True)
+        
+        # Check if PlantUML is available
+        self.plantuml_jar = self._find_plantuml()
+    
+    def _find_plantuml(self):
+        """Find PlantUML JAR file"""
+        possible_paths = [
+            "plantuml.jar",
+            "plantuml-1.2026.2.jar",
+            "/usr/local/bin/plantuml.jar",
+            str(Path.home() / "plantuml.jar")
+        ]
+        
+        for path in possible_paths:
+            if os.path.exists(path):
+                print(f" Found PlantUML: {path}")
+                return path
+        
+        print("  PlantUML not found - will use matplotlib fallback")
+        return None
+    
+    def generate_plantuml_code(self, data):
+        """
+        Generate PlantUML code for activity diagram
+        Matches the style of TUM paper Figure 3
+        """
+        
+        frame = data.get("frame", {})
+        evaluation = data.get("evaluation", {})
+        threat = data.get("threat", {})
+        
+        scenario_type = evaluation.get("scenario_type", "unknown").upper()
+        delay = evaluation.get("actual_delay_ms", 0)
+        max_delay = evaluation.get("expected_delay_ms", 100)
+        violation = evaluation.get("violation", False)
+        risk = evaluation.get("risk_score", 0)
+        road = evaluation.get("road_condition", "dry")
+        attack = frame.get("attack", {}).get("type", "none")
+        
+        # Color coding
+        brake_color = "#FFCCCC" if violation else "#CCFFCC"
+        
+        plantuml = f"""@startuml
+title Scenario: {scenario_type}
+note right
+  Delay: {delay}ms / {max_delay}ms
+  Risk: {risk:.2f}
+  Road: {road}
+  Attack: {attack}
+end note
 
-_PLANTUML_HEADER = """@startuml
-skinparam activity {{
-  BackgroundColor #F8F9FA
-  BorderColor #343A40
-  FontSize 12
-}}
-skinparam activityDiamond {{
-  BackgroundColor #FFF3CD
-  BorderColor #856404
-}}
-title {title}
 start
-"""
 
-_PLANTUML_FOOTER = """
+:Capture Camera Data;
+:Detect Pedestrian (Camera);
+
+if (Camera detects pedestrian?) then (yes)
+  :CamPed = true;
+else (no)
+  :CamPed = false;
+endif
+
+:Capture LiDAR Data;
+:Detect Pedestrian (LiDAR);
+
+if (LiDAR detects pedestrian?) then (yes)
+  :LidarPed = true;
+else (no)
+  :LidarPed = false;
+endif
+
+:Listen CamPed;
+:Listen LidarPed;
+
+if (CamPed == true OR LidarPed == true) then (yes)
+  :{brake_color}**Brake**;
+  note right
+    {' VIOLATION' if violation else ' OK'}
+    Delay: {delay}ms
+    {'Exceeds limit!' if violation else 'Within limit'}
+  end note
+else (no)
+  :Accelerate;
+endif
+
 stop
+
 @enduml
 """
-
-
-def _step_to_plantuml(step: str, is_violation: bool = False, is_decision: bool = False) -> str:
-    """Convert a single event chain step to PlantUML activity notation."""
-    step_clean = step.replace("_", " ").title()
-
-    if is_violation:
-        return f"#FFCCCC:{step_clean} ⚠️ VIOLATION;↓"
-    if is_decision:
-        return f"if ({step_clean}?) then (yes)\n  :{step_clean} = true;\nelse (no)\n  :{step_clean} = false;\nendif"
-    return f":{step_clean};"
-
-
-def generate_plantuml_from_chain(
-    event_chain: list,
-    title: str = "SDV Event Chain",
-    violations: list = None,
-    timing: list = None
-) -> str:
-    """
-    Generate PlantUML activity diagram from event chain list.
+        return plantuml
     
-    Args:
-        event_chain: list of step strings
-        title: diagram title
-        violations: list of step names that are violations (marked red)
-        timing: list of {step, time_ms} dicts for annotations
-    """
-    violations = violations or []
-    timing_map = {t["step"]: t["time_ms"] for t in (timing or [])}
-
-    lines = [_PLANTUML_HEADER.format(title=title)]
-
-    for step in event_chain:
-        step_lower = step.lower()
-        is_viol = any(v.lower() in step_lower or step_lower in v.lower() for v in violations)
-        is_dec  = any(kw in step_lower for kw in ["detect", "check", "decide", "found", "detected"])
-
-        time_note = f" [{timing_map[step]}ms]" if step in timing_map else ""
-        step_label = step.replace("_", " ").title() + time_note
-
-        if is_viol:
-            lines.append(f"#FFCCCC:{step_label} ⚠️;")
-        elif is_dec:
-            lines.append(f"if ({step_label}?) then (yes)")
-            lines.append(f"  :{step_label} = true;")
-            lines.append("else (no)")
-            lines.append(f"  :{step_label} = false;")
-            lines.append("endif")
-        else:
-            lines.append(f":{step_label};")
-        lines.append("↓")
-
-    lines.append(_PLANTUML_FOOTER)
-    return "\n".join(lines)
-
-
-def llm_generate_plantuml(
-    event_chain: list,
-    scenario_type: str,
-    violation: bool,
-    component: str
-) -> str:
-    """
-    Use LLM to generate a richer PlantUML diagram matching the paper's Fig. 3 style.
-    """
-    chain_str = " → ".join(event_chain)
-    violation_note = "MARK any safety-violating steps in RED using #FFCCCC:step_name;" if violation else ""
-
-    prompt = f"""
-You are generating a PlantUML activity diagram for an SDV safety event chain.
-Follow the exact style from the TUM paper (LLM-Empowered Functional Safety for SDVs).
-
-Event chain: {chain_str}
-Scenario type: {scenario_type}
-Component: {component}
-Has safety violation: {violation}
-
-{violation_note}
-
-Rules:
-- Use @startuml / @enduml
-- Use skinparam to style the diagram
-- Use if/else for detection decisions
-- Mark violation steps with #FFCCCC: background color
-- Add note for each step showing input/output format
-- Title: "SDV {component} — {scenario_type.title()} Scenario"
-
-Output ONLY valid PlantUML code. No explanation. No markdown fences.
-"""
-    return query_llm(prompt, temperature=0.3)
-
-
-def generate_mermaid_from_chain(event_chain: list, title: str = "Event Chain") -> str:
-    """
-    Generate Mermaid flowchart from event chain (for dashboard use).
-    Mermaid renders directly in browser without PlantUML server.
-    """
-    lines = [f"flowchart TD", f'    title["{title}"]']
-    nodes = []
-
-    for i, step in enumerate(event_chain):
-        node_id   = f"S{i}"
-        step_clean = step.replace("_", " ").title()
-        is_dec     = any(kw in step.lower() for kw in ["detect", "decide", "check"])
-        shape      = f'{{{{{step_clean}}}}}' if is_dec else f'[{step_clean}]'
-        nodes.append((node_id, shape))
-        lines.append(f"    {node_id}{shape}")
-
-    for i in range(len(nodes) - 1):
-        lines.append(f"    {nodes[i][0]} --> {nodes[i+1][0]}")
-
-    return "\n".join(lines)
+    def save_plantuml(self, code, filename):
+        """Save PlantUML code to .puml file"""
+        filepath = os.path.join(self.output_dir, filename + ".puml")
+        with open(filepath, "w", encoding="utf-8") as f:
+             f.write(code)
+        print(f" Saved PlantUML: {filepath}")
+        return filepath
+    
+    def render_plantuml_to_png(self, puml_file):
+        """Render .puml file to PNG using PlantUML JAR"""
+        
+        if not self.plantuml_jar:
+            print("  Cannot render - PlantUML JAR not found")
+            return None
+        
+        try:
+            # Run: java -jar plantuml.jar diagram.puml
+            result = subprocess.run(
+                ["java", "-jar", self.plantuml_jar, puml_file],
+                capture_output=True,
+                text=True,
+                timeout=30
+            )
+            
+            if result.returncode == 0:
+                png_file = puml_file.replace(".puml", ".png")
+                print(f" Rendered PNG: {png_file}")
+                return png_file
+            else:
+                print(f"❌ PlantUML error: {result.stderr}")
+                return None
+                
+        except Exception as e:
+            print(f"❌ Failed to render PlantUML: {e}")
+            return None
+    
+    def generate_all_scenarios(self, violation_files):
+        """Generate diagrams for all violation files"""
+        
+        diagrams = []
+        
+        for i, filepath in enumerate(violation_files[:6]):  # Max 6 diagrams
+            try:
+                with open(filepath) as f:
+                    data = json.load(f)
+                
+                # Generate PlantUML code
+                code = self.generate_plantuml_code(data)
+                
+                # Save .puml file
+                scenario_type = data.get("evaluation", {}).get("scenario_type", f"scenario_{i}")
+                puml_file = self.save_plantuml(code, f"diagram_{scenario_type}_{i}")
+                
+                # Render to PNG
+                png_file = self.render_plantuml_to_png(puml_file)
+                
+                if png_file:
+                    diagrams.append({
+                        "scenario": scenario_type,
+                        "puml": puml_file,
+                        "png": png_file,
+                        "data": data
+                    })
+            
+            except Exception as e:
+                print(f"❌ Failed to process {filepath}: {e}")
+        
+        return diagrams
 
 
-def save_diagram(content: str, filename: str, output_dir: str = "outputs/diagrams") -> str:
-    """Save diagram to file."""
-    os.makedirs(output_dir, exist_ok=True)
-    path = Path(output_dir) / filename
-    path.write_text(content, encoding="utf-8")
-    return str(path)
-
-
-def generate_all_scenario_diagrams(agent_output: dict) -> list:
-    """
-    Generate PlantUML diagrams for all scenarios in agent output.
-    Returns list of saved file paths.
-    """
-    saved = []
-    event_chain = agent_output.get("event_chain", [])
-
-    for i, scenario in enumerate(agent_output.get("scenarios", [])):
-        stype     = scenario.get("type", f"scenario_{i}")
-        violation = scenario.get("violation", False)
-        component = agent_output.get("event", "brake")
-
-        # Identify violated steps
-        violated_steps = []
-        if violation and "attack_chain" in scenario:
-            violated_steps = scenario.get("attack_chain", [])[:1]
-
-        # Generate timing annotations
-        timing = []
-        if "attack_chain" in scenario:
-            pass  # could enrich with timing data here
-
-        plantuml = generate_plantuml_from_chain(
-            event_chain=event_chain,
-            title=f"SDV {component.title()} — {stype.title()} Scenario",
-            violations=violated_steps,
-            timing=timing
-        )
-
-        filename = f"diagram_{stype}_{i}.puml"
-        path = save_diagram(plantuml, filename)
-        saved.append({"scenario": stype, "path": path, "violation": violation})
-        print(f"  [Diagram] Saved: {path}")
-
-    return saved
-
-
-# ──────────────────────────────────────────────────────────────────────
-# CLI test
-# ──────────────────────────────────────────────────────────────────────
-
+# Test
 if __name__ == "__main__":
-    chain = [
-        "camera_sense_start",
-        "pedestrian_detected",
-        "sensor_fusion_complete",
-        "brake_decide",
-        "brake_actuate"
-    ]
-
-    print("=== PlantUML ===")
-    puml = generate_plantuml_from_chain(
-        chain,
-        title="Emergency Brake — Stress Scenario",
-        violations=["brake_decide"],
-        timing=[{"step": "camera_sense_start", "time_ms": 12},
-                {"step": "pedestrian_detected",  "time_ms": 55},
-                {"step": "brake_actuate",         "time_ms": 145}]
-    )
-    print(puml)
-
-    print("\n=== Mermaid ===")
-    print(generate_mermaid_from_chain(chain, "Emergency Brake"))
+    import glob
+    
+    gen = DiagramGenerator()
+    
+    # Find all violation files
+    files = sorted(glob.glob("outputs/live_violation_*.json"), reverse=True)
+    
+    if files:
+        print(f"\n📊 Generating diagrams for {len(files[:6])} scenarios...\n")
+        diagrams = gen.generate_all_scenarios(files[:6])
+        print(f"\n✅ Generated {len(diagrams)} diagrams")
+    else:
+        print("❌ No violation files found in outputs/")

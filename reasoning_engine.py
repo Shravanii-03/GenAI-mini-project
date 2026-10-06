@@ -24,7 +24,7 @@ from prompt_templates import (
 
 def evaluate_scenario(parsed: dict, scenario: dict) -> dict:
 
-    # ✅ SAFE extraction
+    #  SAFE extraction
     max_delay = parsed.get("max_delay_ms", 100)
     actual_delay = scenario.get("actual_delay_ms", 0)
 
@@ -51,9 +51,10 @@ def evaluate_scenario(parsed: dict, scenario: dict) -> dict:
         "foggy": 1.3
     }.get(road, 1.0)
 
-    cpu_mult = 1.0 + (cpu / 200.0)
+    cpu_mult = 1.0 + (cpu / 500.0)
 
     violation_mult = 1.3 if violation else 1.0
+    base_risk = min(actual_delay / max_delay, 1.2)
 
     risk_score = round(base_risk * road_mult * cpu_mult * violation_mult, 3)
 

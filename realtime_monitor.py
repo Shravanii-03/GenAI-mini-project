@@ -28,7 +28,7 @@ from memory import AgentMemory
 from simulator_rl import run_simulation
 from vehicle_simulator import VehicleSimulator
 from attack_injector import inject_attack
-
+from rag_engine import get_iso_rule_for_component
 
 # ── Config ────────────────────────────────────────────────────────────────────
 TICK_INTERVAL    = 0.5       # 500ms — 10x slower, RL learns properly
@@ -54,7 +54,7 @@ def _print_tick(tick, frame, evaluation, attacked):
     phase  = frame.get("driving_phase", "?")
     speed  = frame.get("vehicle_speed", 0)
     limit  = frame.get("brake_asil_limit_ms", 100)
-    viol   = "⚠️ VIOLATION" if evaluation["violation"] else "✅ OK"
+    viol   = " VIOLATION" if evaluation["violation"] else " OK"
     atk    = f" | ⚡{frame.get('attack',{}).get('type','').upper()}" if attacked else ""
 
     color_sev = {"CRITICAL":"🔴","HIGH":"🟠","MEDIUM":"🟡","LOW":"🟢"}.get(sev,"⚪")
@@ -98,7 +98,7 @@ def _save_violation(tick, frame, evaluation, threat, viol_count):
     }
     with open(path, "w") as f:
         json.dump(data, f, indent=2)
-    print(f"   💾 Saved → {os.path.basename(path)}")
+    print(f"    Saved → {os.path.basename(path)}")
 
 
 # ── Main ──────────────────────────────────────────────────────────────────────
@@ -173,7 +173,7 @@ def run_monitor(requirement: str):
             # ── 5. Trigger GenAI only on violation or attack ──────────────────
             threat = None
             should_genai = (
-                (evaluation["violation"] or attacked or evaluation["risk_score"] > 1.1)
+                (evaluation["violation"] or attacked)
                 and genai_cooldown == 0
             )
 
@@ -182,17 +182,34 @@ def run_monitor(requirement: str):
                 violation_count += 1
 
                 print(f"\n  {'─'*55}")
-                print(f"  ⚠️  SAFETY EVENT — GenAI reasoning triggered")
+                print(f"    SAFETY EVENT — GenAI reasoning triggered")
                 print(f"  {'─'*55}")
                 if attacked:
                     atk_info = frame.get("attack", {})
                     print(f"  Attack : {atk_info.get('type','?').upper()} — {atk_info.get('description','')}")
                 if evaluation["violation"]:
-                    print(f"  ISO    : {frame.get('iso_violation_type', evaluation.get('severity','?'))}")
-                print(f"  Delay  : {evaluation['actual_delay_ms']}ms > {parsed['max_delay_ms']}ms limit")
+                   component = parsed.get("component", "").lower()
+
+                   if "brake" in component:
+                       component_query = "braking_system"
+                   elif "steer" in component:
+                       component_query = "steering_ecu"
+                   else:
+                       component_query = component
+
+                   iso_rule = get_iso_rule_for_component(component_query)
+
+                   if iso_rule:
+                        print(f"  ISO    : {iso_rule.get('rule_id')}  ({iso_rule.get('max_latency_ms')}ms)")
+                   else:
+                       print("  ISO    : ISO 26262 (generic)")
+                if evaluation["actual_delay_ms"] > parsed["max_delay_ms"]:
+                   print(f"  Delay  : {evaluation['actual_delay_ms']}ms > {parsed['max_delay_ms']}ms limit")
+                else:
+                   print(f"  Delay  : {evaluation['actual_delay_ms']}ms / {parsed['max_delay_ms']}ms (within limit)")
                 print(f"  Risk   : {evaluation['risk_score']} ({evaluation['severity']})")
 
-                # 🔥 GenAI threat reasoning — RAG context already in prompt via rag_enriched_query
+                #  GenAI threat reasoning — RAG context already in prompt via rag_enriched_query
                 threat = generate_threat_reasoning(parsed, scenario, evaluation)
 
                 print(f"\n  🔴 THREAT:")
@@ -216,7 +233,7 @@ def run_monitor(requirement: str):
                 })
                 current_delay = rl_result["next_delay"]
                 # ADD THIS:
-                print(f"     🤖 RL: action={rl_result['rl_action_ms']:+d}ms  reward={rl_result['rl_reward']:+.2f}  ε={rl_result['rl_epsilon']:.3f}  Q-states={rl_result['rl_q_states']}")
+                print(f"     RL: action={rl_result['rl_action_ms']:+d}ms  reward={rl_result['rl_reward']:+.2f}  ε={rl_result['rl_epsilon']:.3f}  Q-states={rl_result['rl_q_states']}")
 
                 # Save violation file
                 _save_violation(tick, frame, evaluation, threat, violation_count)
@@ -229,7 +246,7 @@ def run_monitor(requirement: str):
             if tick % 100 == 0:
                 mem_sum = memory.summary()
                 print(f"\n  {'═'*55}")
-                print(f"  📊 SUMMARY  tick={tick}  t={tick*0.05:.1f}s")
+                print(f"   SUMMARY  tick={tick}  t={tick*0.05:.1f}s")
                 print(f"     Violations : {violation_count}")
                 print(f"     Attacks    : {attack_count}")
                 if mem_sum:
