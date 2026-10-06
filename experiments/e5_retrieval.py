@@ -16,7 +16,7 @@ sys.path.insert(0, os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
 
 from sdv.metrics.stats import bootstrap_ci
 from sdv.rag.eval import evaluate, load_queries
-from sdv.rag.kb import load_corpora
+from sdv.rag.kb import load_corpora, load_real_vss
 from sdv.rag.retrievers import BM25Retriever, DenseRetriever, HybridRetriever, LegacyTfidf
 
 
@@ -33,8 +33,8 @@ def chance_mrr(queries, corpora):
     return total / len(queries)
 
 
-def build_retrievers(corpora, with_dense):
-    retrievers = [LegacyTfidf(corpora), BM25Retriever(corpora)]
+def build_retrievers(corpora, with_dense, generic_legacy=False):
+    retrievers = [LegacyTfidf(corpora, generic=generic_legacy), BM25Retriever(corpora)]
     if with_dense:
         try:
             retrievers += [DenseRetriever(corpora), HybridRetriever(corpora)]
@@ -46,11 +46,17 @@ def build_retrievers(corpora, with_dense):
 def main():
     ap = argparse.ArgumentParser()
     ap.add_argument("--dense", action="store_true", help="also evaluate dense and hybrid retrievers")
+    ap.add_argument("--real-vss", action="store_true",
+                    help="VSS queries run against the 1382 real VSS v6.1 signals (only queries whose gold exists there)")
     args = ap.parse_args()
     corpora = load_corpora()
     queries = load_queries()
+    if args.real_vss:
+        corpora["vss"] = load_real_vss()
+        real_ids = {d.id for d in corpora["vss"]}
+        queries = [q for q in queries if q["kind"] == "vss" and q["gold"][0] in real_ids]
     print("corpus sizes:", {k: len(v) for k, v in corpora.items()})
-    retrievers = build_retrievers(corpora, args.dense)
+    retrievers = build_retrievers(corpora, args.dense, generic_legacy=args.real_vss)
 
     for label, subset in (("all queries", queries),
                           ("keyword queries", [q for q in queries if q["style"] == "keyword"]),
@@ -70,6 +76,8 @@ def main():
     print(f"{'corpus':<8}{'size':>6}" + "".join(f"{r.name:>16}" for r in retrievers))
     for kind in corpora:
         sub = [q for q in para if q["kind"] == kind]
+        if not sub:
+            continue
         line = f"{kind:<8}{len(corpora[kind]):>6}"
         for r in retrievers:
             line += f"{evaluate(r, sub)[0]['mrr']:>8.2f} ({chance_mrr(sub, corpora):.2f})"

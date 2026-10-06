@@ -9,7 +9,7 @@ sys.path.insert(0, os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
 import pytest
 
 from sdv.rag.eval import evaluate, load_queries, summarise
-from sdv.rag.kb import KINDS, kb_ids, load_corpora, split_camel, stem, tokenize
+from sdv.rag.kb import KINDS, kb_ids, load_corpora, load_real_vss, split_camel, stem, tokenize
 from sdv.rag.retrievers import BM25, BM25Retriever, DenseRetriever, LegacyTfidf
 
 
@@ -108,9 +108,35 @@ class TestEvaluation:
 
 
 def test_dense_retriever_needs_its_optional_dependency():
-    try:
-        import fastembed  # noqa: F401
-        pytest.skip("fastembed installed; dense retriever covered separately")
-    except ImportError:
-        with pytest.raises(RuntimeError):
-            DenseRetriever()
+    import importlib.util
+    if importlib.util.find_spec("fastembed") is not None:
+        pytest.skip("fastembed installed; dense retriever covered by the retrieval experiment")
+    with pytest.raises(RuntimeError):
+        DenseRetriever()
+
+
+class TestRealVSS:
+
+    def test_the_official_catalogue_is_loaded_and_unique(self):
+        docs = load_real_vss()
+        assert len(docs) > 1000 and len({d.id for d in docs}) == len(docs)
+        assert "Vehicle.Speed" in {d.id for d in docs}
+
+    def test_the_hand_made_kb_is_not_fully_real_vss(self):
+        """Documented finding: 10 of the 26 hand-written signal paths are not real VSS paths."""
+        real = {d.id for d in load_real_vss()}
+        handmade = {d.id for d in load_corpora()["vss"]}
+        assert len(handmade - real) == 10 and len(handmade & real) == 16
+
+    def test_generic_legacy_mode_scores_a_custom_corpus_with_the_original_fallback(self):
+        corpora = load_corpora()
+        corpora["vss"] = load_real_vss()
+        legacy = LegacyTfidf(corpora, generic=True)
+        assert legacy.retrieve("steering wheel angle", "vss", 3)
+        assert len(legacy.retrieve("zzzz qqqq", "vss", 3)) == 3        # unrelated first-k fallback
+
+    def test_bm25_finds_a_named_signal_among_over_a_thousand(self):
+        corpora = load_corpora()
+        corpora["vss"] = load_real_vss()
+        top = BM25Retriever(corpora).retrieve("steering wheel angle", "vss", 5)
+        assert any(d.id == "Vehicle.Chassis.SteeringWheel.Angle" for d in top)

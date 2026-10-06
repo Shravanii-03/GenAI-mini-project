@@ -35,7 +35,7 @@ class CachedLLM:
         self.hits = self.misses = 0
 
     def key(self, prompt: str) -> str:
-        payload = json.dumps([self.model, self.temperature, self.max_tokens, self.extra, prompt])
+        payload = json.dumps([self.model, self.temperature, self.extra, prompt])   # max_tokens only caps length
         return hashlib.sha256(payload.encode()).hexdigest()[:24]
 
     def _raw_call(self, prompt):

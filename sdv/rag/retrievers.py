@@ -63,11 +63,30 @@ class LegacyTfidf:
     _KEY = {"vss": "path", "can": "id", "attack": "id", "rule": "rule_id"}
     _KIND = {"vss": "vss", "can": "can", "attack": "attack", "rule": "iso"}
 
-    def __init__(self, corpora=None):
+    def __init__(self, corpora=None, generic: bool = False):
+        """generic=True scores the supplied documents with the original TF-IDF formula
+        instead of reading the knowledge-base files (needed for a custom corpus)."""
         self.corpora = corpora or load_corpora()
+        self.generic = generic
         self.by_id = {kind: {d.id: d for d in docs} for kind, docs in self.corpora.items()}
 
+    def _retrieve_generic(self, query: str, kind: str, k: int):
+        import rag_engine
+        docs = self.corpora[kind]
+        texts = [d.text for d in docs]
+        q_tokens = rag_engine._tokenize(query)
+        scored = []
+        for i, text in enumerate(texts):
+            score = rag_engine._tfidf_score(q_tokens, rag_engine._tokenize(text), texts)
+            if score > 0:
+                scored.append((i, score))
+        scored.sort(key=lambda x: x[1], reverse=True)
+        picked = [docs[i] for i, _ in scored[:k]]
+        return picked or docs[:k]                      # the original fallback: first k documents
+
     def retrieve(self, query: str, kind: str, k: int = 5):
+        if self.generic:
+            return self._retrieve_generic(query, kind, k)
         import rag_engine
         items = rag_engine.retrieve(query, self._KIND[kind], top_k=k)
         docs = []

@@ -85,12 +85,13 @@ def main():
     ap.add_argument("--retriever", choices=["bm25", "tfidf"], default="bm25")
     ap.add_argument("--conditions", default="baseline,eager,rag,validator,eager_validator,rag_validator")
     ap.add_argument("--limit", type=int, default=None)
+    ap.add_argument("--stride", type=int, default=1, help="use every n-th requirement (keeps all categories)")
     ap.add_argument("--workers", type=int, default=4)
-    ap.add_argument("--max-tokens", type=int, default=1500)
+    ap.add_argument("--max-tokens", type=int, default=450)
     ap.add_argument("--out", default=None)
     args = ap.parse_args()
 
-    items = load_benchmark()[: args.limit]
+    items = load_benchmark()[: args.limit][:: args.stride]
     ids = kb_ids()
     retriever = BM25Retriever() if args.retriever == "bm25" else LegacyTfidf()
     llm = CachedLLM(args.model, max_tokens=args.max_tokens)

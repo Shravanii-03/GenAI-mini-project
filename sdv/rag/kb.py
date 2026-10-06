@@ -72,6 +72,27 @@ def load_corpora() -> dict:
     return corpora
 
 
+REAL_VSS_FILE = "vss_real_v6.1.json"
+
+
+def load_real_vss(path=None):
+    """Leaf signals of the official COVESA VSS release (see Knowledge_base/PROVENANCE.md)."""
+    with open(path or (_kb_dir() / REAL_VSS_FILE), encoding="utf-8") as f:
+        tree = json.load(f)
+    docs = []
+
+    def walk(node, prefix):
+        for name, item in node.items():
+            full = f"{prefix}.{name}" if prefix else name
+            if item.get("type") == "branch":
+                walk(item.get("children", {}), full)
+            else:
+                docs.append(Doc(full, "vss", f"{full} {item.get('description', '')}", full))
+
+    walk(tree, "")
+    return docs
+
+
 def kb_ids() -> dict:
     """Valid identifiers per kind, used to check citations."""
     return {kind: {d.id for d in docs} for kind, docs in load_corpora().items()}
