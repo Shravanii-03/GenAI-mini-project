@@ -31,6 +31,8 @@ class CanBus:
         self._arb_scheduled = False
         self._subscribers = []
         self.log = []               # every frame that completed transmission
+        self.dropped = []           # frames removed by a tx filter (ground truth)
+        self._tx_filters = []
 
     def subscribe(self, callback):
         self._subscribers.append(callback)
@@ -38,7 +40,28 @@ class CanBus:
     def tx_time_us(self, dlc: int) -> int:
         return math.ceil(frame_bits(dlc) * 1_000_000 / self.bitrate)
 
+    def add_tx_filter(self, fn):
+        """Install a filter run on every frame before it reaches arbitration.
+
+        fn(frame, now_us) returns (frame_or_None, delay_us). None drops the frame,
+        delay_us > 0 holds it back, and the frame may be modified in place. This
+        models a compromised ECU or gateway sitting between a sender and the bus.
+        """
+        self._tx_filters.append(fn)
+
     def send(self, frame: CanFrame):
+        for flt in self._tx_filters:
+            result = flt(frame, self.sim.now)
+            if result is None or result[0] is None:
+                self.dropped.append(frame)
+                return
+            frame, delay_us = result
+            if delay_us > 0:
+                self.sim.schedule(delay_us, self._enqueue, frame)
+                return
+        self._enqueue(frame)
+
+    def _enqueue(self, frame: CanFrame):
         frame.t_enqueued_us = self.sim.now
         self._pending.append((self._order, frame))
         self._order += 1

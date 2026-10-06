@@ -13,6 +13,7 @@ class Simulator:
         self.now = 0
         self._queue = []
         self._seq = itertools.count()
+        self._stopped = False
 
     def schedule(self, delay_us, callback, *args):
         """Run callback(*args) delay_us microseconds from now."""
@@ -27,15 +28,19 @@ class Simulator:
 
     def run(self, until_us=None):
         """Process events in time order (ties in scheduling order)."""
-        while self._queue:
+        while self._queue and not self._stopped:
             time_us, _, callback, args = self._queue[0]
             if until_us is not None and time_us > until_us:
                 break
             heapq.heappop(self._queue)
             self.now = time_us
             callback(*args)
-        if until_us is not None:
+        if until_us is not None and not self._stopped:
             self.now = max(self.now, until_us)
+
+    def stop(self):
+        """Stop processing events after the current one."""
+        self._stopped = True
 
     def pending(self):
         return len(self._queue)

@@ -78,6 +78,8 @@ chain:
   load_gain: 1.5                 # compute factor = 1 + load_gain * load^2
   appear_time_ms: 50             # when the obstacle becomes detectable
   timeout_ms: 2000
+  ttc_trigger_s: 2.0             # perception raises a hazard below this reported TTC
+  tail_ms: 100                   # keep simulating after brake onset (for monitors)
 
 plant:
   brake_ramp_ms: 50              # time for brake force to build up

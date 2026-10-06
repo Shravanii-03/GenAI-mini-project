@@ -6,9 +6,11 @@ Emulated emergency-braking chain: sensor ECU -> perception ECU -> decision ECU
     DETECT (0x1C0)  perception result
     BRAKE  (0x1A0)  brake command
 
-End-to-end latency is the time from the obstacle becoming detectable to brake
-onset. It is the sum of sampling wait, bus queueing/arbitration, ECU compute and
-actuator response, so it responds to CPU load and to anything else on the bus.
+Perception raises a hazard when the *reported* time-to-collision
+(distance / speed) drops below ttc_trigger_s. End-to-end latency is measured
+from the obstacle becoming a threat to brake onset, and is the sum of sampling
+wait, bus queueing/arbitration, ECU compute and actuator response. It responds
+to CPU load, background traffic and anything an attacker does on the bus.
 
 Compute-time means are ASSUMED parameters (config.yaml, section "chain") until
 they are calibrated against measurements of real code.
@@ -21,10 +23,12 @@ import config
 from sdv.bus.can_bus import CanBus
 from sdv.schemas import CanFrame, Scenario
 from sdv.sim.engine import Simulator
+from sdv.traffic.background import BackgroundTraffic
 
 SENSOR_ID = 0x2A0
 DETECT_ID = 0x1C0
 BRAKE_ID = 0x1A0
+CHAIN_IDS = (SENSOR_ID, DETECT_ID, BRAKE_ID)
 
 
 @dataclass
@@ -37,6 +41,8 @@ class ChainParams:
     load_gain: float = 1.5
     appear_time_ms: float = 50.0
     timeout_ms: float = 2000.0
+    ttc_trigger_s: float = 2.0
+    tail_ms: float = 100.0
 
     @classmethod
     def from_config(cls):
@@ -45,7 +51,8 @@ class ChainParams:
 
 
 class BrakeChain:
-    def __init__(self, scenario: Scenario, seed: int, params: ChainParams = None):
+    def __init__(self, scenario: Scenario, seed: int, params: ChainParams = None,
+                 attacks=(), background: bool = True):
         self.scenario = scenario
         self.params = params or ChainParams.from_config()
         self.rng = random.Random(seed)
@@ -54,6 +61,9 @@ class BrakeChain:
         self.t_appear_us = int(self.params.appear_time_ms * 1000)
         self.timeline = {}              # event name -> absolute time (us)
         self.brake_onset_us = None
+        self.attacks = list(attacks)
+        self.attack_windows = []        # (name, start_us, end_us) filled by attacks
+        self.background = BackgroundTraffic(self.sim, self.bus, self.rng, CHAIN_IDS) if background else None
         self._detected = False
         self._cmd_started = False
         self._cmd_received = False
@@ -84,8 +94,6 @@ class BrakeChain:
                 "speed_ms": v0,
             },
         )
-        if seen and "sensor_enq" not in self.timeline:
-            self.timeline["sensor_enq"] = now
         self.bus.send(frame)
         if self.brake_onset_us is None:
             self.sim.schedule(int(self.params.sample_period_ms * 1000), self._sensor_tick)
@@ -101,13 +109,23 @@ class BrakeChain:
     def _brake_onset(self):
         self.brake_onset_us = self.sim.now
         self.timeline["brake_onset"] = self.sim.now
+        self.sim.schedule(int(self.params.tail_ms * 1000), self.sim.stop)
+
+    def _reported_ttc(self, frame: CanFrame):
+        d, v = frame.data.get("distance_m"), frame.data.get("speed_ms")
+        if d is None or not v or v <= 0:
+            return None
+        return d / v
 
     def _on_frame(self, frame: CanFrame):
         now = self.sim.now
         if frame.can_id == SENSOR_ID and frame.data.get("obstacle") and not self._detected:
-            self._detected = True
-            self.timeline["sensor_rx"] = now
-            self.sim.schedule(self._compute_us(self.params.perception_ms), self._send_detect)
+            ttc = self._reported_ttc(frame)
+            if ttc is not None and ttc <= self.params.ttc_trigger_s:
+                self._detected = True
+                self.timeline["sensor_enq"] = frame.t_enqueued_us
+                self.timeline["sensor_rx"] = now
+                self.sim.schedule(self._compute_us(self.params.perception_ms), self._send_detect)
         elif frame.can_id == DETECT_ID and not self._cmd_started:
             self._cmd_started = True
             self.timeline["detect_rx"] = now
@@ -120,6 +138,10 @@ class BrakeChain:
             )
 
     def run(self) -> dict:
+        for attack in self.attacks:
+            attack.install(self)
+        if self.background:
+            self.background.start()
         phase_us = int(self.rng.uniform(0, self.params.sample_period_ms * 1000))
         self.sim.schedule_at(phase_us, self._sensor_tick)
         self.sim.run(until_us=int(self.params.timeout_ms * 1000))
