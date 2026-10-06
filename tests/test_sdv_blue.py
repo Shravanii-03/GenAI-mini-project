@@ -12,9 +12,12 @@ import pytest
 from sdv.blue.loop import (
     base_monitors, benign_runs, collect_cases, deployed, known_ids_of, refresh_alarms, timely_rate,
 )
+import json
+
+from sdv.blue.agent import blue_step_llm, build_prompt, parse_rules, propose_rules
 from sdv.blue.rules import RuleMonitor, compile_rule, normalise_id, validate_rule
 from sdv.blue.summary import describe, numeric_ids
-from sdv.blue.synth import candidates, enumerate_step
+from sdv.blue.synth import candidates, enumerate_step, random_step
 from sdv.blue.verify import false_alarm_rate, uncovered, verify_rule
 from sdv.monitors.monitors import Context, Observed
 
@@ -164,3 +167,81 @@ class TestRedBlueOnSimulatedData:
         text = describe(world["valid"], world["missed"])
         assert "During masquerade attack windows" in text and "During dual_masquerade attack windows" in text
         assert "cross_check" not in text
+
+
+def scripted(*replies):
+    seen, it = [], iter(replies)
+
+    def llm(prompt):
+        seen.append(prompt)
+        return next(it)
+    llm.seen = seen
+    return llm
+
+
+class TestBlueAgent:
+
+    def test_prompt_contains_the_language_and_the_evidence_but_no_answer(self):
+        prompt = build_prompt("EVIDENCE-TEXT", "- earlier rule: rejected")
+        assert "cross_check" in prompt and "EVIDENCE-TEXT" in prompt and "earlier rule" in prompt
+        assert "0x2A0" not in prompt            # the prompt does not name specific IDs by itself
+
+    def test_rules_are_parsed_from_prose_and_garbage_gives_nothing(self):
+        assert parse_rules('Sure: {"rules": [{"type": "range"}]} done') == [{"type": "range"}]
+        assert parse_rules("I cannot help") == [] and parse_rules('{"rules": "x"}') == []
+
+    def test_invalid_rules_trigger_a_repair_with_the_errors(self):
+        bad = json.dumps({"rules": [{**XCHK, "id_a": "0x999"}]})
+        good = json.dumps({"rules": [XCHK]})
+        llm = scripted(bad, good)
+        rules, calls, errors = propose_rules(llm, "evidence", KNOWN)
+        assert len(rules) == 1 and calls == 2 and errors
+        assert "not a CAN ID seen on the bus" in llm.seen[1]
+
+    def test_repairs_are_bounded(self):
+        llm = scripted(*(["nonsense"] * 5))
+        rules, calls, _ = propose_rules(llm, "evidence", KNOWN, max_repairs=2)
+        assert rules == [] and calls == 3
+
+    def test_only_verified_rules_are_adopted(self, world):
+        cases = [dict(c) for c in world["missed"]]
+        jumpy = {"type": "jump", "id": "0x2A0", "field": "distance_m", "max_step": 0.3}   # fires on benign
+        llm = scripted(json.dumps({"rules": [jumpy, XCHK]}))
+        accepted, stats = blue_step_llm(llm, world["valid"], cases, world["known"], attempts=1)
+        assert [a["rule"]["type"] for a in accepted] == ["cross_check"]
+        assert stats["proposals"] == 2 and stats["rejected_proposals"] == 1
+
+    def test_rejection_reasons_are_fed_back_in_the_next_attempt(self, world):
+        cases = [dict(c) for c in world["missed"] if c["family"] == "masquerade"]
+        jumpy = {"type": "jump", "id": "0x2A0", "field": "distance_m", "max_step": 0.3}
+        llm = scripted(json.dumps({"rules": [jumpy]}), json.dumps({"rules": [XCHK]}))
+        accepted, stats = blue_step_llm(llm, world["valid"], cases, world["known"], attempts=3)
+        assert len(accepted) == 1 and stats["attempts"] == 2
+        assert "false-alarm rate" in llm.seen[1]
+
+    def test_the_loop_stops_when_nothing_is_left_to_fix(self, world):
+        single = [dict(c) for c in world["missed"] if c["family"] == "masquerade"]
+        llm = scripted(json.dumps({"rules": [XCHK]}))
+        accepted, stats = blue_step_llm(llm, world["valid"], single, world["known"], attempts=3)
+        assert len(accepted) == 1 and stats["attempts"] == 1 and not uncovered(single)
+
+    def test_the_dual_attacker_defeats_every_proposal(self, world):
+        dual = [dict(c) for c in world["missed"] if c["family"] == "dual_masquerade"]
+        llm = scripted(*([json.dumps({"rules": [XCHK]})] * 3))
+        accepted, stats = blue_step_llm(llm, world["valid"], dual, world["known"], attempts=3)
+        assert accepted == [] and stats["rejected_proposals"] == 3 and uncovered(dual)
+
+
+class TestRandomBaseline:
+
+    def test_random_proposals_pass_through_the_same_verifier(self, world):
+        cases = [dict(c) for c in world["missed"]]
+        accepted, budget = random_step(world["valid"], cases, world["known"], random.Random(0), proposals=40)
+        assert budget == 40
+        for a in accepted:
+            assert a["fpr"] <= 0.02 and a["new_timely"] >= 1
+
+    def test_random_search_cannot_fix_the_dual_attacker_either(self, world):
+        dual = [dict(c) for c in world["missed"] if c["family"] == "dual_masquerade"]
+        accepted, _ = random_step(world["valid"], dual, world["known"], random.Random(1), proposals=60)
+        assert accepted == []

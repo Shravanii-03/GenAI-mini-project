@@ -27,7 +27,7 @@ PARAMS = {
 ID_KEYS = {"cross_check": ("id_a", "id_b"), "jump": ("id",), "drift": ("id",), "range": ("id",)}
 
 DSL_HELP = """\
-Rule types (JSON objects). Use CAN IDs as hex strings such as "0x2A0".
+Rule types (JSON objects). Use CAN IDs as hex strings such as "0x123".
   {"type":"cross_check","id_a":"0x..","id_b":"0x..","field":"distance_m","tol":<0.3-20>,"max_skew_ms":<1-50>}
       two IDs reporting the same field must agree within tol
   {"type":"jump","id":"0x..","field":"distance_m","max_step":<0.3-20>}

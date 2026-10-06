@@ -51,3 +51,21 @@ def enumerate_step(benign_obs, cases, known_ids, fpr_cap=0.02, max_rules=3):
         accepted.append(best)
         adopt_rule(best["rule"], cases)
     return accepted, evaluated
+
+
+def random_step(benign_obs, cases, known_ids, rng, proposals=9, fpr_cap=0.02):
+    """Baseline: random rules from the grid with the same verifier and a fixed proposal budget.
+
+    Separates what an LLM's reasoning adds from what verification alone achieves.
+    Returns (accepted verdicts, proposals made). Mutates cases' base alarms.
+    """
+    pool = candidates(benign_obs)
+    accepted = []
+    for _ in range(proposals):
+        if not uncovered(cases):
+            break
+        verdict = verify_rule(rng.choice(pool), benign_obs, cases, known_ids, fpr_cap)
+        if verdict["ok"]:
+            accepted.append(verdict)
+            adopt_rule(verdict["rule"], cases)
+    return accepted, proposals
