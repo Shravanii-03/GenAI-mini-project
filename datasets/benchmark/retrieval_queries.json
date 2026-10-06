@@ -1,0 +1,956 @@
+[
+ {
+  "id": "Q001",
+  "kind": "vss",
+  "style": "keyword",
+  "query": "anti-lock braking system active",
+  "gold": [
+   "Vehicle.ADAS.ABS.IsActive"
+  ]
+ },
+ {
+  "id": "Q002",
+  "kind": "vss",
+  "style": "paraphrase",
+  "query": "is the wheel-lock prevention feature switched on",
+  "gold": [
+   "Vehicle.ADAS.ABS.IsActive"
+  ]
+ },
+ {
+  "id": "Q003",
+  "kind": "vss",
+  "style": "keyword",
+  "query": "ABS engaged controlling brake pressure",
+  "gold": [
+   "Vehicle.ADAS.ABS.IsEngaged"
+  ]
+ },
+ {
+  "id": "Q004",
+  "kind": "vss",
+  "style": "paraphrase",
+  "query": "antilock is intervening right now to modulate the brakes",
+  "gold": [
+   "Vehicle.ADAS.ABS.IsEngaged"
+  ]
+ },
+ {
+  "id": "Q005",
+  "kind": "vss",
+  "style": "keyword",
+  "query": "current SAE autonomy level",
+  "gold": [
+   "Vehicle.ADAS.ActiveAutonomyLevel"
+  ]
+ },
+ {
+  "id": "Q006",
+  "kind": "vss",
+  "style": "paraphrase",
+  "query": "how much self-driving capability is the car currently using",
+  "gold": [
+   "Vehicle.ADAS.ActiveAutonomyLevel"
+  ]
+ },
+ {
+  "id": "Q007",
+  "kind": "vss",
+  "style": "keyword",
+  "query": "cruise control active",
+  "gold": [
+   "Vehicle.ADAS.CruiseControl.IsActive"
+  ]
+ },
+ {
+  "id": "Q008",
+  "kind": "vss",
+  "style": "paraphrase",
+  "query": "is the speed-holding assistant turned on",
+  "gold": [
+   "Vehicle.ADAS.CruiseControl.IsActive"
+  ]
+ },
+ {
+  "id": "Q009",
+  "kind": "vss",
+  "style": "keyword",
+  "query": "cruise control set speed",
+  "gold": [
+   "Vehicle.ADAS.CruiseControl.SpeedSet"
+  ]
+ },
+ {
+  "id": "Q010",
+  "kind": "vss",
+  "style": "paraphrase",
+  "query": "target velocity the driver selected for automatic speed holding",
+  "gold": [
+   "Vehicle.ADAS.CruiseControl.SpeedSet"
+  ]
+ },
+ {
+  "id": "Q011",
+  "kind": "vss",
+  "style": "keyword",
+  "query": "emergency brake assist active",
+  "gold": [
+   "Vehicle.ADAS.EBA.IsActive"
+  ]
+ },
+ {
+  "id": "Q012",
+  "kind": "vss",
+  "style": "paraphrase",
+  "query": "panic braking support is enabled",
+  "gold": [
+   "Vehicle.ADAS.EBA.IsActive"
+  ]
+ },
+ {
+  "id": "Q013",
+  "kind": "vss",
+  "style": "keyword",
+  "query": "emergency brake assist engaged",
+  "gold": [
+   "Vehicle.ADAS.EBA.IsEngaged"
+  ]
+ },
+ {
+  "id": "Q014",
+  "kind": "vss",
+  "style": "paraphrase",
+  "query": "the panic-brake helper is currently applying extra braking force",
+  "gold": [
+   "Vehicle.ADAS.EBA.IsEngaged"
+  ]
+ },
+ {
+  "id": "Q015",
+  "kind": "vss",
+  "style": "keyword",
+  "query": "electronic stability control active",
+  "gold": [
+   "Vehicle.ADAS.ESC.IsActive"
+  ]
+ },
+ {
+  "id": "Q016",
+  "kind": "vss",
+  "style": "paraphrase",
+  "query": "skid prevention system is switched on",
+  "gold": [
+   "Vehicle.ADAS.ESC.IsActive"
+  ]
+ },
+ {
+  "id": "Q017",
+  "kind": "vss",
+  "style": "keyword",
+  "query": "lane departure warning active",
+  "gold": [
+   "Vehicle.ADAS.LaneDepartureDetection.IsWarning"
+  ]
+ },
+ {
+  "id": "Q018",
+  "kind": "vss",
+  "style": "paraphrase",
+  "query": "alert because the car is drifting out of its lane",
+  "gold": [
+   "Vehicle.ADAS.LaneDepartureDetection.IsWarning"
+  ]
+ },
+ {
+  "id": "Q019",
+  "kind": "vss",
+  "style": "keyword",
+  "query": "obstacle detection warning",
+  "gold": [
+   "Vehicle.ADAS.ObstacleDetection.IsWarning"
+  ]
+ },
+ {
+  "id": "Q020",
+  "kind": "vss",
+  "style": "paraphrase",
+  "query": "alert that something is in the way ahead",
+  "gold": [
+   "Vehicle.ADAS.ObstacleDetection.IsWarning"
+  ]
+ },
+ {
+  "id": "Q021",
+  "kind": "vss",
+  "style": "keyword",
+  "query": "brake lights active",
+  "gold": [
+   "Vehicle.Body.Lights.Brake.IsActive"
+  ]
+ },
+ {
+  "id": "Q022",
+  "kind": "vss",
+  "style": "paraphrase",
+  "query": "rear red lamps lit when slowing",
+  "gold": [
+   "Vehicle.Body.Lights.Brake.IsActive"
+  ]
+ },
+ {
+  "id": "Q023",
+  "kind": "vss",
+  "style": "keyword",
+  "query": "driver emergency braking detected",
+  "gold": [
+   "Vehicle.Chassis.Brake.IsDriverEmergencyBrakingDetected"
+  ]
+ },
+ {
+  "id": "Q024",
+  "kind": "vss",
+  "style": "paraphrase",
+  "query": "the person at the wheel stamped hard on the brake",
+  "gold": [
+   "Vehicle.Chassis.Brake.IsDriverEmergencyBrakingDetected"
+  ]
+ },
+ {
+  "id": "Q025",
+  "kind": "vss",
+  "style": "keyword",
+  "query": "brake pedal position percentage",
+  "gold": [
+   "Vehicle.Chassis.Brake.PedalPosition"
+  ]
+ },
+ {
+  "id": "Q026",
+  "kind": "vss",
+  "style": "paraphrase",
+  "query": "how far the brake pedal is pushed down",
+  "gold": [
+   "Vehicle.Chassis.Brake.PedalPosition"
+  ]
+ },
+ {
+  "id": "Q027",
+  "kind": "vss",
+  "style": "keyword",
+  "query": "steering wheel angle",
+  "gold": [
+   "Vehicle.Chassis.SteeringWheel.Angle"
+  ]
+ },
+ {
+  "id": "Q028",
+  "kind": "vss",
+  "style": "paraphrase",
+  "query": "how much the driver has turned the wheel",
+  "gold": [
+   "Vehicle.Chassis.SteeringWheel.Angle"
+  ]
+ },
+ {
+  "id": "Q029",
+  "kind": "vss",
+  "style": "keyword",
+  "query": "current vehicle latitude",
+  "gold": [
+   "Vehicle.CurrentLocation.Latitude"
+  ]
+ },
+ {
+  "id": "Q030",
+  "kind": "vss",
+  "style": "paraphrase",
+  "query": "north-south GPS coordinate of the car",
+  "gold": [
+   "Vehicle.CurrentLocation.Latitude"
+  ]
+ },
+ {
+  "id": "Q031",
+  "kind": "vss",
+  "style": "keyword",
+  "query": "current vehicle longitude",
+  "gold": [
+   "Vehicle.CurrentLocation.Longitude"
+  ]
+ },
+ {
+  "id": "Q032",
+  "kind": "vss",
+  "style": "paraphrase",
+  "query": "east-west GPS coordinate of the car",
+  "gold": [
+   "Vehicle.CurrentLocation.Longitude"
+  ]
+ },
+ {
+  "id": "Q033",
+  "kind": "vss",
+  "style": "keyword",
+  "query": "probability that the driver is attentive",
+  "gold": [
+   "Vehicle.Driver.AttentiveProbability"
+  ]
+ },
+ {
+  "id": "Q034",
+  "kind": "vss",
+  "style": "paraphrase",
+  "query": "is the driver paying attention to the road",
+  "gold": [
+   "Vehicle.Driver.AttentiveProbability"
+  ]
+ },
+ {
+  "id": "Q035",
+  "kind": "vss",
+  "style": "keyword",
+  "query": "vehicle speed reported by OBD",
+  "gold": [
+   "Vehicle.OBD.Speed"
+  ]
+ },
+ {
+  "id": "Q036",
+  "kind": "vss",
+  "style": "paraphrase",
+  "query": "velocity read from the diagnostic port",
+  "gold": [
+   "Vehicle.OBD.Speed"
+  ]
+ },
+ {
+  "id": "Q037",
+  "kind": "vss",
+  "style": "keyword",
+  "query": "vehicle speed",
+  "gold": [
+   "Vehicle.Speed"
+  ]
+ },
+ {
+  "id": "Q038",
+  "kind": "vss",
+  "style": "paraphrase",
+  "query": "how fast the car is travelling",
+  "gold": [
+   "Vehicle.Speed"
+  ]
+ },
+ {
+  "id": "Q039",
+  "kind": "vss",
+  "style": "keyword",
+  "query": "target vehicle speed commanded",
+  "gold": [
+   "Vehicle.Speed.Target"
+  ]
+ },
+ {
+  "id": "Q040",
+  "kind": "vss",
+  "style": "paraphrase",
+  "query": "the velocity the controller is asking the car to reach",
+  "gold": [
+   "Vehicle.Speed.Target"
+  ]
+ },
+ {
+  "id": "Q041",
+  "kind": "vss",
+  "style": "keyword",
+  "query": "current gear",
+  "gold": [
+   "Vehicle.Powertrain.Transmission.CurrentGear"
+  ]
+ },
+ {
+  "id": "Q042",
+  "kind": "vss",
+  "style": "paraphrase",
+  "query": "which transmission ratio is selected",
+  "gold": [
+   "Vehicle.Powertrain.Transmission.CurrentGear"
+  ]
+ },
+ {
+  "id": "Q043",
+  "kind": "vss",
+  "style": "keyword",
+  "query": "engine coolant temperature",
+  "gold": [
+   "Vehicle.Powertrain.CombustionEngine.ECT"
+  ]
+ },
+ {
+  "id": "Q044",
+  "kind": "vss",
+  "style": "paraphrase",
+  "query": "how hot the engine's cooling liquid is",
+  "gold": [
+   "Vehicle.Powertrain.CombustionEngine.ECT"
+  ]
+ },
+ {
+  "id": "Q045",
+  "kind": "vss",
+  "style": "keyword",
+  "query": "air conditioning active",
+  "gold": [
+   "Vehicle.Cabin.HVAC.IsAirConditioningActive"
+  ]
+ },
+ {
+  "id": "Q046",
+  "kind": "vss",
+  "style": "paraphrase",
+  "query": "is the cabin cooling system running",
+  "gold": [
+   "Vehicle.Cabin.HVAC.IsAirConditioningActive"
+  ]
+ },
+ {
+  "id": "Q047",
+  "kind": "vss",
+  "style": "keyword",
+  "query": "pedestrian detected in vehicle path",
+  "gold": [
+   "Vehicle.ADAS.PedestrianDetection.IsDetected"
+  ]
+ },
+ {
+  "id": "Q048",
+  "kind": "vss",
+  "style": "paraphrase",
+  "query": "a person walking ahead of the car has been spotted",
+  "gold": [
+   "Vehicle.ADAS.PedestrianDetection.IsDetected"
+  ]
+ },
+ {
+  "id": "Q049",
+  "kind": "vss",
+  "style": "keyword",
+  "query": "camera-based pedestrian detection confidence",
+  "gold": [
+   "Vehicle.ADAS.PedestrianDetection.CameraConfidence"
+  ]
+ },
+ {
+  "id": "Q050",
+  "kind": "vss",
+  "style": "paraphrase",
+  "query": "how sure the image sensor is that it sees a walker",
+  "gold": [
+   "Vehicle.ADAS.PedestrianDetection.CameraConfidence"
+  ]
+ },
+ {
+  "id": "Q051",
+  "kind": "vss",
+  "style": "keyword",
+  "query": "LIDAR pedestrian detection confidence",
+  "gold": [
+   "Vehicle.ADAS.PedestrianDetection.LidarConfidence"
+  ]
+ },
+ {
+  "id": "Q052",
+  "kind": "vss",
+  "style": "paraphrase",
+  "query": "how certain the laser scanner is about a person ahead",
+  "gold": [
+   "Vehicle.ADAS.PedestrianDetection.LidarConfidence"
+  ]
+ },
+ {
+  "id": "Q053",
+  "kind": "can",
+  "style": "keyword",
+  "query": "emergency brake command to the brake actuator",
+  "gold": [
+   "0x1A0"
+  ]
+ },
+ {
+  "id": "Q054",
+  "kind": "can",
+  "style": "paraphrase",
+  "query": "message telling the wheels to stop the car urgently",
+  "gold": [
+   "0x1A0"
+  ]
+ },
+ {
+  "id": "Q055",
+  "kind": "can",
+  "style": "keyword",
+  "query": "brake pressure feedback from actuator",
+  "gold": [
+   "0x1A3"
+  ]
+ },
+ {
+  "id": "Q056",
+  "kind": "can",
+  "style": "paraphrase",
+  "query": "reading of hydraulic force reported back after braking",
+  "gold": [
+   "0x1A3"
+  ]
+ },
+ {
+  "id": "Q057",
+  "kind": "can",
+  "style": "keyword",
+  "query": "vehicle speed broadcast from wheel speed sensors",
+  "gold": [
+   "0x200"
+  ]
+ },
+ {
+  "id": "Q058",
+  "kind": "can",
+  "style": "paraphrase",
+  "query": "periodic velocity message derived from the wheels",
+  "gold": [
+   "0x200"
+  ]
+ },
+ {
+  "id": "Q059",
+  "kind": "can",
+  "style": "keyword",
+  "query": "steering angle command",
+  "gold": [
+   "0x210"
+  ]
+ },
+ {
+  "id": "Q060",
+  "kind": "can",
+  "style": "paraphrase",
+  "query": "request that points the front wheels in a given direction",
+  "gold": [
+   "0x210"
+  ]
+ },
+ {
+  "id": "Q061",
+  "kind": "can",
+  "style": "keyword",
+  "query": "fused perception data from camera and LiDAR",
+  "gold": [
+   "0x300"
+  ]
+ },
+ {
+  "id": "Q062",
+  "kind": "can",
+  "style": "paraphrase",
+  "query": "combined view of the surroundings from several sensors",
+  "gold": [
+   "0x300"
+  ]
+ },
+ {
+  "id": "Q063",
+  "kind": "can",
+  "style": "keyword",
+  "query": "LiDAR point cloud summary data",
+  "gold": [
+   "0x310"
+  ]
+ },
+ {
+  "id": "Q064",
+  "kind": "can",
+  "style": "paraphrase",
+  "query": "condensed laser scanner measurements",
+  "gold": [
+   "0x310"
+  ]
+ },
+ {
+  "id": "Q065",
+  "kind": "can",
+  "style": "keyword",
+  "query": "camera object detection result",
+  "gold": [
+   "0x320"
+  ]
+ },
+ {
+  "id": "Q066",
+  "kind": "can",
+  "style": "paraphrase",
+  "query": "what the image sensor recognised in front of the car",
+  "gold": [
+   "0x320"
+  ]
+ },
+ {
+  "id": "Q067",
+  "kind": "can",
+  "style": "keyword",
+  "query": "infotainment system control messages",
+  "gold": [
+   "0x400"
+  ]
+ },
+ {
+  "id": "Q068",
+  "kind": "can",
+  "style": "paraphrase",
+  "query": "commands for the media and entertainment head unit",
+  "gold": [
+   "0x400"
+  ]
+ },
+ {
+  "id": "Q069",
+  "kind": "can",
+  "style": "keyword",
+  "query": "over-the-air software update control",
+  "gold": [
+   "0x500"
+  ]
+ },
+ {
+  "id": "Q070",
+  "kind": "can",
+  "style": "paraphrase",
+  "query": "wireless firmware upgrade management messages",
+  "gold": [
+   "0x500"
+  ]
+ },
+ {
+  "id": "Q071",
+  "kind": "can",
+  "style": "keyword",
+  "query": "zone ECU liveness heartbeat",
+  "gold": [
+   "0x600"
+  ]
+ },
+ {
+  "id": "Q072",
+  "kind": "can",
+  "style": "paraphrase",
+  "query": "periodic I'm-alive signal from a regional controller",
+  "gold": [
+   "0x600"
+  ]
+ },
+ {
+  "id": "Q073",
+  "kind": "can",
+  "style": "keyword",
+  "query": "traction control commands",
+  "gold": [
+   "0x700"
+  ]
+ },
+ {
+  "id": "Q074",
+  "kind": "can",
+  "style": "paraphrase",
+  "query": "messages limiting wheel spin on slippery surfaces",
+  "gold": [
+   "0x700"
+  ]
+ },
+ {
+  "id": "Q075",
+  "kind": "attack",
+  "style": "keyword",
+  "query": "forged CAN messages injected to override brake commands",
+  "gold": [
+   "ATK-001"
+  ]
+ },
+ {
+  "id": "Q076",
+  "kind": "attack",
+  "style": "paraphrase",
+  "query": "attacker sends fake frames pretending to be a legitimate controller",
+  "gold": [
+   "ATK-001"
+  ]
+ },
+ {
+  "id": "Q077",
+  "kind": "attack",
+  "style": "keyword",
+  "query": "sensor data injection",
+  "gold": [
+   "ATK-002"
+  ]
+ },
+ {
+  "id": "Q078",
+  "kind": "attack",
+  "style": "paraphrase",
+  "query": "feeding false readings into the perception inputs",
+  "gold": [
+   "ATK-002"
+  ]
+ },
+ {
+  "id": "Q079",
+  "kind": "attack",
+  "style": "keyword",
+  "query": "delay injection timing attack on an ECU",
+  "gold": [
+   "ATK-003"
+  ]
+ },
+ {
+  "id": "Q080",
+  "kind": "attack",
+  "style": "paraphrase",
+  "query": "making a controller respond later than its deadline by stalling messages",
+  "gold": [
+   "ATK-003"
+  ]
+ },
+ {
+  "id": "Q081",
+  "kind": "attack",
+  "style": "keyword",
+  "query": "OTA firmware tampering",
+  "gold": [
+   "ATK-004"
+  ]
+ },
+ {
+  "id": "Q082",
+  "kind": "attack",
+  "style": "paraphrase",
+  "query": "malicious modification of software delivered wirelessly to the vehicle",
+  "gold": [
+   "ATK-004"
+  ]
+ },
+ {
+  "id": "Q083",
+  "kind": "attack",
+  "style": "keyword",
+  "query": "infotainment to CAN bridge attack",
+  "gold": [
+   "ATK-005"
+  ]
+ },
+ {
+  "id": "Q084",
+  "kind": "attack",
+  "style": "paraphrase",
+  "query": "pivoting from the entertainment system into the safety network",
+  "gold": [
+   "ATK-005"
+  ]
+ },
+ {
+  "id": "Q085",
+  "kind": "attack",
+  "style": "keyword",
+  "query": "replay attack on safety messages",
+  "gold": [
+   "ATK-006"
+  ]
+ },
+ {
+  "id": "Q086",
+  "kind": "attack",
+  "style": "paraphrase",
+  "query": "recording valid frames and sending them again later",
+  "gold": [
+   "ATK-006"
+  ]
+ },
+ {
+  "id": "Q087",
+  "kind": "attack",
+  "style": "keyword",
+  "query": "denial of service flooding the CAN bus",
+  "gold": [
+   "ATK-007"
+  ]
+ },
+ {
+  "id": "Q088",
+  "kind": "attack",
+  "style": "paraphrase",
+  "query": "saturating the network so legitimate frames cannot get through",
+  "gold": [
+   "ATK-007"
+  ]
+ },
+ {
+  "id": "Q089",
+  "kind": "attack",
+  "style": "keyword",
+  "query": "GPS spoofing navigation hijack",
+  "gold": [
+   "ATK-008"
+  ]
+ },
+ {
+  "id": "Q090",
+  "kind": "attack",
+  "style": "paraphrase",
+  "query": "fake satellite positions that steer the route",
+  "gold": [
+   "ATK-008"
+  ]
+ },
+ {
+  "id": "Q091",
+  "kind": "rule",
+  "style": "keyword",
+  "query": "emergency brake response time limit",
+  "gold": [
+   "ISO26262-6-8.4.5"
+  ]
+ },
+ {
+  "id": "Q092",
+  "kind": "rule",
+  "style": "paraphrase",
+  "query": "maximum delay between seeing an obstacle and full braking",
+  "gold": [
+   "ISO26262-6-8.4.5"
+  ]
+ },
+ {
+  "id": "Q093",
+  "kind": "rule",
+  "style": "keyword",
+  "query": "steering override response time",
+  "gold": [
+   "ISO26262-6-8.4.6"
+  ]
+ },
+ {
+  "id": "Q094",
+  "kind": "rule",
+  "style": "paraphrase",
+  "query": "how quickly an urgent steering takeover must complete",
+  "gold": [
+   "ISO26262-6-8.4.6"
+  ]
+ },
+ {
+  "id": "Q095",
+  "kind": "rule",
+  "style": "keyword",
+  "query": "driver alert response",
+  "gold": [
+   "ISO26262-6-8.4.7"
+  ]
+ },
+ {
+  "id": "Q096",
+  "kind": "rule",
+  "style": "paraphrase",
+  "query": "how soon the occupant must be notified of danger",
+  "gold": [
+   "ISO26262-6-8.4.7"
+  ]
+ },
+ {
+  "id": "Q097",
+  "kind": "rule",
+  "style": "keyword",
+  "query": "pedestrian detection to brake latency",
+  "gold": [
+   "ISO26262-3-7.4.2"
+  ]
+ },
+ {
+  "id": "Q098",
+  "kind": "rule",
+  "style": "paraphrase",
+  "query": "time allowed from spotting a walker to starting to stop",
+  "gold": [
+   "ISO26262-3-7.4.2"
+  ]
+ },
+ {
+  "id": "Q099",
+  "kind": "rule",
+  "style": "keyword",
+  "query": "lane departure warning timing",
+  "gold": [
+   "ISO26262-3-7.4.3"
+  ]
+ },
+ {
+  "id": "Q100",
+  "kind": "rule",
+  "style": "paraphrase",
+  "query": "time limit for alerting when the vehicle strays from its lane",
+  "gold": [
+   "ISO26262-3-7.4.3"
+  ]
+ },
+ {
+  "id": "Q101",
+  "kind": "rule",
+  "style": "keyword",
+  "query": "adaptive cruise control response time",
+  "gold": [
+   "ISO26262-3-7.4.4"
+  ]
+ },
+ {
+  "id": "Q102",
+  "kind": "rule",
+  "style": "paraphrase",
+  "query": "limit for reacting to a slower vehicle ahead while following",
+  "gold": [
+   "ISO26262-3-7.4.4"
+  ]
+ },
+ {
+  "id": "Q103",
+  "kind": "rule",
+  "style": "keyword",
+  "query": "safety mechanism activation time",
+  "gold": [
+   "ISO26262-4-6.4.1"
+  ]
+ },
+ {
+  "id": "Q104",
+  "kind": "rule",
+  "style": "paraphrase",
+  "query": "how fast a protective function must kick in after a fault",
+  "gold": [
+   "ISO26262-4-6.4.1"
+  ]
+ },
+ {
+  "id": "Q105",
+  "kind": "rule",
+  "style": "keyword",
+  "query": "ECU watchdog timeout",
+  "gold": [
+   "ISO26262-6-9.4.3"
+  ]
+ },
+ {
+  "id": "Q106",
+  "kind": "rule",
+  "style": "paraphrase",
+  "query": "how long a controller may stay silent before being reset",
+  "gold": [
+   "ISO26262-6-9.4.3"
+  ]
+ }
+]

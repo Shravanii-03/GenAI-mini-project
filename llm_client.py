@@ -29,14 +29,16 @@ def _get_client():
     return _client
 
 
-def query_llm(prompt: str, temperature: float = None) -> str:
-    """Send prompt to the configured LLM and return the text response."""
+def query_llm(prompt: str, temperature: float = None, model: str = None,
+              max_tokens: int = None, **extra) -> str:
+    """Send prompt to the LLM (default: the model in config.yaml) and return the text."""
     if temperature is None:
         temperature = config.get("llm.temperature_default", 0.7)
     response = _get_client().chat.completions.create(
-        model=config.get("llm.model"),
+        model=model or config.get("llm.model"),
         messages=[{"role": "user", "content": prompt}],
-        max_tokens=config.get("llm.max_tokens"),
+        max_tokens=max_tokens or config.get("llm.max_tokens"),
         temperature=temperature,
+        **extra,
     )
-    return response.choices[0].message.content
+    return response.choices[0].message.content or ""

@@ -1,0 +1,1606 @@
+[
+ {
+  "id": "R001",
+  "text": "The emergency braking function shall apply the brakes within 100 ms of detecting an obstacle.",
+  "deadline_ms": 100,
+  "unresolved": false,
+  "component": "braking_system",
+  "vss_signals": [
+   "Vehicle.ADAS.ObstacleDetection.IsWarning"
+  ],
+  "can_ids": [],
+  "tags": [
+   "explicit"
+  ]
+ },
+ {
+  "id": "R002",
+  "text": "The brake command shall be sent on the CAN bus within 100 ms of an obstacle warning being raised.",
+  "deadline_ms": 100,
+  "unresolved": false,
+  "component": "braking_system",
+  "vss_signals": [
+   "Vehicle.ADAS.ObstacleDetection.IsWarning"
+  ],
+  "can_ids": [
+   "0x1A0"
+  ],
+  "tags": [
+   "explicit"
+  ]
+ },
+ {
+  "id": "R003",
+  "text": "Pedestrian detection shall result in braking within 100 ms.",
+  "deadline_ms": 100,
+  "unresolved": false,
+  "component": "braking_system",
+  "vss_signals": [
+   "Vehicle.ADAS.PedestrianDetection.IsDetected"
+  ],
+  "can_ids": [],
+  "tags": [
+   "explicit"
+  ]
+ },
+ {
+  "id": "R004",
+  "text": "Once a pedestrian is detected in the vehicle's path, the system shall brake no later than 100 ms afterwards.",
+  "deadline_ms": 100,
+  "unresolved": false,
+  "component": "braking_system",
+  "vss_signals": [
+   "Vehicle.ADAS.PedestrianDetection.IsDetected"
+  ],
+  "can_ids": [],
+  "tags": [
+   "explicit"
+  ]
+ },
+ {
+  "id": "R005",
+  "text": "The lane departure warning shall be issued within 200 ms of the vehicle leaving its lane.",
+  "deadline_ms": 200,
+  "unresolved": false,
+  "component": "lane_departure_system",
+  "vss_signals": [
+   "Vehicle.ADAS.LaneDepartureDetection.IsWarning"
+  ],
+  "can_ids": [],
+  "tags": [
+   "explicit"
+  ]
+ },
+ {
+  "id": "R006",
+  "text": "A lane departure warning must reach the driver within 200 ms.",
+  "deadline_ms": 200,
+  "unresolved": false,
+  "component": "lane_departure_system",
+  "vss_signals": [
+   "Vehicle.ADAS.LaneDepartureDetection.IsWarning"
+  ],
+  "can_ids": [],
+  "tags": [
+   "explicit"
+  ]
+ },
+ {
+  "id": "R007",
+  "text": "The adaptive cruise control shall respond to a lead-vehicle speed change within 300 ms.",
+  "deadline_ms": 300,
+  "unresolved": false,
+  "component": "acc_system",
+  "vss_signals": [],
+  "can_ids": [],
+  "tags": [
+   "explicit"
+  ]
+ },
+ {
+  "id": "R008",
+  "text": "Adaptive cruise control shall adjust the set speed within 300 ms of a driver request.",
+  "deadline_ms": 300,
+  "unresolved": false,
+  "component": "acc_system",
+  "vss_signals": [
+   "Vehicle.ADAS.CruiseControl.SpeedSet"
+  ],
+  "can_ids": [],
+  "tags": [
+   "explicit"
+  ]
+ },
+ {
+  "id": "R009",
+  "text": "The driver alert shall be presented within 50 ms of a critical fault being flagged.",
+  "deadline_ms": 50,
+  "unresolved": false,
+  "component": "alert_module",
+  "vss_signals": [],
+  "can_ids": [],
+  "tags": [
+   "explicit"
+  ]
+ },
+ {
+  "id": "R010",
+  "text": "A driver alert must be displayed no later than 50 ms after the hazard is detected.",
+  "deadline_ms": 50,
+  "unresolved": false,
+  "component": "alert_module",
+  "vss_signals": [],
+  "can_ids": [],
+  "tags": [
+   "explicit"
+  ]
+ },
+ {
+  "id": "R011",
+  "text": "The safety monitor shall activate the safety mechanism within 50 ms of a fault.",
+  "deadline_ms": 50,
+  "unresolved": false,
+  "component": "safety_monitor",
+  "vss_signals": [],
+  "can_ids": [],
+  "tags": [
+   "explicit"
+  ]
+ },
+ {
+  "id": "R012",
+  "text": "A safety mechanism activation must occur within 50 ms of fault detection.",
+  "deadline_ms": 50,
+  "unresolved": false,
+  "component": "safety_monitor",
+  "vss_signals": [],
+  "can_ids": [],
+  "tags": [
+   "explicit"
+  ]
+ },
+ {
+  "id": "R013",
+  "text": "The ECU watchdog shall time out after 500 ms without a heartbeat.",
+  "deadline_ms": 500,
+  "unresolved": false,
+  "component": "ecu_watchdog",
+  "vss_signals": [],
+  "can_ids": [
+   "0x600"
+  ],
+  "tags": [
+   "explicit"
+  ]
+ },
+ {
+  "id": "R014",
+  "text": "If the zone ECU heartbeat is missing for 500 ms, the watchdog shall trigger a reset.",
+  "deadline_ms": 500,
+  "unresolved": false,
+  "component": "ecu_watchdog",
+  "vss_signals": [],
+  "can_ids": [
+   "0x600"
+  ],
+  "tags": [
+   "explicit"
+  ]
+ },
+ {
+  "id": "R015",
+  "text": "The steering override response shall complete within 200 ms.",
+  "deadline_ms": 200,
+  "unresolved": false,
+  "component": "steering_ecu",
+  "vss_signals": [],
+  "can_ids": [],
+  "tags": [
+   "explicit"
+  ]
+ },
+ {
+  "id": "R016",
+  "text": "The steering angle command shall be applied within 200 ms of an emergency steering request.",
+  "deadline_ms": 200,
+  "unresolved": false,
+  "component": "steering_ecu",
+  "vss_signals": [
+   "Vehicle.Chassis.SteeringWheel.Angle"
+  ],
+  "can_ids": [
+   "0x210"
+  ],
+  "tags": [
+   "explicit"
+  ]
+ },
+ {
+  "id": "R017",
+  "text": "ABS shall begin controlling brake pressure within 20 ms of wheel lock-up detection.",
+  "deadline_ms": 20,
+  "unresolved": false,
+  "component": "braking_system",
+  "vss_signals": [
+   "Vehicle.ADAS.ABS.IsEngaged"
+  ],
+  "can_ids": [],
+  "tags": [
+   "explicit"
+  ]
+ },
+ {
+  "id": "R018",
+  "text": "Electronic stability control shall intervene within 50 ms of a skid being detected.",
+  "deadline_ms": 50,
+  "unresolved": false,
+  "component": "other",
+  "vss_signals": [
+   "Vehicle.ADAS.ESC.IsActive"
+  ],
+  "can_ids": [],
+  "tags": [
+   "explicit"
+  ]
+ },
+ {
+  "id": "R019",
+  "text": "Traction control shall reduce engine torque within 30 ms of wheel slip detection.",
+  "deadline_ms": 30,
+  "unresolved": false,
+  "component": "other",
+  "vss_signals": [],
+  "can_ids": [
+   "0x700"
+  ],
+  "tags": [
+   "explicit"
+  ]
+ },
+ {
+  "id": "R020",
+  "text": "The airbag shall deploy within 15 ms of a crash being detected.",
+  "deadline_ms": 15,
+  "unresolved": false,
+  "component": "other",
+  "vss_signals": [],
+  "can_ids": [],
+  "tags": [
+   "explicit"
+  ]
+ },
+ {
+  "id": "R021",
+  "text": "The brake lights shall illuminate within 100 ms of the brake pedal being pressed.",
+  "deadline_ms": 100,
+  "unresolved": false,
+  "component": "other",
+  "vss_signals": [
+   "Vehicle.Body.Lights.Brake.IsActive",
+   "Vehicle.Chassis.Brake.PedalPosition"
+  ],
+  "can_ids": [],
+  "tags": [
+   "explicit"
+  ]
+ },
+ {
+  "id": "R022",
+  "text": "Driver emergency braking detection shall raise the emergency brake assist within 100 ms.",
+  "deadline_ms": 100,
+  "unresolved": false,
+  "component": "braking_system",
+  "vss_signals": [
+   "Vehicle.Chassis.Brake.IsDriverEmergencyBrakingDetected",
+   "Vehicle.ADAS.EBA.IsActive"
+  ],
+  "can_ids": [],
+  "tags": [
+   "explicit"
+  ]
+ },
+ {
+  "id": "R023",
+  "text": "The camera detection result shall reach the sensor fusion ECU within 33 ms.",
+  "deadline_ms": 33,
+  "unresolved": false,
+  "component": "other",
+  "vss_signals": [],
+  "can_ids": [
+   "0x320",
+   "0x300"
+  ],
+  "tags": [
+   "explicit"
+  ]
+ },
+ {
+  "id": "R024",
+  "text": "LiDAR data shall be delivered to the sensor fusion module within 33 ms.",
+  "deadline_ms": 33,
+  "unresolved": false,
+  "component": "other",
+  "vss_signals": [],
+  "can_ids": [
+   "0x310",
+   "0x300"
+  ],
+  "tags": [
+   "explicit"
+  ]
+ },
+ {
+  "id": "R025",
+  "text": "The pedestrian detection camera confidence shall be updated within 100 ms of new image data.",
+  "deadline_ms": 100,
+  "unresolved": false,
+  "component": "other",
+  "vss_signals": [
+   "Vehicle.ADAS.PedestrianDetection.CameraConfidence"
+  ],
+  "can_ids": [],
+  "tags": [
+   "explicit"
+  ]
+ },
+ {
+  "id": "R026",
+  "text": "Brake pressure feedback shall be received within 20 ms of the brake command.",
+  "deadline_ms": 20,
+  "unresolved": false,
+  "component": "braking_system",
+  "vss_signals": [],
+  "can_ids": [
+   "0x1A3",
+   "0x1A0"
+  ],
+  "tags": [
+   "explicit"
+  ]
+ },
+ {
+  "id": "R027",
+  "text": "The vehicle shall display a warning within 50 ms when the driver is detected as inattentive.",
+  "deadline_ms": 50,
+  "unresolved": false,
+  "component": "alert_module",
+  "vss_signals": [
+   "Vehicle.Driver.AttentiveProbability"
+  ],
+  "can_ids": [],
+  "tags": [
+   "explicit"
+  ]
+ },
+ {
+  "id": "R028",
+  "text": "Cruise control shall disengage within 100 ms of the brake pedal being pressed.",
+  "deadline_ms": 100,
+  "unresolved": false,
+  "component": "acc_system",
+  "vss_signals": [
+   "Vehicle.ADAS.CruiseControl.IsActive",
+   "Vehicle.Chassis.Brake.PedalPosition"
+  ],
+  "can_ids": [],
+  "tags": [
+   "explicit"
+  ]
+ },
+ {
+  "id": "R029",
+  "text": "Brake pedal position shall be reported within 10 ms.",
+  "deadline_ms": 10,
+  "unresolved": false,
+  "component": "braking_system",
+  "vss_signals": [
+   "Vehicle.Chassis.Brake.PedalPosition"
+  ],
+  "can_ids": [],
+  "tags": [
+   "explicit"
+  ]
+ },
+ {
+  "id": "R030",
+  "text": "The obstacle detection warning shall reach the driver within 50 ms.",
+  "deadline_ms": 50,
+  "unresolved": false,
+  "component": "alert_module",
+  "vss_signals": [
+   "Vehicle.ADAS.ObstacleDetection.IsWarning"
+  ],
+  "can_ids": [],
+  "tags": [
+   "explicit"
+  ]
+ },
+ {
+  "id": "R031",
+  "text": "The brakes shall be applied within 0.1 s of obstacle detection.",
+  "deadline_ms": 100,
+  "unresolved": false,
+  "component": "braking_system",
+  "vss_signals": [
+   "Vehicle.ADAS.ObstacleDetection.IsWarning"
+  ],
+  "can_ids": [],
+  "tags": [
+   "units"
+  ]
+ },
+ {
+  "id": "R032",
+  "text": "Braking must start no later than 0.1 seconds after an obstacle is detected.",
+  "deadline_ms": 100,
+  "unresolved": false,
+  "component": "braking_system",
+  "vss_signals": [
+   "Vehicle.ADAS.ObstacleDetection.IsWarning"
+  ],
+  "can_ids": [],
+  "tags": [
+   "units"
+  ]
+ },
+ {
+  "id": "R033",
+  "text": "The lane departure warning shall be issued within 0.2 s.",
+  "deadline_ms": 200,
+  "unresolved": false,
+  "component": "lane_departure_system",
+  "vss_signals": [
+   "Vehicle.ADAS.LaneDepartureDetection.IsWarning"
+  ],
+  "can_ids": [],
+  "tags": [
+   "units"
+  ]
+ },
+ {
+  "id": "R034",
+  "text": "Steering override shall complete within 0.2 seconds.",
+  "deadline_ms": 200,
+  "unresolved": false,
+  "component": "steering_ecu",
+  "vss_signals": [],
+  "can_ids": [],
+  "tags": [
+   "units"
+  ]
+ },
+ {
+  "id": "R035",
+  "text": "The driver alert shall appear within 50 milliseconds of fault detection.",
+  "deadline_ms": 50,
+  "unresolved": false,
+  "component": "alert_module",
+  "vss_signals": [],
+  "can_ids": [],
+  "tags": [
+   "units"
+  ]
+ },
+ {
+  "id": "R036",
+  "text": "The watchdog shall expire after half a second without a heartbeat message.",
+  "deadline_ms": 500,
+  "unresolved": false,
+  "component": "ecu_watchdog",
+  "vss_signals": [],
+  "can_ids": [
+   "0x600"
+  ],
+  "tags": [
+   "units"
+  ]
+ },
+ {
+  "id": "R037",
+  "text": "ACC shall respond to a closing lead vehicle within 0.3 s.",
+  "deadline_ms": 300,
+  "unresolved": false,
+  "component": "acc_system",
+  "vss_signals": [],
+  "can_ids": [],
+  "tags": [
+   "units"
+  ]
+ },
+ {
+  "id": "R038",
+  "text": "The safety mechanism shall be active within 5 hundredths of a second of a fault.",
+  "deadline_ms": 50,
+  "unresolved": false,
+  "component": "safety_monitor",
+  "vss_signals": [],
+  "can_ids": [],
+  "tags": [
+   "units"
+  ]
+ },
+ {
+  "id": "R039",
+  "text": "The pedestrian braking function shall respond in under a tenth of a second.",
+  "deadline_ms": 100,
+  "unresolved": false,
+  "component": "braking_system",
+  "vss_signals": [
+   "Vehicle.ADAS.PedestrianDetection.IsDetected"
+  ],
+  "can_ids": [],
+  "tags": [
+   "units"
+  ]
+ },
+ {
+  "id": "R040",
+  "text": "The airbag must deploy within 0.015 s of impact detection.",
+  "deadline_ms": 15,
+  "unresolved": false,
+  "component": "other",
+  "vss_signals": [],
+  "can_ids": [],
+  "tags": [
+   "units"
+  ]
+ },
+ {
+  "id": "R041",
+  "text": "Time from obstacle detection to full braking must not exceed 0.150 s.",
+  "deadline_ms": 150,
+  "unresolved": false,
+  "component": "braking_system",
+  "vss_signals": [
+   "Vehicle.ADAS.ObstacleDetection.IsWarning"
+  ],
+  "can_ids": [],
+  "tags": [
+   "units"
+  ]
+ },
+ {
+  "id": "R042",
+  "text": "The emergency brake command shall be issued within 100 msec of detection.",
+  "deadline_ms": 100,
+  "unresolved": false,
+  "component": "braking_system",
+  "vss_signals": [],
+  "can_ids": [
+   "0x1A0"
+  ],
+  "tags": [
+   "units"
+  ]
+ },
+ {
+  "id": "R043",
+  "text": "The warning shall sound within 0.05 s of the lane departure.",
+  "deadline_ms": 50,
+  "unresolved": false,
+  "component": "lane_departure_system",
+  "vss_signals": [
+   "Vehicle.ADAS.LaneDepartureDetection.IsWarning"
+  ],
+  "can_ids": [],
+  "tags": [
+   "units"
+  ]
+ },
+ {
+  "id": "R044",
+  "text": "Fault reaction must complete within 2 seconds.",
+  "deadline_ms": 2000,
+  "unresolved": false,
+  "component": "safety_monitor",
+  "vss_signals": [],
+  "can_ids": [],
+  "tags": [
+   "units"
+  ]
+ },
+ {
+  "id": "R045",
+  "text": "The steering command shall be output within 0.25 s.",
+  "deadline_ms": 250,
+  "unresolved": false,
+  "component": "steering_ecu",
+  "vss_signals": [],
+  "can_ids": [
+   "0x210"
+  ],
+  "tags": [
+   "units"
+  ]
+ },
+ {
+  "id": "R046",
+  "text": "At speeds above 80 km/h, the emergency brake shall engage within 120 ms of obstacle detection (ASIL-D).",
+  "deadline_ms": 120,
+  "unresolved": false,
+  "component": "braking_system",
+  "vss_signals": [
+   "Vehicle.ADAS.ObstacleDetection.IsWarning"
+  ],
+  "can_ids": [],
+  "tags": [
+   "distractor"
+  ]
+ },
+ {
+  "id": "R047",
+  "text": "For obstacles closer than 30 m, braking shall start within 100 ms; the system operates at up to 130 km/h.",
+  "deadline_ms": 100,
+  "unresolved": false,
+  "component": "braking_system",
+  "vss_signals": [
+   "Vehicle.ADAS.ObstacleDetection.IsWarning"
+  ],
+  "can_ids": [],
+  "tags": [
+   "distractor"
+  ]
+ },
+ {
+  "id": "R048",
+  "text": "The system, rated ASIL-C, shall issue the lane departure warning within 200 ms at 100 km/h.",
+  "deadline_ms": 200,
+  "unresolved": false,
+  "component": "lane_departure_system",
+  "vss_signals": [
+   "Vehicle.ADAS.LaneDepartureDetection.IsWarning"
+  ],
+  "can_ids": [],
+  "tags": [
+   "distractor"
+  ]
+ },
+ {
+  "id": "R049",
+  "text": "With a 10 Hz sensor update rate, the pedestrian braking response shall be below 150 ms.",
+  "deadline_ms": 150,
+  "unresolved": false,
+  "component": "braking_system",
+  "vss_signals": [
+   "Vehicle.ADAS.PedestrianDetection.IsDetected"
+  ],
+  "can_ids": [],
+  "tags": [
+   "distractor"
+  ]
+ },
+ {
+  "id": "R050",
+  "text": "On CAN ID 0x1A0, the brake command shall be transmitted within 100 ms of detection.",
+  "deadline_ms": 100,
+  "unresolved": false,
+  "component": "braking_system",
+  "vss_signals": [],
+  "can_ids": [
+   "0x1A0"
+  ],
+  "tags": [
+   "distractor"
+  ]
+ },
+ {
+  "id": "R051",
+  "text": "While the vehicle is travelling at 50 km/h on a 3% gradient, the ACC shall react within 300 ms.",
+  "deadline_ms": 300,
+  "unresolved": false,
+  "component": "acc_system",
+  "vss_signals": [],
+  "can_ids": [],
+  "tags": [
+   "distractor"
+  ]
+ },
+ {
+  "id": "R052",
+  "text": "The 12 V supply may drop, but the safety monitor shall still activate the safety mechanism within 50 ms.",
+  "deadline_ms": 50,
+  "unresolved": false,
+  "component": "safety_monitor",
+  "vss_signals": [],
+  "can_ids": [],
+  "tags": [
+   "distractor"
+  ]
+ },
+ {
+  "id": "R053",
+  "text": "Based on a 2 m/s2 deceleration limit, the steering override shall complete within 200 ms.",
+  "deadline_ms": 200,
+  "unresolved": false,
+  "component": "steering_ecu",
+  "vss_signals": [],
+  "can_ids": [],
+  "tags": [
+   "distractor"
+  ]
+ },
+ {
+  "id": "R054",
+  "text": "Using three redundant sensors, the watchdog shall reset the ECU within 500 ms of a missing heartbeat.",
+  "deadline_ms": 500,
+  "unresolved": false,
+  "component": "ecu_watchdog",
+  "vss_signals": [],
+  "can_ids": [
+   "0x600"
+  ],
+  "tags": [
+   "distractor"
+  ]
+ },
+ {
+  "id": "R055",
+  "text": "For ASIL-D functions with 99% diagnostic coverage, a driver alert shall be shown within 50 ms.",
+  "deadline_ms": 50,
+  "unresolved": false,
+  "component": "alert_module",
+  "vss_signals": [],
+  "can_ids": [],
+  "tags": [
+   "distractor"
+  ]
+ },
+ {
+  "id": "R056",
+  "text": "Under 5 lux lighting, the camera detection shall reach the fusion ECU within 33 ms.",
+  "deadline_ms": 33,
+  "unresolved": false,
+  "component": "other",
+  "vss_signals": [],
+  "can_ids": [
+   "0x320",
+   "0x300"
+  ],
+  "tags": [
+   "distractor"
+  ]
+ },
+ {
+  "id": "R057",
+  "text": "Within a 40 m range, the obstacle warning shall be displayed in no more than 50 ms.",
+  "deadline_ms": 50,
+  "unresolved": false,
+  "component": "alert_module",
+  "vss_signals": [
+   "Vehicle.ADAS.ObstacleDetection.IsWarning"
+  ],
+  "can_ids": [],
+  "tags": [
+   "distractor"
+  ]
+ },
+ {
+  "id": "R058",
+  "text": "The system shall brake within 100 ms of a pedestrian detection at a confidence above 0.8.",
+  "deadline_ms": 100,
+  "unresolved": false,
+  "component": "braking_system",
+  "vss_signals": [
+   "Vehicle.ADAS.PedestrianDetection.IsDetected"
+  ],
+  "can_ids": [],
+  "tags": [
+   "distractor"
+  ]
+ },
+ {
+  "id": "R059",
+  "text": "ESC, which samples every 5 ms, shall intervene within 50 ms of skid detection.",
+  "deadline_ms": 50,
+  "unresolved": false,
+  "component": "other",
+  "vss_signals": [
+   "Vehicle.ADAS.ESC.IsActive"
+  ],
+  "can_ids": [],
+  "tags": [
+   "distractor"
+  ]
+ },
+ {
+  "id": "R060",
+  "text": "At 3 passengers and 20 degrees C, the airbag shall deploy within 15 ms of crash detection.",
+  "deadline_ms": 15,
+  "unresolved": false,
+  "component": "other",
+  "vss_signals": [],
+  "can_ids": [],
+  "tags": [
+   "distractor"
+  ]
+ },
+ {
+  "id": "R061",
+  "text": "The overall response from obstacle detection to braking shall be within 100 ms, of which perception may use at most 30 ms.",
+  "deadline_ms": 100,
+  "unresolved": false,
+  "component": "braking_system",
+  "vss_signals": [
+   "Vehicle.ADAS.ObstacleDetection.IsWarning"
+  ],
+  "can_ids": [],
+  "tags": [
+   "multi_clause"
+  ]
+ },
+ {
+  "id": "R062",
+  "text": "End-to-end latency from lane departure to warning must be below 200 ms; the CAN transmission must take under 10 ms.",
+  "deadline_ms": 200,
+  "unresolved": false,
+  "component": "lane_departure_system",
+  "vss_signals": [
+   "Vehicle.ADAS.LaneDepartureDetection.IsWarning"
+  ],
+  "can_ids": [],
+  "tags": [
+   "multi_clause"
+  ]
+ },
+ {
+  "id": "R063",
+  "text": "The complete steering override must finish within 200 ms, with the command issued in the first 50 ms.",
+  "deadline_ms": 200,
+  "unresolved": false,
+  "component": "steering_ecu",
+  "vss_signals": [],
+  "can_ids": [],
+  "tags": [
+   "multi_clause"
+  ]
+ },
+ {
+  "id": "R064",
+  "text": "The watchdog timeout is 500 ms, and the reset sequence must start within 20 ms of the timeout.",
+  "deadline_ms": 500,
+  "unresolved": false,
+  "component": "ecu_watchdog",
+  "vss_signals": [],
+  "can_ids": [],
+  "tags": [
+   "multi_clause"
+  ]
+ },
+ {
+  "id": "R065",
+  "text": "Pedestrian detection to full braking: at most 100 ms in total, split 40 ms sensing, 30 ms decision, 30 ms actuation.",
+  "deadline_ms": 100,
+  "unresolved": false,
+  "component": "braking_system",
+  "vss_signals": [
+   "Vehicle.ADAS.PedestrianDetection.IsDetected"
+  ],
+  "can_ids": [],
+  "tags": [
+   "multi_clause"
+  ]
+ },
+ {
+  "id": "R066",
+  "text": "The driver alert latency budget is 50 ms in total, including a 5 ms bus delay.",
+  "deadline_ms": 50,
+  "unresolved": false,
+  "component": "alert_module",
+  "vss_signals": [],
+  "can_ids": [],
+  "tags": [
+   "multi_clause"
+  ]
+ },
+ {
+  "id": "R067",
+  "text": "ACC must react within 300 ms; the brake request part must be sent within 100 ms.",
+  "deadline_ms": 300,
+  "unresolved": false,
+  "component": "acc_system",
+  "vss_signals": [],
+  "can_ids": [],
+  "tags": [
+   "multi_clause"
+  ]
+ },
+ {
+  "id": "R068",
+  "text": "Safety mechanism activation, including diagnosis (20 ms) and reaction (30 ms), must complete within 50 ms.",
+  "deadline_ms": 50,
+  "unresolved": false,
+  "component": "safety_monitor",
+  "vss_signals": [],
+  "can_ids": [],
+  "tags": [
+   "multi_clause"
+  ]
+ },
+ {
+  "id": "R069",
+  "text": "Total time from crash detection to airbag deployment shall be 15 ms, of which 5 ms is sensor processing.",
+  "deadline_ms": 15,
+  "unresolved": false,
+  "component": "other",
+  "vss_signals": [],
+  "can_ids": [],
+  "tags": [
+   "multi_clause"
+  ]
+ },
+ {
+  "id": "R070",
+  "text": "From brake pedal press to brake light illumination, a maximum of 100 ms is allowed, with the lamp driver contributing at most 20 ms.",
+  "deadline_ms": 100,
+  "unresolved": false,
+  "component": "other",
+  "vss_signals": [
+   "Vehicle.Chassis.Brake.PedalPosition",
+   "Vehicle.Body.Lights.Brake.IsActive"
+  ],
+  "can_ids": [],
+  "tags": [
+   "multi_clause"
+  ]
+ },
+ {
+  "id": "R071",
+  "text": "The emergency braking function shall log every activation event.",
+  "deadline_ms": null,
+  "unresolved": false,
+  "component": "braking_system",
+  "vss_signals": [],
+  "can_ids": [],
+  "tags": [
+   "no_deadline"
+  ]
+ },
+ {
+  "id": "R072",
+  "text": "The lane departure warning shall be both audible and visual.",
+  "deadline_ms": null,
+  "unresolved": false,
+  "component": "lane_departure_system",
+  "vss_signals": [
+   "Vehicle.ADAS.LaneDepartureDetection.IsWarning"
+  ],
+  "can_ids": [],
+  "tags": [
+   "no_deadline"
+  ]
+ },
+ {
+  "id": "R073",
+  "text": "The driver shall be able to disable adaptive cruise control.",
+  "deadline_ms": null,
+  "unresolved": false,
+  "component": "acc_system",
+  "vss_signals": [
+   "Vehicle.ADAS.CruiseControl.IsActive"
+  ],
+  "can_ids": [],
+  "tags": [
+   "no_deadline"
+  ]
+ },
+ {
+  "id": "R074",
+  "text": "The steering system shall support wheel angles up to 540 degrees.",
+  "deadline_ms": null,
+  "unresolved": false,
+  "component": "steering_ecu",
+  "vss_signals": [
+   "Vehicle.Chassis.SteeringWheel.Angle"
+  ],
+  "can_ids": [],
+  "tags": [
+   "no_deadline"
+  ]
+ },
+ {
+  "id": "R075",
+  "text": "Brake pressure shall not exceed 200 bar.",
+  "deadline_ms": null,
+  "unresolved": false,
+  "component": "braking_system",
+  "vss_signals": [],
+  "can_ids": [],
+  "tags": [
+   "no_deadline"
+  ]
+ },
+ {
+  "id": "R076",
+  "text": "The watchdog shall be implemented in a separate hardware unit.",
+  "deadline_ms": null,
+  "unresolved": false,
+  "component": "ecu_watchdog",
+  "vss_signals": [],
+  "can_ids": [],
+  "tags": [
+   "no_deadline"
+  ]
+ },
+ {
+  "id": "R077",
+  "text": "The pedestrian detection function shall use camera and LiDAR inputs.",
+  "deadline_ms": null,
+  "unresolved": false,
+  "component": "other",
+  "vss_signals": [
+   "Vehicle.ADAS.PedestrianDetection.IsDetected"
+  ],
+  "can_ids": [],
+  "tags": [
+   "no_deadline"
+  ]
+ },
+ {
+  "id": "R078",
+  "text": "The airbag control unit shall be diagnosable via OBD.",
+  "deadline_ms": null,
+  "unresolved": false,
+  "component": "other",
+  "vss_signals": [],
+  "can_ids": [],
+  "tags": [
+   "no_deadline"
+  ]
+ },
+ {
+  "id": "R079",
+  "text": "All safety messages shall be authenticated.",
+  "deadline_ms": null,
+  "unresolved": false,
+  "component": "other",
+  "vss_signals": [],
+  "can_ids": [],
+  "tags": [
+   "no_deadline"
+  ]
+ },
+ {
+  "id": "R080",
+  "text": "The safety monitor shall report its status in the vehicle log.",
+  "deadline_ms": null,
+  "unresolved": false,
+  "component": "safety_monitor",
+  "vss_signals": [],
+  "can_ids": [],
+  "tags": [
+   "no_deadline"
+  ]
+ },
+ {
+  "id": "R081",
+  "text": "Vehicle speed shall be reported in km/h.",
+  "deadline_ms": null,
+  "unresolved": false,
+  "component": "other",
+  "vss_signals": [
+   "Vehicle.Speed"
+  ],
+  "can_ids": [],
+  "tags": [
+   "no_deadline"
+  ]
+ },
+ {
+  "id": "R082",
+  "text": "ABS shall be active in all driving modes.",
+  "deadline_ms": null,
+  "unresolved": false,
+  "component": "braking_system",
+  "vss_signals": [
+   "Vehicle.ADAS.ABS.IsActive"
+  ],
+  "can_ids": [],
+  "tags": [
+   "no_deadline"
+  ]
+ },
+ {
+  "id": "R083",
+  "text": "The infotainment system shall not affect safety-critical CAN traffic.",
+  "deadline_ms": null,
+  "unresolved": false,
+  "component": "other",
+  "vss_signals": [],
+  "can_ids": [],
+  "tags": [
+   "no_deadline"
+  ]
+ },
+ {
+  "id": "R084",
+  "text": "The ECU shall restart automatically after a watchdog reset.",
+  "deadline_ms": null,
+  "unresolved": false,
+  "component": "ecu_watchdog",
+  "vss_signals": [],
+  "can_ids": [],
+  "tags": [
+   "no_deadline"
+  ]
+ },
+ {
+  "id": "R085",
+  "text": "Traction control shall be operable on icy roads.",
+  "deadline_ms": null,
+  "unresolved": false,
+  "component": "other",
+  "vss_signals": [],
+  "can_ids": [
+   "0x700"
+  ],
+  "tags": [
+   "no_deadline"
+  ]
+ },
+ {
+  "id": "R086",
+  "text": "The emergency brake shall engage as soon as possible after an obstacle is detected.",
+  "deadline_ms": null,
+  "unresolved": true,
+  "component": "braking_system",
+  "vss_signals": [
+   "Vehicle.ADAS.ObstacleDetection.IsWarning"
+  ],
+  "can_ids": [],
+  "tags": [
+   "vague"
+  ]
+ },
+ {
+  "id": "R087",
+  "text": "The lane departure warning shall be issued promptly.",
+  "deadline_ms": null,
+  "unresolved": true,
+  "component": "lane_departure_system",
+  "vss_signals": [
+   "Vehicle.ADAS.LaneDepartureDetection.IsWarning"
+  ],
+  "can_ids": [],
+  "tags": [
+   "vague"
+  ]
+ },
+ {
+  "id": "R088",
+  "text": "The driver alert shall appear without perceptible delay.",
+  "deadline_ms": null,
+  "unresolved": true,
+  "component": "alert_module",
+  "vss_signals": [],
+  "can_ids": [],
+  "tags": [
+   "vague"
+  ]
+ },
+ {
+  "id": "R089",
+  "text": "ACC shall react quickly to changes in lead vehicle speed.",
+  "deadline_ms": null,
+  "unresolved": true,
+  "component": "acc_system",
+  "vss_signals": [],
+  "can_ids": [],
+  "tags": [
+   "vague"
+  ]
+ },
+ {
+  "id": "R090",
+  "text": "The system shall brake in a timely manner when a pedestrian is detected.",
+  "deadline_ms": null,
+  "unresolved": true,
+  "component": "braking_system",
+  "vss_signals": [
+   "Vehicle.ADAS.PedestrianDetection.IsDetected"
+  ],
+  "can_ids": [],
+  "tags": [
+   "vague"
+  ]
+ },
+ {
+  "id": "R091",
+  "text": "Steering override shall be performed in real time.",
+  "deadline_ms": null,
+  "unresolved": true,
+  "component": "steering_ecu",
+  "vss_signals": [],
+  "can_ids": [],
+  "tags": [
+   "vague"
+  ]
+ },
+ {
+  "id": "R092",
+  "text": "The watchdog shall trigger a reset shortly after the heartbeat is lost.",
+  "deadline_ms": null,
+  "unresolved": true,
+  "component": "ecu_watchdog",
+  "vss_signals": [],
+  "can_ids": [
+   "0x600"
+  ],
+  "tags": [
+   "vague"
+  ]
+ },
+ {
+  "id": "R093",
+  "text": "Safety mechanisms shall react with minimal latency.",
+  "deadline_ms": null,
+  "unresolved": true,
+  "component": "safety_monitor",
+  "vss_signals": [],
+  "can_ids": [],
+  "tags": [
+   "vague"
+  ]
+ },
+ {
+  "id": "R094",
+  "text": "The airbag must deploy immediately on impact.",
+  "deadline_ms": null,
+  "unresolved": true,
+  "component": "other",
+  "vss_signals": [],
+  "can_ids": [],
+  "tags": [
+   "vague"
+  ]
+ },
+ {
+  "id": "R095",
+  "text": "The obstacle warning shall be displayed within a short time.",
+  "deadline_ms": null,
+  "unresolved": true,
+  "component": "alert_module",
+  "vss_signals": [
+   "Vehicle.ADAS.ObstacleDetection.IsWarning"
+  ],
+  "can_ids": [],
+  "tags": [
+   "vague"
+  ]
+ },
+ {
+  "id": "R096",
+  "text": "Braking shall start within five control cycles of 10 ms after obstacle detection.",
+  "deadline_ms": 50,
+  "unresolved": false,
+  "component": "braking_system",
+  "vss_signals": [
+   "Vehicle.ADAS.ObstacleDetection.IsWarning"
+  ],
+  "can_ids": [],
+  "tags": [
+   "derived"
+  ]
+ },
+ {
+  "id": "R097",
+  "text": "The lane departure warning shall be generated within 4 cycles of the 50 ms task.",
+  "deadline_ms": 200,
+  "unresolved": false,
+  "component": "lane_departure_system",
+  "vss_signals": [
+   "Vehicle.ADAS.LaneDepartureDetection.IsWarning"
+  ],
+  "can_ids": [],
+  "tags": [
+   "derived"
+  ]
+ },
+ {
+  "id": "R098",
+  "text": "The watchdog expires after three missed 100 ms heartbeats.",
+  "deadline_ms": 300,
+  "unresolved": false,
+  "component": "ecu_watchdog",
+  "vss_signals": [],
+  "can_ids": [
+   "0x600"
+  ],
+  "tags": [
+   "derived"
+  ]
+ },
+ {
+  "id": "R099",
+  "text": "ACC shall respond within two sampling periods of 150 ms.",
+  "deadline_ms": 300,
+  "unresolved": false,
+  "component": "acc_system",
+  "vss_signals": [],
+  "can_ids": [],
+  "tags": [
+   "derived"
+  ]
+ },
+ {
+  "id": "R100",
+  "text": "The brake command shall be sent within one tenth of a second of detection.",
+  "deadline_ms": 100,
+  "unresolved": false,
+  "component": "braking_system",
+  "vss_signals": [],
+  "can_ids": [
+   "0x1A0"
+  ],
+  "tags": [
+   "derived"
+  ]
+ },
+ {
+  "id": "R101",
+  "text": "The driver alert shall appear within twice the 25 ms sensor period.",
+  "deadline_ms": 50,
+  "unresolved": false,
+  "component": "alert_module",
+  "vss_signals": [],
+  "can_ids": [],
+  "tags": [
+   "derived"
+  ]
+ },
+ {
+  "id": "R102",
+  "text": "The steering override shall finish within double the 100 ms nominal time.",
+  "deadline_ms": 200,
+  "unresolved": false,
+  "component": "steering_ecu",
+  "vss_signals": [],
+  "can_ids": [],
+  "tags": [
+   "derived"
+  ]
+ },
+ {
+  "id": "R103",
+  "text": "Safety mechanism activation shall take no longer than half of the 100 ms emergency brake budget.",
+  "deadline_ms": 50,
+  "unresolved": false,
+  "component": "safety_monitor",
+  "vss_signals": [],
+  "can_ids": [],
+  "tags": [
+   "derived"
+  ]
+ },
+ {
+  "id": "R104",
+  "text": "Pedestrian braking must be 20 ms faster than the 120 ms general braking limit.",
+  "deadline_ms": 100,
+  "unresolved": false,
+  "component": "braking_system",
+  "vss_signals": [
+   "Vehicle.ADAS.PedestrianDetection.IsDetected"
+  ],
+  "can_ids": [],
+  "tags": [
+   "derived"
+  ]
+ },
+ {
+  "id": "R105",
+  "text": "The airbag deploys within three 5 ms sensor frames.",
+  "deadline_ms": 15,
+  "unresolved": false,
+  "component": "other",
+  "vss_signals": [],
+  "can_ids": [],
+  "tags": [
+   "derived"
+  ]
+ },
+ {
+  "id": "R106",
+  "text": "Brake pressure feedback shall arrive within 2 ms of the brake actuator update.",
+  "deadline_ms": 2,
+  "unresolved": false,
+  "component": "braking_system",
+  "vss_signals": [],
+  "can_ids": [
+   "0x1A3"
+  ],
+  "tags": [
+   "derived"
+  ]
+ },
+ {
+  "id": "R107",
+  "text": "The fusion output shall be available within one 20 ms cycle of the camera detection.",
+  "deadline_ms": 20,
+  "unresolved": false,
+  "component": "other",
+  "vss_signals": [],
+  "can_ids": [
+   "0x300",
+   "0x320"
+  ],
+  "tags": [
+   "derived"
+  ]
+ },
+ {
+  "id": "R108",
+  "text": "The warning must be issued within a fifth of a second of the lane departure.",
+  "deadline_ms": 200,
+  "unresolved": false,
+  "component": "lane_departure_system",
+  "vss_signals": [
+   "Vehicle.ADAS.LaneDepartureDetection.IsWarning"
+  ],
+  "can_ids": [],
+  "tags": [
+   "derived"
+  ]
+ },
+ {
+  "id": "R109",
+  "text": "Cruise control disengagement on braking must take less than 100 ms, or one tenth of a second.",
+  "deadline_ms": 100,
+  "unresolved": false,
+  "component": "acc_system",
+  "vss_signals": [
+   "Vehicle.ADAS.CruiseControl.IsActive",
+   "Vehicle.Chassis.Brake.PedalPosition"
+  ],
+  "can_ids": [],
+  "tags": [
+   "derived"
+  ]
+ },
+ {
+  "id": "R110",
+  "text": "Steering response is allowed 0.4 s minus the 0.2 s already used by perception.",
+  "deadline_ms": 200,
+  "unresolved": false,
+  "component": "steering_ecu",
+  "vss_signals": [],
+  "can_ids": [],
+  "tags": [
+   "derived"
+  ]
+ },
+ {
+  "id": "R111",
+  "text": "Brake within 100ms if obstacle detected.",
+  "deadline_ms": 100,
+  "unresolved": false,
+  "component": "braking_system",
+  "vss_signals": [
+   "Vehicle.ADAS.ObstacleDetection.IsWarning"
+  ],
+  "can_ids": [],
+  "tags": [
+   "format"
+  ]
+ },
+ {
+  "id": "R112",
+  "text": "Obstacle-to-brake latency <= 100 ms.",
+  "deadline_ms": 100,
+  "unresolved": false,
+  "component": "braking_system",
+  "vss_signals": [
+   "Vehicle.ADAS.ObstacleDetection.IsWarning"
+  ],
+  "can_ids": [],
+  "tags": [
+   "format"
+  ]
+ },
+ {
+  "id": "R113",
+  "text": "t(obstacle_detected -> brake_applied) < 100 ms",
+  "deadline_ms": 100,
+  "unresolved": false,
+  "component": "braking_system",
+  "vss_signals": [
+   "Vehicle.ADAS.ObstacleDetection.IsWarning"
+  ],
+  "can_ids": [],
+  "tags": [
+   "format"
+  ]
+ },
+ {
+  "id": "R114",
+  "text": "REQ-BRK-001: Emergency brake actuation SHALL occur within 100 MILLISECONDS of obstacle detection.",
+  "deadline_ms": 100,
+  "unresolved": false,
+  "component": "braking_system",
+  "vss_signals": [
+   "Vehicle.ADAS.ObstacleDetection.IsWarning"
+  ],
+  "can_ids": [],
+  "tags": [
+   "format"
+  ]
+ },
+ {
+  "id": "R115",
+  "text": "LDW alert <= 200ms from lane crossing.",
+  "deadline_ms": 200,
+  "unresolved": false,
+  "component": "lane_departure_system",
+  "vss_signals": [
+   "Vehicle.ADAS.LaneDepartureDetection.IsWarning"
+  ],
+  "can_ids": [],
+  "tags": [
+   "format"
+  ]
+ },
+ {
+  "id": "R116",
+  "text": "Heartbeat timeout: 500 msec.",
+  "deadline_ms": 500,
+  "unresolved": false,
+  "component": "ecu_watchdog",
+  "vss_signals": [],
+  "can_ids": [
+   "0x600"
+  ],
+  "tags": [
+   "format"
+  ]
+ },
+ {
+  "id": "R117",
+  "text": "Max latency, pedestrian detection to brake: 0.1 s.",
+  "deadline_ms": 100,
+  "unresolved": false,
+  "component": "braking_system",
+  "vss_signals": [
+   "Vehicle.ADAS.PedestrianDetection.IsDetected"
+  ],
+  "can_ids": [],
+  "tags": [
+   "format"
+  ]
+ },
+ {
+  "id": "R118",
+  "text": "ACC response time limit - 300 ms (see HARA item 12).",
+  "deadline_ms": 300,
+  "unresolved": false,
+  "component": "acc_system",
+  "vss_signals": [],
+  "can_ids": [],
+  "tags": [
+   "format"
+  ]
+ },
+ {
+  "id": "R119",
+  "text": "Driver alert SLA: fifty milliseconds.",
+  "deadline_ms": 50,
+  "unresolved": false,
+  "component": "alert_module",
+  "vss_signals": [],
+  "can_ids": [],
+  "tags": [
+   "format"
+  ]
+ },
+ {
+  "id": "R120",
+  "text": "The AEB must be fully engaged inside of one hundred milliseconds of obstacle detection.",
+  "deadline_ms": 100,
+  "unresolved": false,
+  "component": "braking_system",
+  "vss_signals": [
+   "Vehicle.ADAS.ObstacleDetection.IsWarning"
+  ],
+  "can_ids": [],
+  "tags": [
+   "format"
+  ]
+ }
+]
