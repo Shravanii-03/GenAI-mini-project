@@ -14,7 +14,7 @@ Times are relative to the moment the obstacle becomes a threat.
 import random
 
 from sdv.schemas import CanFrame
-from sdv.system.brake_chain import BRAKE_ID, SENSOR_ID
+from sdv.system.brake_chain import BRAKE_ID, RADAR_ID, SENSOR_ID
 
 # Capabilities
 NODE = "compromised node on the bus (e.g. via OBD-II or infotainment bridge)"
@@ -185,6 +185,29 @@ class Masquerade(_FilterAttack):
         return flt
 
 
+class DualMasquerade(_FilterAttack):
+    """Spoof the primary sensor AND the redundant radar with the same constant distance bias.
+
+    A stronger attacker (a compromised gateway that forwards both sensor ECUs): redundancy
+    between the two channels no longer exposes it. Not part of the original eight families.
+    """
+    name = "dual_masquerade"
+    PARAM_BOUNDS = {"bias_m": (2, 40), "duration_ms": (50, 800), "start_offset_ms": (-400, 50)}
+
+    def __init__(self, bias_m=15.0, **kw):
+        super().__init__(**kw)
+        self.bias_m = bias_m
+
+    def _make_filter(self, start, end):
+        def flt(frame, now):
+            if (start <= now < end and frame.can_id in (SENSOR_ID, RADAR_ID)
+                    and frame.data.get("distance_m") is not None):
+                frame.data["distance_m"] += self.bias_m
+                frame.attack = True
+            return frame, 0
+        return flt
+
+
 class GatewayDelay(_FilterAttack):
     """Hold forwarded frames of one ID for a fixed time."""
     name = "gateway_delay"
@@ -228,10 +251,15 @@ ATTACKS = {cls.name: cls for cls in (
 )}
 
 
+# The original eight families stay in ATTACKS so Phase 1-4 experiments are unchanged;
+# ALL_ATTACKS adds the stronger attacker used by the red/blue loop.
+ALL_ATTACKS = {**ATTACKS, DualMasquerade.name: DualMasquerade}
+
+
 def make_attack(name: str, **params) -> Attack:
-    if name not in ATTACKS:
-        raise KeyError(f"unknown attack '{name}'; choose from {sorted(ATTACKS)}")
-    return ATTACKS[name](**params)
+    if name not in ALL_ATTACKS:
+        raise KeyError(f"unknown attack '{name}'; choose from {sorted(ALL_ATTACKS)}")
+    return ALL_ATTACKS[name](**params)
 
 
-__all__ = ["ATTACKS", "make_attack", "Attack", "BRAKE_ID"]
+__all__ = ["ATTACKS", "ALL_ATTACKS", "make_attack", "Attack", "BRAKE_ID"]

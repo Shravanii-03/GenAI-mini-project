@@ -21,7 +21,7 @@ import random
 
 import numpy as np
 
-from sdv.attacks.library import ATTACKS, make_attack
+from sdv.attacks.library import ALL_ATTACKS, make_attack
 from sdv.metrics.detection_margin import credited_alarm_us, detection_margin_ms
 from sdv.monitors.monitors import observe
 from sdv.plant.longitudinal import braking_distance, decel_for_road, ramp_seconds
@@ -52,7 +52,7 @@ class AttackSearchProblem:
         if mode == "stealth" and monitor is None:
             raise ValueError("stealth mode needs a trained monitor")
         self.family, self.scenario, self.mode, self.monitor = family, scenario, mode, monitor
-        self.bounds = dict(ATTACKS[family].PARAM_BOUNDS)
+        self.bounds = dict(ALL_ATTACKS[family].PARAM_BOUNDS)
         self.keys = list(self.bounds)
         self.dim = len(self.keys)
         self.evaluations = 0

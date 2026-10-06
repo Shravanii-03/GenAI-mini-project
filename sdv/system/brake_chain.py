@@ -28,7 +28,8 @@ from sdv.traffic.background import BackgroundTraffic
 SENSOR_ID = 0x2A0
 DETECT_ID = 0x1C0
 BRAKE_ID = 0x1A0
-CHAIN_IDS = (SENSOR_ID, DETECT_ID, BRAKE_ID)
+RADAR_ID = 0x2B0        # redundant, independent distance sensor (optional)
+CHAIN_IDS = (SENSOR_ID, DETECT_ID, BRAKE_ID, RADAR_ID)
 
 
 @dataclass
@@ -44,6 +45,8 @@ class ChainParams:
     ttc_trigger_s: float = 2.0
     tail_ms: float = 100.0
     sensor_noise_m: float = 0.1
+    radar: bool = False             # add the redundant radar channel (used by monitors, not by perception)
+    radar_noise_m: float = 0.1
 
     @classmethod
     def from_config(cls):
@@ -67,6 +70,8 @@ class BrakeChain:
         self.background = BackgroundTraffic(self.sim, self.bus, self.rng, CHAIN_IDS) if background else None
         self._noise_rng = random.Random(seed + 7919)   # separate stream: noise never perturbs timing draws
         self._seq = 0
+        self._radar_rng = random.Random(seed + 104729)   # separate stream: radar never perturbs other draws
+        self._radar_seq = 0
         self._detected = False
         self._cmd_started = False
         self._cmd_received = False
@@ -102,6 +107,24 @@ class BrakeChain:
         self._seq += 1
         self.bus.send(frame)
         self.sim.schedule(int(self.params.sample_period_ms * 1000), self._sensor_tick)
+
+    def _radar_tick(self):
+        now = self.sim.now
+        seen = now >= self.t_appear_us
+        elapsed_s = max(0, now - self.t_appear_us) / 1e6
+        v0 = self.scenario.v0_kmh / 3.6
+        true_d = max(0.0, self.scenario.d0_m - v0 * elapsed_s)
+        self.bus.send(CanFrame(
+            can_id=RADAR_ID, src="radar",
+            data={
+                "seq": self._radar_seq,
+                "obstacle": seen,
+                "distance_m": true_d + self._radar_rng.gauss(0, self.params.radar_noise_m) if seen else None,
+                "speed_ms": v0,
+            },
+        ))
+        self._radar_seq += 1
+        self.sim.schedule(int(self.params.sample_period_ms * 1000), self._radar_tick)
 
     def _send_detect(self):
         self.timeline["detect_enq"] = self.sim.now
@@ -149,5 +172,8 @@ class BrakeChain:
             self.background.start()
         phase_us = int(self.rng.uniform(0, self.params.sample_period_ms * 1000))
         self.sim.schedule_at(phase_us, self._sensor_tick)
+        if self.params.radar:
+            radar_phase = int(self._radar_rng.uniform(0, self.params.sample_period_ms * 1000))
+            self.sim.schedule_at(radar_phase, self._radar_tick)
         self.sim.run(until_us=self.t_appear_us + int(self.params.timeout_ms * 1000))
         return self.timeline
