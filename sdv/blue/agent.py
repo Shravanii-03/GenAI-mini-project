@@ -90,6 +90,7 @@ def blue_step_llm(llm, benign_obs, cases, known_ids, fpr_cap: float = 0.02, atte
             stats["proposals"] += 1
             verdict = verify_rule(rule, benign_obs, cases, known_ids, fpr_cap)
             if verdict["ok"]:
+                verdict["proposal_index"] = stats["proposals"]       # proposals made up to this rule
                 accepted.append(verdict)
                 adopt_rule(verdict["rule"], cases)
             else:

@@ -245,3 +245,18 @@ class TestRandomBaseline:
         dual = [dict(c) for c in world["missed"] if c["family"] == "dual_masquerade"]
         accepted, _ = random_step(world["valid"], dual, world["known"], random.Random(1), proposals=60)
         assert accepted == []
+
+
+class TestCostAccounting:
+
+    def test_each_accepted_rule_records_how_many_proposals_it_took(self, world):
+        cases = [dict(c) for c in world["missed"]]
+        accepted, _ = random_step(world["valid"], cases, world["known"], random.Random(3), proposals=40)
+        assert accepted and all(1 <= a["proposal_index"] <= 40 for a in accepted)
+        cases = [dict(c) for c in world["missed"]]
+        enumerated, _ = enumerate_step(world["valid"], cases, world["known"], 0.02, 1)
+        assert enumerated[0]["proposal_index"] >= len(candidates(world["valid"]))
+        cases = [dict(c) for c in world["missed"] if c["family"] == "masquerade"]
+        llm = scripted(json.dumps({"rules": [XCHK]}))
+        accepted, _ = blue_step_llm(llm, world["valid"], cases, world["known"], attempts=1)
+        assert accepted[0]["proposal_index"] == 1

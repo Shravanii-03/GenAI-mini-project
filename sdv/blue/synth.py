@@ -48,6 +48,7 @@ def enumerate_step(benign_obs, cases, known_ids, fpr_cap=0.02, max_rules=3):
                 best = verdict
         if best is None:
             break
+        best["proposal_index"] = evaluated          # candidates evaluated when this rule was chosen
         accepted.append(best)
         adopt_rule(best["rule"], cases)
     return accepted, evaluated
@@ -61,11 +62,12 @@ def random_step(benign_obs, cases, known_ids, rng, proposals=9, fpr_cap=0.02):
     """
     pool = candidates(benign_obs)
     accepted = []
-    for _ in range(proposals):
+    for index in range(1, proposals + 1):
         if not uncovered(cases):
             break
         verdict = verify_rule(rng.choice(pool), benign_obs, cases, known_ids, fpr_cap)
         if verdict["ok"]:
+            verdict["proposal_index"] = index
             accepted.append(verdict)
             adopt_rule(verdict["rule"], cases)
     return accepted, proposals
