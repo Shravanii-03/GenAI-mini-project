@@ -15,6 +15,18 @@ import math
 from sdv.schemas import RunResult
 
 
+def credited_alarm_us(alarm_us, attack_start_us):
+    """The alarm that counts as a detection of the attack.
+
+    An alarm before the attack starts is a false alarm, not an early detection, so it
+    earns no margin. Monitors report only their first alarm, so a run whose first
+    alarm is a false alarm is conservatively scored as undetected.
+    """
+    if alarm_us is None or attack_start_us is None or alarm_us >= attack_start_us:
+        return alarm_us
+    return None
+
+
 def detection_time_ms(alarm_us, t_appear_us):
     """Alarm time relative to threat onset; +inf if the detector never fired."""
     return math.inf if alarm_us is None else (alarm_us - t_appear_us) / 1000.0

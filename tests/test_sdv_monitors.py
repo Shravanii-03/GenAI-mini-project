@@ -11,7 +11,7 @@ import pytest
 
 from sdv.attacks.library import make_attack
 from sdv.metrics.detection_margin import (
-    classify_run, detection_margin_ms, detection_time_ms, f1_from_counts, summarise,
+    classify_run, credited_alarm_us, detection_margin_ms, detection_time_ms, f1_from_counts, summarise,
 )
 from sdv.monitors.monitors import (
     DeadlineMonitor, FrequencyIDS, FusedMonitor, PlausibilityMonitor, observe,
@@ -148,6 +148,12 @@ class TestMargin:
         assert classify_run(None, attack_start_us=500_000) == "FN"
         assert classify_run(None, None) == "TN"
         assert classify_run(300_000, None) == "FP"
+
+    def test_a_false_alarm_before_the_attack_earns_no_margin(self):
+        assert credited_alarm_us(400_000, attack_start_us=500_000) is None
+        assert credited_alarm_us(600_000, attack_start_us=500_000) == 600_000
+        assert credited_alarm_us(None, attack_start_us=500_000) is None
+        assert credited_alarm_us(400_000, attack_start_us=None) == 400_000
 
     def test_summary_separates_detection_from_timeliness(self):
         rows = [

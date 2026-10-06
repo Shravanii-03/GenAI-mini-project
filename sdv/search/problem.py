@@ -22,7 +22,7 @@ import random
 import numpy as np
 
 from sdv.attacks.library import ATTACKS, make_attack
-from sdv.metrics.detection_margin import detection_margin_ms
+from sdv.metrics.detection_margin import credited_alarm_us, detection_margin_ms
 from sdv.monitors.monitors import observe
 from sdv.plant.longitudinal import braking_distance, decel_for_road, ramp_seconds
 from sdv.runner import execute
@@ -76,7 +76,8 @@ class AttackSearchProblem:
         if self.mode == "hazard":
             f = system
         else:
-            alarm = self.monitor.first_alarm_us(*observe(chain))
+            alarm = credited_alarm_us(self.monitor.first_alarm_us(*observe(chain)),
+                                      chain.attack_windows[0][1])
             margin = detection_margin_ms(result, alarm, chain.t_appear_us, RESPONSE_MS)
             detector = clip(margin) if margin is not None else CLIP_MS
             f = max(system, detector)

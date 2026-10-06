@@ -22,7 +22,7 @@ import sys
 sys.path.insert(0, os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
 
 from sdv.attacks.library import ATTACKS, make_attack
-from sdv.metrics.detection_margin import classify_run, detection_margin_ms, summarise
+from sdv.metrics.detection_margin import classify_run, credited_alarm_us, detection_margin_ms, summarise
 from sdv.monitors.monitors import (
     DeadlineMonitor, FrequencyIDS, FusedMonitor, PlausibilityMonitor, observe,
 )
@@ -103,7 +103,8 @@ def main():
                 rows.append({
                     "monitor": name, "family": family, "kind": "attack",
                     "outcome": classify_run(a_alarm, start_us), "hazard": hazard,
-                    "margin_ms": detection_margin_ms(attacked, a_alarm, achain.t_appear_us, RESPONSE_MS),
+                    "margin_ms": detection_margin_ms(attacked, credited_alarm_us(a_alarm, start_us),
+                                                     achain.t_appear_us, RESPONSE_MS),
                 })
                 rows.append({
                     "monitor": name, "family": family, "kind": "benign",
