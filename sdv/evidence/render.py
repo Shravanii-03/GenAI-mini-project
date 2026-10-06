@@ -1,6 +1,16 @@
 """Render an evidence bundle (and its audit) as a GSN-style Markdown document."""
 
 
+def _retrieval_note(pat):
+    sug = pat.get("retrieval_suggestion")
+    if not sug:
+        return ""
+    if sug["agrees"]:
+        return "- Retrieval over the knowledge base independently suggests the same pattern."
+    return (f"- Note: retrieval suggested {sug['id']} *{sug['name']}* instead; the declared mapping "
+            "for this attack family is used because retrieval is unreliable for this link.")
+
+
 def render_markdown(bundle: dict, report: dict = None) -> str:
     req, spec, vio, thr, mit = (bundle[k] for k in ("requirement", "spec", "violation", "threat", "mitigation"))
     rec, pat, ver = vio["recorded"], thr["kb_pattern"], mit["verification"]
@@ -26,7 +36,8 @@ def render_markdown(bundle: dict, report: dict = None) -> str:
         f"- Family `{thr['family']}`; attacker capability: {thr['capability']}{tick('attack_is_known')}",
         f"- Knowledge-base pattern {pat['id']} *{pat['name']}* (severity {pat['severity']}, "
         f"likelihood {pat['likelihood']}, TARA risk {pat['tara_risk_score']}); KB mitigation: {pat['mitigation']}"
-        f"{tick('kb_pattern_matches_the_knowledge_base')}",
+        f"{tick('threat_mapping_is_declared')}{tick('kb_pattern_matches_the_knowledge_base')}",
+        _retrieval_note(pat),
         "",
         "## S4. Mitigation",
         f"- Monitor rule `{mit['rule']}`{tick('rule_is_valid')}",

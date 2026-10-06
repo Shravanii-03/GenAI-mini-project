@@ -109,6 +109,54 @@ MRR with chance in brackets; 95% bootstrap CIs are in the script output.
 * **Knowledge-base audit** (`Knowledge_base/PROVENANCE.md`): only 16 of the 26 hand-written VSS paths
   exist in the official VSS v6.1; the ISO rule IDs, CAN IDs and attack patterns are illustrative.
 
+## E6 - red/blue loop (`experiments/e6_redblue.py --seeds 1,2,3 --n 60 --model qwen/qwen3.8-27b`)
+
+A redundant radar (0x2B0) is added for this experiment (off elsewhere) and a stronger attacker,
+`dual_masquerade`, that spoofs both sensors consistently. Round 0: red samples 60 attacks per family
+against the baseline monitors; hazards with no in-time alarm are the blue team's evidence (half for
+fitting, half held out). Round 1: red attacks each hardened monitor again.
+
+* **Round 0 (3 seeds):** 84, 92, 91 attack-induced hazards; 45, 47, 51 of them (about 54%) get no in-time
+  alarm. They come from two families only: masquerade (23-24 of 26-27) and dual_masquerade (22-28 of 24-29).
+* **Blue arms** (same verifier for all: false-alarm rate <= 2% on benign runs and at least one missed hazard
+  turned into an in-time detection):
+
+| Arm | Held-out missed hazards now in time | All hazards in time | False-alarm rate | Round-1 evading-hazard volume | Proposals to first rule |
+|---|---|---|---|---|---|
+| none | 0.00 | 0.46 | 0.01 | 0.094 | - |
+| random proposals (9) | 0.53 | 0.75 | 0.01 | 0.048 | 1 |
+| exhaustive grid | 0.53 | 0.75 | 0.02 | 0.048 | 52 |
+| LLM (qwen3.8-27b) | 0.53 | 0.75 | 0.01 | 0.048 | 1 |
+
+* **All three rule-synthesis arms reach the same hardened state**: a `cross_check` between the two distance
+  sensors (tolerance 1-5 m). Evading-hazard volume halves (9.4% -> 4.8%) and the single masquerade drops from
+  73/180 to 0/180 sampled attacks.
+* **The LLM adds nothing measurable beyond random proposals plus the verifier** at this problem size: equal
+  outcome, equal cost (one proposal), and the 7-9 valid proposals per seed after the first were all rejected
+  because nothing can cover the dual attacker. The deterministic verifier does the work. The evidence summary
+  the LLM sees is per-family and already shows the sensor-vs-radar gap (20.7 m vs 0.11 m benign), which makes
+  the task easy; a larger rule language or messier evidence is needed to show any LLM advantage.
+* **Irreducible residual:** `dual_masquerade` stays at 78-80 of 180 sampled attacks (about 43%) under every
+  arm. A consistent bias on both channels is indistinguishable from reality for any check in this rule
+  language; the knowledge base's own mitigation for this threat class is message authentication (SecOC).
+* 9 LLM calls in total (3 per seed); no invalid rules after validation, 6-8 proposals per seed rejected by the
+  verifier.
+
+## Evidence chain and pipeline (`python -m sdv`, `sdv/evidence`)
+
+* One command takes a requirement in plain English through spec extraction, red team, blue team, a second red
+  round and an audited evidence bundle (about 13 s for 40 samples per family, no API key with `--blue enumerate`).
+* The auditor re-runs every claim (10 checks: formula, bound, violation reproduces, attack and KB citation,
+  declared threat mapping, rule validity, benign false-alarm rate, in-time detection). Tamper tests confirm
+  that falsified latencies, collision flags, attack parameters, KB fields, an unparseable formula, a rule that
+  alarms on benign traffic and a rule that does not cover the violation are each caught.
+* **A defect found by reading the first generated document:** retrieval matched the sensor masquerade to the
+  knowledge-base pattern "DoS on CAN Bus", and the original audit passed because it only checked that the
+  cited pattern existed. The bundle now cites an explicitly declared family -> pattern mapping
+  (`KB_PATTERN_FOR`, the authors' judgement), records what retrieval suggested next to it, and the auditor
+  fails a bundle that cites a real but wrong pattern.
+* The bundle is machine-checked consistency on an emulated system, not a certified safety case.
+
 ## Caveats
 
 * Metric fix: an alarm before the attack starts is a false alarm and earns no margin
@@ -116,5 +164,8 @@ MRR with chance in brackets; 95% bootstrap CIs are in the script output.
 * Per-family hazard counts in E3 are small (some under 10); do not over-read them.
 * LLM refusals occurred in an early generation attempt (stealth framing); refusals are
   retried and never cached.
+* E6 uses 3 seeds and 60 samples per family per round; the held-out set per seed is about 22-25 cases.
+* The Docker image has not been built (Docker is not installed on the development machine); the dependency
+  list was checked by installing `requirements.txt` into a fresh virtual environment and running the tests.
 * Raw LLM replies live in `outputs/llm_cache/` (not committed). Keep a copy: they are the evidence
   behind the E4 tables and make every number reproducible offline with `--offline`.

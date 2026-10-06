@@ -8,7 +8,7 @@ not a narrative. It is a consistency check on an emulated system, not a certifie
 """
 import json
 
-from sdv.attacks.library import ALL_ATTACKS
+from sdv.attacks.library import ALL_ATTACKS, KB_PATTERN_FOR
 from sdv.rag.kb import load_corpora
 from sdv.rag.retrievers import BM25Retriever
 from sdv.spec import stl
@@ -16,14 +16,24 @@ from sdv.spec import stl
 BUNDLE_VERSION = 1
 
 
+def _kb_attack_patterns():
+    return {p["id"]: p for p in json.load(open(_attack_file(), encoding="utf-8"))["attack_patterns"]}
+
+
 def kb_pattern_for(family: str, retriever=None):
-    """Attack pattern from the knowledge base that best matches an attack family (retrieval)."""
+    """The declared knowledge-base pattern for an attack family, plus what retrieval would suggest.
+
+    The declared mapping (KB_PATTERN_FOR) is what the bundle cites; the retrieval suggestion is
+    recorded next to it so a disagreement is visible instead of silently wrong.
+    """
+    raw = _kb_attack_patterns()[KB_PATTERN_FOR[family]]
+    keep = ("id", "name", "severity", "likelihood", "tara_risk_score", "iso_reference", "mitigation")
+    pattern = {k: raw[k] for k in keep}
     retriever = retriever or BM25Retriever()
     cls = ALL_ATTACKS[family]
-    doc = retriever.retrieve(f"{family.replace('_', ' ')} {cls.__doc__ or ''}", "attack", 1)[0]
-    raw = next(p for p in json.load(open(_attack_file(), encoding="utf-8"))["attack_patterns"] if p["id"] == doc.id)
-    keep = ("id", "name", "severity", "likelihood", "tara_risk_score", "iso_reference", "mitigation")
-    return {k: raw[k] for k in keep}
+    top = retriever.retrieve(f"{family.replace('_', ' ')} {cls.__doc__ or ''}", "attack", 1)[0]
+    pattern["retrieval_suggestion"] = {"id": top.id, "name": top.title, "agrees": top.id == raw["id"]}
+    return pattern
 
 
 def _attack_file():

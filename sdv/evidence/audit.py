@@ -8,6 +8,8 @@ Checks (each is recomputed, none is taken on trust):
                                    robustness and collision flag
   violation_is_real                the deadline is missed (robustness < 0) and/or a collision occurs
   attack_is_known                  the family exists and its capability text matches the library
+  threat_mapping_is_declared       the cited pattern is the one declared for this attack family
+                                   (a pattern that exists in the KB but is the wrong one fails here)
   kb_pattern_matches_the_knowledge_base   the cited attack pattern exists with the same fields
   rule_is_valid                    the rule passes language validation against the bus IDs
   rule_fpr_reproduces              false-alarm rate recomputed on regenerated benign runs is within the cap
@@ -18,7 +20,7 @@ Coverage is the share of checks that pass.
 """
 import json
 
-from sdv.attacks.library import ALL_ATTACKS, make_attack
+from sdv.attacks.library import ALL_ATTACKS, KB_PATTERN_FOR, make_attack
 from sdv.blue.loop import base_monitors, benign_runs, deployed, known_ids_of, radar_params
 from sdv.blue.rules import validate_rule
 from sdv.blue.verify import case_outcome, false_alarm_rate
@@ -72,8 +74,11 @@ def audit(bundle: dict) -> dict:
     pattern = bundle["threat"]["kb_pattern"]
     from sdv.evidence.chain import _attack_file
     kb = {p["id"]: p for p in json.load(open(_attack_file(), encoding="utf-8"))["attack_patterns"]}
+    checks.append(_check("threat_mapping_is_declared", KB_PATTERN_FOR.get(family) == pattern["id"],
+                         f"declared for {family}: {KB_PATTERN_FOR.get(family)}, cited: {pattern['id']}"))
+    cited = {k: v for k, v in pattern.items() if k != "retrieval_suggestion"}
     checks.append(_check("kb_pattern_matches_the_knowledge_base",
-                         pattern["id"] in kb and all(kb[pattern["id"]][k] == v for k, v in pattern.items()),
+                         pattern["id"] in kb and all(kb[pattern["id"]][k] == v for k, v in cited.items()),
                          f"{pattern['id']} {pattern['name']}"))
 
     cal = bundle["calibration"]

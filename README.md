@@ -55,6 +55,9 @@ streamlit run dashboard/app.py     # dashboard
 | `sdv/metrics` | Detection margin and run-level F1 |
 | `sdv/spec` | Natural-language requirement -> validated timing spec (bounded-response STL, deterministic validator, repair loop) |
 | `sdv/rag` | Normalised KB corpora, BM25, legacy TF-IDF wrapper, optional dense/hybrid, Recall@k/MRR |
+| `sdv/blue` | Monitor rule language, deterministic verifier, exhaustive and random baselines, LLM blue agent |
+| `sdv/evidence` | Evidence bundle, auditor that re-runs every claim, GSN-style rendering |
+| `sdv/pipeline.py` | End-to-end orchestrator (`python -m sdv`) |
 | `sdv/llm` | Disk-cached, rate-limit-aware LLM calls |
 | `datasets/benchmark` | 120 labelled timing requirements, 106 labelled retrieval queries |
 | `experiments/` | `phase1_demo.py`, `e1_pilot.py` (detector ranking by F1 vs margin) |
@@ -62,6 +65,19 @@ streamlit run dashboard/app.py     # dashboard
 ```bash
 python experiments/e1_pilot.py --n 300 --seed 1
 ```
+
+## Run the whole pipeline
+
+```bash
+python -m sdv --requirement "Brake within 100 ms if an obstacle is detected." --blue enumerate
+# -> spec, red team, verified monitor rules, residual risk, audited evidence in outputs/pipeline_run/
+python experiments/reproduce_all.py --quick     # regenerate the result tables offline
+docker build -t sdv-safety . && docker run --rm sdv-safety     # tests in a container
+```
+
+`--blue llm --llm-model <groq model>` lets an LLM propose the monitor rules (needs `GROQ_API_KEY`); every
+proposal still has to pass the same deterministic verifier. Experiment results and their caveats are in
+`experiments/RESULTS.md`.
 
 ## Known limitations
 

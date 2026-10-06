@@ -251,6 +251,16 @@ ATTACKS = {cls.name: cls for cls in (
 )}
 
 
+# Which knowledge-base attack pattern each family instantiates. This is the authors' judgement,
+# declared explicitly because retrieval picks it unreliably (BM25 matched the sensor masquerade
+# to "DoS on CAN Bus"). The evidence auditor checks bundles against this table.
+KB_PATTERN_FOR = {
+    "dos_flood": "ATK-007", "priority_abuse": "ATK-007", "low_slow_dos": "ATK-007",
+    "selective_suppression": "ATK-007",
+    "sensor_drift_spoof": "ATK-002", "masquerade": "ATK-002", "dual_masquerade": "ATK-002",
+    "gateway_delay": "ATK-003", "jitter_injection": "ATK-003",
+}
+
 # The original eight families stay in ATTACKS so Phase 1-4 experiments are unchanged;
 # ALL_ATTACKS adds the stronger attacker used by the red/blue loop.
 ALL_ATTACKS = {**ATTACKS, DualMasquerade.name: DualMasquerade}
@@ -262,4 +272,4 @@ def make_attack(name: str, **params) -> Attack:
     return ALL_ATTACKS[name](**params)
 
 
-__all__ = ["ATTACKS", "ALL_ATTACKS", "make_attack", "Attack", "BRAKE_ID"]
+__all__ = ["ATTACKS", "ALL_ATTACKS", "KB_PATTERN_FOR", "make_attack", "Attack", "BRAKE_ID"]

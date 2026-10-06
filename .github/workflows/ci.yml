@@ -70,6 +70,11 @@ jobs:
           pytest tests/ -v --tb=short --ignore=tests/test_llm_integration.py
         continue-on-error: false
 
+      - name: End-to-end pipeline smoke test (no LLM, no API key needed)
+        run: |
+          python -m sdv --blue enumerate --n 12 --out /tmp/pipeline_run
+          test -f /tmp/pipeline_run/evidence.md
+
       - name: Upload coverage report
         uses: actions/upload-artifact@v4
         with:

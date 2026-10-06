@@ -48,10 +48,18 @@ class TestBundle:
         rec = bundle["violation"]["recorded"]
         assert rec["robustness_ms"] == pytest.approx(stl.parse(SPEC["formula"]).robustness(rec["e2e_latency_ms"]))
 
-    def test_the_threat_is_grounded_in_a_retrieved_knowledge_base_pattern(self, bundle):
+    def test_the_threat_cites_the_declared_pattern_and_records_what_retrieval_suggested(self, bundle):
         pattern = bundle["threat"]["kb_pattern"]
-        assert pattern["id"].startswith("ATK-") and pattern["mitigation"]
+        assert pattern["id"] == "ATK-002" and "redundant sensing" in pattern["mitigation"]
         assert kb_pattern_for("masquerade")["id"] == pattern["id"]
+        sug = pattern["retrieval_suggestion"]
+        assert set(sug) == {"id", "name", "agrees"} and sug["agrees"] == (sug["id"] == pattern["id"])
+
+    def test_every_family_has_a_declared_pattern_that_exists_in_the_kb(self):
+        from sdv.attacks.library import ALL_ATTACKS, KB_PATTERN_FOR
+        from sdv.rag.kb import kb_ids
+        assert set(KB_PATTERN_FOR) == set(ALL_ATTACKS)
+        assert set(KB_PATTERN_FOR.values()) <= kb_ids()["attack"]
 
 
 class TestAudit:
@@ -59,7 +67,7 @@ class TestAudit:
     def test_an_honest_bundle_passes_every_check(self, bundle):
         report = audit(bundle)
         assert report["all_passed"], [c for c in report["checks"] if not c["passed"]]
-        assert report["total"] == 9 and report["coverage"] == 1.0
+        assert report["total"] == 10 and report["coverage"] == 1.0
 
     def test_a_falsified_latency_is_caught(self, bundle):
         bad = copy.deepcopy(bundle)
@@ -93,6 +101,18 @@ class TestAudit:
         bad["threat"]["kb_pattern"]["tara_risk_score"] = 0.01
         assert "kb_pattern_matches_the_knowledge_base" in {c["name"] for c in audit(bad)["checks"] if not c["passed"]}
 
+    def test_citing_the_wrong_but_real_pattern_is_caught(self, bundle):
+        """ATK-007 exists in the KB with these exact fields, but it is not the pattern for masquerade."""
+        import json
+        from sdv.evidence.chain import _attack_file
+        raw = next(p for p in json.load(open(_attack_file(), encoding="utf-8"))["attack_patterns"]
+                   if p["id"] == "ATK-007")
+        bad = copy.deepcopy(bundle)
+        bad["threat"]["kb_pattern"] = {k: raw[k] for k in ("id", "name", "severity", "likelihood",
+                                                          "tara_risk_score", "iso_reference", "mitigation")}
+        failed = {c["name"] for c in audit(bad)["checks"] if not c["passed"]}
+        assert failed == {"threat_mapping_is_declared"}
+
     def test_a_rule_that_alarms_on_benign_traffic_is_caught(self, bundle):
         bad = copy.deepcopy(bundle)
         bad["mitigation"]["rule"] = {"type": "jump", "id": "0x2A0", "field": "distance_m", "max_step": 0.3}
@@ -120,7 +140,7 @@ class TestRender:
     def test_markdown_shows_every_link_and_the_audit_result(self, bundle):
         text = render_markdown(bundle, audit(bundle))
         for needle in ("G1.", "S1. Specification", "S2. Counter-example", "S3. Threat", "S4. Mitigation",
-                       "Residual risk", "dual_masquerade", "9/9 checks re-verified", "[PASS]", "not a certified safety case"):
+                       "Residual risk", "dual_masquerade", "10/10 checks re-verified", "[PASS]", "not a certified safety case"):
             assert needle in text
 
     def test_failures_are_visible_in_the_document(self, bundle):
