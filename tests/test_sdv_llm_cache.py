@@ -78,3 +78,30 @@ def test_non_transient_errors_are_raised_immediately(tmp_path):
 def test_reasoning_effort_is_set_for_gpt_oss_only(tmp_path):
     assert make(tmp_path, lambda p: "x").extra["reasoning_effort"] == "low"
     assert "reasoning_effort" not in CachedLLM("qwen/qwen3.8-27b", cache_dir=tmp_path, call=lambda p: "x").extra
+
+
+def test_the_servers_suggested_wait_is_parsed_from_the_message():
+    class E(Exception):
+        pass
+    assert CachedLLM._retry_after(E("429 ... Please try again in 3.21s. Need more tokens?")) == pytest.approx(3.21)
+    assert CachedLLM._retry_after(E("Please try again in 250ms")) == pytest.approx(0.25)
+    assert CachedLLM._retry_after(E("unrelated")) == 0.0
+
+
+def test_the_wait_honours_the_server_hint_and_is_jittered(tmp_path, monkeypatch):
+    sleeps = []
+    monkeypatch.setattr("time.sleep", lambda s: sleeps.append(s))
+    attempts = []
+
+    def flaky(prompt):
+        attempts.append(1)
+        if len(attempts) < 3:
+            raise RateLimitError("429 Please try again in 12s")
+        return "ok"
+
+    assert make(tmp_path, flaky)("q") == "ok"
+    assert all(12 <= s <= 14 for s in sleeps) and len(sleeps) == 2
+
+
+def test_default_retry_budget_is_large_enough_for_contended_workers(tmp_path):
+    assert make(tmp_path, lambda p: "x").max_retries >= 30

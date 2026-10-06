@@ -8,6 +8,7 @@ the server-suggested wait. Failed calls are never cached.
 """
 import hashlib
 import json
+import random
 import re
 import time
 from pathlib import Path
@@ -23,7 +24,7 @@ def _slug(model: str) -> str:
 
 class CachedLLM:
     def __init__(self, model: str, cache_dir=None, temperature: float = 0.0, max_tokens: int = 1500,
-                 call=None, max_retries: int = 8, extra: dict = None):
+                 call=None, max_retries: int = 40, extra: dict = None):
         self.model, self.temperature, self.max_tokens = model, temperature, max_tokens
         self.extra = dict(extra or {})
         if model.startswith("openai/gpt-oss") and "reasoning_effort" not in self.extra:
@@ -47,11 +48,19 @@ class CachedLLM:
 
     @staticmethod
     def _retry_after(error) -> float:
+        """Seconds the server asks us to wait: Retry-After header, else 'try again in 3.2s' in the message."""
         headers = getattr(getattr(error, "response", None), "headers", None) or {}
         try:
-            return float(headers.get("retry-after", 0))
+            header = float(headers.get("retry-after", 0))
+            if header > 0:
+                return header
         except (TypeError, ValueError):
-            return 0.0
+            pass
+        match = re.search(r"try again in (\d+(?:\.\d+)?)\s*(ms|s)", str(error))
+        if match:
+            value = float(match.group(1))
+            return value / 1000 if match.group(2) == "ms" else value
+        return 0.0
 
     def __call__(self, prompt: str, temperature=None) -> str:
         path = self.dir / f"{self.key(prompt)}.json"
@@ -71,5 +80,6 @@ class CachedLLM:
                 if "RateLimit" not in name and "Timeout" not in name and "Connection" not in name \
                         and "InternalServer" not in name:
                     raise
-                time.sleep(max(self._retry_after(error), min(60, 2 ** attempt)))
+                wait = max(self._retry_after(error), min(8, 0.5 * 2 ** attempt))
+                time.sleep(min(65, wait + random.uniform(0.2, 1.5)))   # jitter breaks up worker collisions
         raise RuntimeError(f"LLM call failed after {self.max_retries} attempts: {last}")
