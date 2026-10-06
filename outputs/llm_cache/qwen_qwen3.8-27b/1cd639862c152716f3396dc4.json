@@ -1,0 +1,1 @@
+{"model": "qwen/qwen3.8-27b", "reply": "{\n  \"deadline_ms\": null,\n  \"unresolved\": false,\n  \"component\": \"other\",\n  \"trigger\": \"pedestrian_detection_active\",\n  \"response\": \"sensor_data_processed\",\n  \"vss_signals\": [\n    \"Vehicle.Cameras\",\n    \"Vehicle.LiDAR\"\n  ],\n  \"can_ids\": [],\n  \"formula\": null\n}"}

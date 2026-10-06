@@ -1,0 +1,1 @@
+{"model": "qwen/qwen3.8-27b", "reply": "{\n  \"deadline_ms\": 50,\n  \"unresolved\": false,\n  \"component\": \"alert_module\",\n  \"trigger\": \"alert_condition_detected\",\n  \"response\": \"driver_alert_activated\",\n  \"vss_signals\": [],\n  \"can_ids\": [],\n  \"formula\": \"G(alert_condition_detected -> F[0,50 ms] driver_alert_activated)\"\n}"}

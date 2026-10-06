@@ -1,0 +1,1 @@
+{"model": "qwen/qwen3.8-27b", "reply": "{\n  \"deadline_ms\": 250,\n  \"unresolved\": false,\n  \"component\": \"steering_ecu\",\n  \"trigger\": \"steering_request\",\n  \"response\": \"steering_command_output\",\n  \"vss_signals\": [],\n  \"can_ids\": [\n    \"0x210\"\n  ],\n  \"formula\": \"G(steering_request -> F[0,250 ms] steering_command_output)\"\n}"}

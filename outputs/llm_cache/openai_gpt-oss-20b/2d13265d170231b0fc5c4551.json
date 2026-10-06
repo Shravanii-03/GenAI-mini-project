@@ -1,0 +1,1 @@
+{"model": "openai/gpt-oss-20b", "reply": "{\n  \"deadline_ms\": 500,\n  \"unresolved\": false,\n  \"component\": \"ecu_watchdog\",\n  \"trigger\": \"no_heartbeat\",\n  \"response\": \"watchdog_timeout\",\n  \"vss_signals\": [],\n  \"can_ids\": [],\n  \"formula\": \"G(no_heartbeat -> F[0,500 ms] watchdog_timeout)\"\n}"}

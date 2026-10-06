@@ -1,0 +1,1 @@
+{"model": "openai/gpt-oss-120b", "reply": "{\n  \"deadline_ms\": 20,\n  \"unresolved\": false,\n  \"component\": \"ecu_watchdog\",\n  \"trigger\": \"watchdog_timeout\",\n  \"response\": \"reset_sequence_start\",\n  \"vss_signals\": [],\n  \"can_ids\": [],\n  \"formula\": \"G(watchdog_timeout -> F[0,20 ms] reset_sequence_start)\"\n}"}

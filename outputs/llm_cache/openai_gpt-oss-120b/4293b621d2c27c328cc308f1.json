@@ -1,0 +1,1 @@
+{"model": "openai/gpt-oss-120b", "reply": "{\n  \"deadline_ms\": 50,\n  \"unresolved\": false,\n  \"component\": \"alert_module\",\n  \"trigger\": \"sensor_tick\",\n  \"response\": \"driver_alert_displayed\",\n  \"vss_signals\": [],\n  \"can_ids\": [],\n  \"formula\": \"G(sensor_tick -> F[0,50 ms] driver_alert_displayed)\"\n}"}

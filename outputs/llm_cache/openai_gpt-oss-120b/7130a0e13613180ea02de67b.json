@@ -1,0 +1,1 @@
+{"model": "openai/gpt-oss-120b", "reply": "{\n  \"deadline_ms\": 500,\n  \"unresolved\": false,\n  \"component\": \"ecu_watchdog\",\n  \"trigger\": \"heartbeat_missed\",\n  \"response\": \"system_reset\",\n  \"vss_signals\": [\"Vehicle.Identification.Heartbeat\"],\n  \"can_ids\": [\"0x700\"],\n  \"formula\": \"G(heartbeat_missed -> F[0,500 ms] system_reset)\"\n}"}

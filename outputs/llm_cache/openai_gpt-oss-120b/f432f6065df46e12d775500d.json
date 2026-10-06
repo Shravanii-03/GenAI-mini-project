@@ -1,0 +1,1 @@
+{"model": "openai/gpt-oss-120b", "reply": "{\n  \"deadline_ms\": null,\n  \"unresolved\": false,\n  \"component\": \"braking_system\",\n  \"trigger\": \"brake_pressure_monitor\",\n  \"response\": \"brake_pressure_limit_enforced\",\n  \"vss_signals\": [\"Vehicle.Brake.BrakePressure\"],\n  \"can_ids\": [\"0x2A0\"],\n  \"formula\": null\n}"}

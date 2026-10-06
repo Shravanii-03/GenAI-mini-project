@@ -1,0 +1,1 @@
+{"model": "qwen/qwen3.8-27b", "reply": "{\n  \"deadline_ms\": 300,\n  \"unresolved\": false,\n  \"component\": \"acc_system\",\n  \"trigger\": \"lead_vehicle_speed_change\",\n  \"response\": \"acc_response\",\n  \"vss_signals\": [],\n  \"can_ids\": [],\n  \"formula\": \"G(lead_vehicle_speed_change -> F[0,300 ms] acc_response)\"\n}"}

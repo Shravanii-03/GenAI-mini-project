@@ -1,0 +1,1 @@
+{"model": "openai/gpt-oss-20b", "reply": "{\n  \"deadline_ms\": 50,\n  \"unresolved\": false,\n  \"component\": \"alert_module\",\n  \"trigger\": \"critical_fault_flagged\",\n  \"response\": \"driver_alert_presented\",\n  \"vss_signals\": [],\n  \"can_ids\": [],\n  \"formula\": \"G(critical_fault_flagged -> F[0,50 ms] driver_alert_presented)\"\n}"}
