@@ -37,7 +37,7 @@ def latency_by_load():
 
 
 def hazard_vs_distance():
-    print(f"\n2) Same latency, different obstacle distance (60 km/h, dry, load 0.7)")
+    print("\n2) Same latency, different obstacle distance (60 km/h, dry, load 0.7)")
     print(f"{'d0 (m)':>7} {'safe limit':>11} {'mean lat':>9} {'collisions':>11}")
     for d0 in (19.0, 19.5, 20.0, 20.5, 21.0, 22.0):
         s = Scenario(v0_kmh=60, d0_m=d0, cpu_load=0.7)

@@ -128,7 +128,7 @@ def main():
     print("ranking by timely-rate:    ", " > ".join(by_timely))
     print("rankings differ:           ", by_f1 != by_timely)
 
-    print(f"\nPer-family recall / timely rate (deployable monitors)")
+    print("\nPer-family recall / timely rate (deployable monitors)")
     print(f"{'family':<24}" + "".join(f"{n:>22}" for n in deployable))
     for family in ATTACKS:
         line = f"{family:<24}"
