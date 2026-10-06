@@ -105,3 +105,15 @@ def test_the_wait_honours_the_server_hint_and_is_jittered(tmp_path, monkeypatch)
 
 def test_default_retry_budget_is_large_enough_for_contended_workers(tmp_path):
     assert make(tmp_path, lambda p: "x").max_retries >= 30
+
+
+def test_offline_mode_serves_the_cache_and_never_calls_the_api(tmp_path):
+    from sdv.llm.cached import CacheMiss
+    calls = []
+    make(tmp_path, lambda p: calls.append(p) or "cached answer")("seen")
+    offline = CachedLLM("openai/gpt-oss-120b", cache_dir=tmp_path, call=lambda p: calls.append(p) or "new",
+                        offline=True)
+    assert offline("seen") == "cached answer"
+    with pytest.raises(CacheMiss):
+        offline("never asked")
+    assert len(calls) == 1

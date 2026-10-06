@@ -18,13 +18,17 @@ import config
 DEFAULT_CACHE_DIR = config.project_root() / "outputs" / "llm_cache"
 
 
+class CacheMiss(KeyError):
+    """Raised in offline mode when a reply is not cached."""
+
+
 def _slug(model: str) -> str:
     return re.sub(r"[^A-Za-z0-9_.-]+", "_", model)
 
 
 class CachedLLM:
     def __init__(self, model: str, cache_dir=None, temperature: float = 0.0, max_tokens: int = 1500,
-                 call=None, max_retries: int = 40, extra: dict = None):
+                 call=None, max_retries: int = 40, extra: dict = None, offline: bool = False):
         self.model, self.temperature, self.max_tokens = model, temperature, max_tokens
         self.extra = dict(extra or {})
         if model.startswith("openai/gpt-oss") and "reasoning_effort" not in self.extra:
@@ -33,6 +37,7 @@ class CachedLLM:
         self.dir.mkdir(parents=True, exist_ok=True)
         self._call = call
         self.max_retries = max_retries
+        self.offline = offline            # serve from the cache only; never call the API
         self.hits = self.misses = 0
 
     def key(self, prompt: str) -> str:
@@ -67,6 +72,8 @@ class CachedLLM:
         if path.exists():
             self.hits += 1
             return json.loads(path.read_text(encoding="utf-8"))["reply"]
+        if self.offline:
+            raise CacheMiss(path.name)
         self.misses += 1
         last = None
         for attempt in range(self.max_retries):

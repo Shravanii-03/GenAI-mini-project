@@ -23,7 +23,7 @@ from concurrent.futures import ThreadPoolExecutor
 
 sys.path.insert(0, os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
 
-from sdv.llm.cached import CachedLLM
+from sdv.llm.cached import CacheMiss, CachedLLM
 from sdv.rag.kb import kb_ids
 from sdv.rag.retrievers import BM25Retriever, LegacyTfidf
 from sdv.spec.agent import extract_spec
@@ -54,8 +54,11 @@ def run_condition(name, items, llm, retriever, ids, workers):
     cfg = CONDITIONS[name]
 
     def one(item):
-        result = extract_spec(item["text"], llm, retriever=retriever if cfg["rag"] else None,
-                              validate=cfg["validate"], ids=ids, eager=cfg["eager"])
+        try:
+            result = extract_spec(item["text"], llm, retriever=retriever if cfg["rag"] else None,
+                                  validate=cfg["validate"], ids=ids, eager=cfg["eager"])
+        except CacheMiss:
+            return None                                   # offline mode: not available in the cache
         row = score(item, result.spec, ids)
         row.update(condition=name, repairs=result.repairs, llm_calls=result.llm_calls,
                    valid_first_try=not result.errors_initial, valid_final=result.valid,
@@ -64,7 +67,7 @@ def run_condition(name, items, llm, retriever, ids, workers):
         return row
 
     with ThreadPoolExecutor(workers) as pool:
-        return list(pool.map(one, items))
+        return [row for row in pool.map(one, items) if row is not None]
 
 
 def print_table(title, groups):
@@ -88,13 +91,17 @@ def main():
     ap.add_argument("--stride", type=int, default=1, help="use every n-th requirement (keeps all categories)")
     ap.add_argument("--workers", type=int, default=4)
     ap.add_argument("--max-tokens", type=int, default=450)
+    ap.add_argument("--offline", action="store_true",
+                    help="use cached replies only; items missing from the cache are skipped (n is reported)")
+    ap.add_argument("--matched", action="store_true",
+                    help="restrict every condition to the items available in all conditions")
     ap.add_argument("--out", default=None)
     args = ap.parse_args()
 
     items = load_benchmark()[: args.limit][:: args.stride]
     ids = kb_ids()
     retriever = BM25Retriever() if args.retriever == "bm25" else LegacyTfidf()
-    llm = CachedLLM(args.model, max_tokens=args.max_tokens)
+    llm = CachedLLM(args.model, max_tokens=args.max_tokens, offline=args.offline)
 
     groups = {"regex": [regex_row(i, ids) for i in items]}
     all_rows = []
@@ -104,7 +111,12 @@ def main():
         all_rows.extend(rows)
         print(f"[{name}] done ({llm.hits} cache hits, {llm.misses} API calls so far)", flush=True)
 
-    print_table(f"{args.model} | retriever={args.retriever} | n={len(items)}", groups)
+    if args.matched:
+        common = set.intersection(*(set(r["id"] for r in rows) for rows in groups.values() if rows))
+        groups = {name: [r for r in rows if r["id"] in common] for name, rows in groups.items()}
+        all_rows = [r for r in all_rows if r["id"] in common]
+        print(f"\nmatched subset: {len(common)} requirements available in every condition")
+    print_table(f"{args.model} | retriever={args.retriever} | requirements={len(items)}", groups)
     print("\nvalidator effect: first-reply validity -> final validity, repairs used")
     for name in ("validator", "eager_validator", "rag_validator"):
         rows = groups.get(name)
@@ -122,7 +134,7 @@ def main():
         for rows in groups.values():
             sel = [r for r in rows if r["tag"] == tag]
             key = "deadline_ok"
-            line += f"{sum(r[key] for r in sel) / len(sel):>15.2f}"
+            line += f"{sum(r[key] for r in sel) / len(sel):>15.2f}" if sel else f"{'-':>15}"
         print(line)
     print("(category table shows deadline accuracy)")
 
