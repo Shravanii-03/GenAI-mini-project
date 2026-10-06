@@ -76,8 +76,8 @@ chain:
   actuator_ms: 25                # hydraulic response, not scaled by load
   jitter_sigma: 0.15             # lognormal compute-time jitter
   load_gain: 1.5                 # compute factor = 1 + load_gain * load^2
-  appear_time_ms: 50             # when the obstacle becomes detectable
-  timeout_ms: 2000
+  appear_time_ms: 500            # when the obstacle becomes a threat (leaves run-up time for attacks)
+  timeout_ms: 2000               # simulated time allowed after the obstacle appears
   ttc_trigger_s: 2.0             # perception raises a hazard below this reported TTC
   tail_ms: 100                   # keep simulating after brake onset (for monitors)
 

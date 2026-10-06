@@ -1,5 +1,5 @@
 """Typed data models shared across the SDV timing/security pipeline."""
-from typing import Dict, Literal, Optional
+from typing import Dict, List, Literal, Optional
 
 from pydantic import BaseModel, Field
 
@@ -40,3 +40,5 @@ class RunResult(BaseModel):
     outcome: PlantOutcome
     latest_safe_latency_ms: float            # point of no return; <0 means unavoidable
     margin_ms: Optional[float]               # latest_safe - latency; <0 means hazard
+    attacks: List[Dict] = Field(default_factory=list)            # attack name + parameters
+    attack_windows_ms: List[Dict] = Field(default_factory=list)  # relative to obstacle appearance

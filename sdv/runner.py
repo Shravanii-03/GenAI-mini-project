@@ -14,8 +14,10 @@ _STAGES = [
 ]
 
 
-def run_once(scenario: Scenario, seed: int, params: ChainParams = None) -> RunResult:
-    chain = BrakeChain(scenario, seed, params)
+def execute(scenario: Scenario, seed: int, params: ChainParams = None,
+            attacks=(), background: bool = True):
+    """Run one scenario and return (RunResult, chain) so callers can inspect the bus log."""
+    chain = BrakeChain(scenario, seed, params, attacks=attacks, background=background)
     timeline_us = chain.run()
     t0 = chain.t_appear_us
 
@@ -31,7 +33,7 @@ def run_once(scenario: Scenario, seed: int, params: ChainParams = None) -> RunRe
     outcome = simulate_braking(scenario, None if latency_ms is None else latency_ms / 1000.0)
     safe_ms = latest_safe_latency_ms(scenario)
 
-    return RunResult(
+    result = RunResult(
         seed=seed,
         scenario=scenario,
         braked=braked,
@@ -41,4 +43,15 @@ def run_once(scenario: Scenario, seed: int, params: ChainParams = None) -> RunRe
         outcome=outcome,
         latest_safe_latency_ms=safe_ms,
         margin_ms=None if latency_ms is None else safe_ms - latency_ms,
+        attacks=[{"name": a.name, **a.params()} for a in chain.attacks],
+        attack_windows_ms=[
+            {"name": n, "start_ms": (s_ - t0) / 1000.0, "end_ms": (e_ - t0) / 1000.0}
+            for n, s_, e_ in chain.attack_windows
+        ],
     )
+    return result, chain
+
+
+def run_once(scenario: Scenario, seed: int, params: ChainParams = None,
+             attacks=(), background: bool = True) -> RunResult:
+    return execute(scenario, seed, params, attacks, background)[0]

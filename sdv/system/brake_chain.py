@@ -39,7 +39,7 @@ class ChainParams:
     actuator_ms: float = 25.0
     jitter_sigma: float = 0.15
     load_gain: float = 1.5
-    appear_time_ms: float = 50.0
+    appear_time_ms: float = 500.0
     timeout_ms: float = 2000.0
     ttc_trigger_s: float = 2.0
     tail_ms: float = 100.0
@@ -144,5 +144,5 @@ class BrakeChain:
             self.background.start()
         phase_us = int(self.rng.uniform(0, self.params.sample_period_ms * 1000))
         self.sim.schedule_at(phase_us, self._sensor_tick)
-        self.sim.run(until_us=int(self.params.timeout_ms * 1000))
+        self.sim.run(until_us=self.t_appear_us + int(self.params.timeout_ms * 1000))
         return self.timeline
