@@ -64,3 +64,25 @@ output:
   save_diagrams: true
   output_dir: "outputs/"
   log_level: "INFO"
+
+# ── Phase 1: emulated brake chain (ASSUMED values, to be calibrated) ───────────
+bus:
+  bitrate_bps: 500000            # classical CAN 2.0A
+
+chain:
+  sample_period_ms: 10           # sensor ECU sampling period
+  perception_ms: 25              # mean compute time, scaled by CPU load
+  decision_ms: 15                # mean compute time, scaled by CPU load
+  actuator_ms: 25                # hydraulic response, not scaled by load
+  jitter_sigma: 0.15             # lognormal compute-time jitter
+  load_gain: 1.5                 # compute factor = 1 + load_gain * load^2
+  appear_time_ms: 50             # when the obstacle becomes detectable
+  timeout_ms: 2000
+
+plant:
+  brake_ramp_ms: 50              # time for brake force to build up
+  gravity: 9.81
+  friction:
+    dry: 0.8
+    wet: 0.5
+    icy: 0.25

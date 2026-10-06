@@ -12,6 +12,7 @@ altair>=5.0.0
 
 # ── Data & Config ─────────────────────────────────────────────────────
 pyyaml>=6.0.1
+pydantic>=2.0
 pandas>=2.0.0
 
 # ── Optional: RAG with real embeddings (uncomment for production) ──────

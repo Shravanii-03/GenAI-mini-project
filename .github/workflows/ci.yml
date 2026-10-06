@@ -29,13 +29,13 @@ jobs:
 
       - name: Check syntax (pyflakes)
         run: |
-          pyflakes config.py rag_engine.py llm_client.py simulator_rl.py \
+          pyflakes sdv config.py rag_engine.py llm_client.py simulator_rl.py \
                    vehicle_simulator.py attack_injector.py \
                    prompt_templates.py reasoning_engine.py memory.py
 
       - name: Flake8 style check (errors only)
         run: |
-          flake8 config.py rag_engine.py llm_client.py simulator_rl.py \
+          flake8 sdv config.py rag_engine.py llm_client.py simulator_rl.py \
                  vehicle_simulator.py attack_injector.py \
                  prompt_templates.py reasoning_engine.py memory.py \
                  --max-line-length=120 --select=E9,F63,F7,F82
