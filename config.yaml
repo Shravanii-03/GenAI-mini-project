@@ -79,6 +79,7 @@ chain:
   appear_time_ms: 500            # when the obstacle becomes a threat (leaves run-up time for attacks)
   timeout_ms: 2000               # simulated time allowed after the obstacle appears
   ttc_trigger_s: 2.0             # perception raises a hazard below this reported TTC
+  sensor_noise_m: 0.1            # std-dev of distance measurement noise (assumed)
   tail_ms: 100                   # keep simulating after brake onset (for monitors)
 
 plant:

@@ -43,6 +43,7 @@ class ChainParams:
     timeout_ms: float = 2000.0
     ttc_trigger_s: float = 2.0
     tail_ms: float = 100.0
+    sensor_noise_m: float = 0.1
 
     @classmethod
     def from_config(cls):
@@ -64,6 +65,8 @@ class BrakeChain:
         self.attacks = list(attacks)
         self.attack_windows = []        # (name, start_us, end_us) filled by attacks
         self.background = BackgroundTraffic(self.sim, self.bus, self.rng, CHAIN_IDS) if background else None
+        self._noise_rng = random.Random(seed + 7919)   # separate stream: noise never perturbs timing draws
+        self._seq = 0
         self._detected = False
         self._cmd_started = False
         self._cmd_received = False
@@ -86,17 +89,19 @@ class BrakeChain:
         seen = now >= self.t_appear_us
         elapsed_s = max(0, now - self.t_appear_us) / 1e6
         v0 = self.scenario.v0_kmh / 3.6
+        true_d = max(0.0, self.scenario.d0_m - v0 * elapsed_s)
         frame = CanFrame(
             can_id=SENSOR_ID, src="sensor",
             data={
+                "seq": self._seq,
                 "obstacle": seen,
-                "distance_m": max(0.0, self.scenario.d0_m - v0 * elapsed_s) if seen else None,
+                "distance_m": true_d + self._noise_rng.gauss(0, self.params.sensor_noise_m) if seen else None,
                 "speed_ms": v0,
             },
         )
+        self._seq += 1
         self.bus.send(frame)
-        if self.brake_onset_us is None:
-            self.sim.schedule(int(self.params.sample_period_ms * 1000), self._sensor_tick)
+        self.sim.schedule(int(self.params.sample_period_ms * 1000), self._sensor_tick)
 
     def _send_detect(self):
         self.timeline["detect_enq"] = self.sim.now
