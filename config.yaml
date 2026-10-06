@@ -4,8 +4,8 @@
 # ── LLM Configuration ─────────────────────────────────────────────────────────
 llm:
   provider: "groq"
-  model: "llama-3.3-70b-versatile"
-  max_tokens: 1024
+  model: "openai/gpt-oss-120b"
+  max_tokens: 2048
   temperature_default: 0.7
   temperature_precision: 0.1    # for parsing tasks
   temperature_creative: 0.95    # for scenario generation
@@ -31,7 +31,7 @@ timing:
 # ── RAG Configuration ──────────────────────────────────────────────────────────
 rag:
   top_k: 3
-  knowledge_base_path: "knowledge_base/"
+  knowledge_base_path: "Knowledge_base/"
   files:
     vss: "vss_signals.json"
     can: "can_messages.json"
@@ -43,8 +43,8 @@ datasets:
   timing_requirements: "datasets/requirements/timing_requirements.json"
   code_samples:
     python: "datasets/code_samples/brake_python.py"
-    cpp:    "datasets/code_samples/brake_cpp.cpp"
-    rust:   "datasets/code_samples/brake_rust.rs"
+    cpp:    "datasets/code_samples/cpp_brake.cpp"
+    rust:   "datasets/code_samples/rust_brake.rs"
   runtime_traces:
     scenario_1: "datasets/runtime_traces/scenario_1_trace.json"
     scenario_2: "datasets/runtime_traces/scenario_2_trace.json"

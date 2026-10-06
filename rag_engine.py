@@ -13,13 +13,14 @@ import math
 import re
 from pathlib import Path
 from llm_client import query_llm
+import config
 
 
 # =========================
 # LOAD KB
 # =========================
 
-_KB_PATH = Path("Knowledge_base")
+_KB_PATH = config.project_root() / config.get("rag.knowledge_base_path", "Knowledge_base/")
 _CACHE = {}
 
 def _load_kb(filename):
