@@ -14,6 +14,7 @@ altair>=5.0.0
 pyyaml>=6.0.1
 pydantic>=2.0
 pandas>=2.0.0
+numpy>=1.24
 
 # ── Optional: RAG with real embeddings (uncomment for production) ──────
 # sentence-transformers>=2.7.0
