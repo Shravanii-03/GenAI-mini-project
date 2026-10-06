@@ -53,6 +53,10 @@ streamlit run dashboard/app.py     # dashboard
 | `sdv/attacks` | Eight bus-level attack families with capabilities and search bounds |
 | `sdv/monitors` | Deadline (STL robustness), frequency IDS, plausibility, fused monitors |
 | `sdv/metrics` | Detection margin and run-level F1 |
+| `sdv/spec` | Natural-language requirement -> validated timing spec (bounded-response STL, deterministic validator, repair loop) |
+| `sdv/rag` | Normalised KB corpora, BM25, legacy TF-IDF wrapper, optional dense/hybrid, Recall@k/MRR |
+| `sdv/llm` | Disk-cached, rate-limit-aware LLM calls |
+| `datasets/benchmark` | 120 labelled timing requirements, 106 labelled retrieval queries |
 | `experiments/` | `phase1_demo.py`, `e1_pilot.py` (detector ranking by F1 vs margin) |
 
 ```bash

@@ -39,16 +39,19 @@ _GROUND_RAG = ("choose ONLY from the candidates listed below, and only those the
                "clearly implies; use [] if none apply.")
 _GROUND_NONE = ("list only items the requirement names or clearly implies, and only if you are certain "
                 "they exist; otherwise use [].")
+_GROUND_EAGER = ("list the COVESA VSS signal paths and CAN message IDs the requirement refers to, "
+                 "using your own knowledge of the vehicle signal specification.")
 
 
-def build_prompt(text: str, vss_docs=None, can_docs=None) -> str:
+def build_prompt(text: str, vss_docs=None, can_docs=None, eager: bool = False) -> str:
     context = ""
     if vss_docs is not None:
         context += "\nCandidate VSS signals:\n" + "\n".join(
             f"- {d.id}: {d.text[len(d.id):].strip()}" for d in vss_docs)
         context += "\nCandidate CAN messages:\n" + "\n".join(f"- {d.id} {d.title}" for d in (can_docs or []))
         context += "\n"
-    return _TASK.format(grounding=_GROUND_RAG if vss_docs is not None else _GROUND_NONE,
+    grounding = _GROUND_RAG if vss_docs is not None else (_GROUND_EAGER if eager else _GROUND_NONE)
+    return _TASK.format(grounding=grounding,
                         fields=FIELDS_HELP, context=context, text=text)
 
 
@@ -91,13 +94,13 @@ class SpecResult:
 
 
 def extract_spec(text: str, llm, retriever=None, validate: bool = True, max_repairs: int = 2,
-                 k_vss: int = 8, k_can: int = 5, ids: dict = None) -> SpecResult:
+                 k_vss: int = 8, k_can: int = 5, ids: dict = None, eager: bool = False) -> SpecResult:
     ids = ids or kb_ids()
     vss_docs = can_docs = None
     if retriever is not None:
         vss_docs = retriever.retrieve(text, "vss", k_vss)
         can_docs = retriever.retrieve(text, "can", k_can)
-    prompt = build_prompt(text, vss_docs, can_docs)
+    prompt = build_prompt(text, vss_docs, can_docs, eager=eager)
     result = SpecResult(
         spec=None, valid=False,
         retrieved_vss=[d.id for d in vss_docs or []], retrieved_can=[d.id for d in can_docs or []],

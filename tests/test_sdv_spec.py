@@ -170,6 +170,11 @@ class TestAgentLoop:
         assert "Candidate VSS signals" in llm.seen[0] and "Vehicle.Chassis.Brake.PedalPosition" in llm.seen[0]
         assert "Candidate" not in build_prompt("x")
 
+    def test_eager_prompt_asks_for_signals_from_memory(self):
+        assert "own knowledge" in build_prompt("x", eager=True)
+        assert "own knowledge" not in build_prompt("x")
+        assert "only if you are certain" in build_prompt("x")
+
 
 class TestScoring:
 
