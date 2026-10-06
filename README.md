@@ -43,9 +43,28 @@ streamlit run dashboard/app.py     # dashboard
 | `dashboard/` | Streamlit dashboard |
 | `config.yaml`, `config.py` | Configuration |
 
+## Rebuilt core (`sdv/` package)
+
+| Module | Purpose |
+|---|---|
+| `sdv/sim`, `sdv/bus` | Discrete-event engine and CAN emulator (arbitration, bit-accurate timing) |
+| `sdv/system` | Emulated sensor, perception, decision and actuator chain |
+| `sdv/plant` | Braking model with an exact point of no return |
+| `sdv/attacks` | Eight bus-level attack families with capabilities and search bounds |
+| `sdv/monitors` | Deadline (STL robustness), frequency IDS, plausibility, fused monitors |
+| `sdv/metrics` | Detection margin and run-level F1 |
+| `experiments/` | `phase1_demo.py`, `e1_pilot.py` (detector ranking by F1 vs margin) |
+
+```bash
+python experiments/e1_pilot.py --n 300 --seed 1
+```
+
 ## Known limitations
 
 - The knowledge base is small (26 VSS signals, 11 CAN messages, 8 attack
   patterns, 12 timing/event rules). Timing limits in it are assumed values, not
   quotations from ISO 26262.
-- Simulated delays and attacks are generated, not measured on a real bus.
+- The rebuilt core runs on an **emulated** CAN network; ECU compute times, bus load
+  and the mitigation response time are assumptions set in `config.yaml`.
+- The legacy modules (`vehicle_simulator.py`, `attack_injector.py`, ...) still generate
+  delays and attacks synthetically and are being replaced.
