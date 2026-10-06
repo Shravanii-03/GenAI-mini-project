@@ -1,0 +1,132 @@
+"""
+tests/test_sdv_evidence.py — evidence bundle, auditor (including tamper detection) and rendering.
+"""
+import copy
+import os
+import random
+import sys
+
+sys.path.insert(0, os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
+
+import pytest
+
+from sdv.blue.loop import base_monitors, benign_runs, collect_cases, deployed, known_ids_of
+from sdv.blue.verify import verify_rule
+from sdv.evidence.audit import audit
+from sdv.evidence.chain import build_bundle, kb_pattern_for
+from sdv.evidence.render import render_markdown
+from sdv.spec import stl
+
+XCHK = {"type": "cross_check", "id_a": "0x2A0", "id_b": "0x2B0", "field": "distance_m",
+        "tol": 2.0, "max_skew_ms": 15.0}
+CAL = {"train_seed0": 940000, "n_train": 40, "benign_seed0": 950000, "n_benign": 40, "fpr_cap": 0.02}
+SPEC = {"deadline_ms": 100.0, "formula": "G(obstacle_detected -> F[0,100 ms] brake_applied)",
+        "trigger": "obstacle_detected", "response": "brake_applied", "component": "braking_system"}
+REQ = {"id": "R-test", "text": "Brake within 100 ms if an obstacle is detected.", "method": "test"}
+
+
+@pytest.fixture(scope="module")
+def bundle():
+    train = benign_runs(CAL["n_train"], CAL["train_seed0"])
+    benign = benign_runs(CAL["n_benign"], CAL["benign_seed0"])
+    base = base_monitors(train)
+    _, missed, _ = collect_cases(deployed(base, []), ["masquerade"], 40, random.Random(5))
+    assert missed, "the test needs at least one missed masquerade hazard"
+    verdict = verify_rule(XCHK, benign, missed, known_ids_of(train), CAL["fpr_cap"])
+    assert verdict["ok"]
+    return build_bundle(REQ, SPEC, missed[0], verdict, CAL, residual={"dual_masquerade": "not coverable"})
+
+
+class TestBundle:
+
+    def test_it_links_requirement_trace_threat_and_mitigation(self, bundle):
+        assert set(bundle) >= {"requirement", "spec", "violation", "threat", "mitigation", "calibration"}
+        assert bundle["violation"]["attack"]["family"] == "masquerade"
+        assert bundle["mitigation"]["rule"]["type"] == "cross_check"
+
+    def test_the_recorded_robustness_is_the_stl_value_of_the_recorded_latency(self, bundle):
+        rec = bundle["violation"]["recorded"]
+        assert rec["robustness_ms"] == pytest.approx(stl.parse(SPEC["formula"]).robustness(rec["e2e_latency_ms"]))
+
+    def test_the_threat_is_grounded_in_a_retrieved_knowledge_base_pattern(self, bundle):
+        pattern = bundle["threat"]["kb_pattern"]
+        assert pattern["id"].startswith("ATK-") and pattern["mitigation"]
+        assert kb_pattern_for("masquerade")["id"] == pattern["id"]
+
+
+class TestAudit:
+
+    def test_an_honest_bundle_passes_every_check(self, bundle):
+        report = audit(bundle)
+        assert report["all_passed"], [c for c in report["checks"] if not c["passed"]]
+        assert report["total"] == 9 and report["coverage"] == 1.0
+
+    def test_a_falsified_latency_is_caught(self, bundle):
+        bad = copy.deepcopy(bundle)
+        bad["violation"]["recorded"]["e2e_latency_ms"] += 5.0
+        failed = {c["name"] for c in audit(bad)["checks"] if not c["passed"]}
+        assert "violation_reproduces" in failed
+
+    def test_a_falsified_collision_claim_is_caught(self, bundle):
+        bad = copy.deepcopy(bundle)
+        bad["violation"]["recorded"]["collision"] = not bad["violation"]["recorded"]["collision"]
+        assert "violation_reproduces" in {c["name"] for c in audit(bad)["checks"] if not c["passed"]}
+
+    def test_changed_attack_parameters_no_longer_reproduce(self, bundle):
+        bad = copy.deepcopy(bundle)
+        bad["violation"]["attack"]["params"]["bias_m"] = 1.0
+        assert "violation_reproduces" in {c["name"] for c in audit(bad)["checks"] if not c["passed"]}
+
+    def test_a_formula_that_disagrees_with_the_deadline_is_caught(self, bundle):
+        bad = copy.deepcopy(bundle)
+        bad["spec"]["formula"] = "G(a -> F[0,50 ms] b)"
+        assert "spec_bound_matches_deadline" in {c["name"] for c in audit(bad)["checks"] if not c["passed"]}
+
+    def test_an_unparseable_formula_is_caught(self, bundle):
+        bad = copy.deepcopy(bundle)
+        bad["spec"]["formula"] = "always brake"
+        failed = {c["name"] for c in audit(bad)["checks"] if not c["passed"]}
+        assert {"spec_formula_parses", "spec_bound_matches_deadline"} <= failed
+
+    def test_a_tampered_knowledge_base_citation_is_caught(self, bundle):
+        bad = copy.deepcopy(bundle)
+        bad["threat"]["kb_pattern"]["tara_risk_score"] = 0.01
+        assert "kb_pattern_matches_the_knowledge_base" in {c["name"] for c in audit(bad)["checks"] if not c["passed"]}
+
+    def test_a_rule_that_alarms_on_benign_traffic_is_caught(self, bundle):
+        bad = copy.deepcopy(bundle)
+        bad["mitigation"]["rule"] = {"type": "jump", "id": "0x2A0", "field": "distance_m", "max_step": 0.3}
+        failed = {c["name"] for c in audit(bad)["checks"] if not c["passed"]}
+        assert "rule_fpr_reproduces" in failed
+
+    def test_a_rule_that_does_not_cover_the_violation_is_caught(self, bundle):
+        bad = copy.deepcopy(bundle)
+        bad["mitigation"]["rule"] = {"type": "range", "id": "0x2A0", "field": "distance_m", "lo": -5, "hi": 300}
+        assert "rule_catches_the_violation_in_time" in {c["name"] for c in audit(bad)["checks"] if not c["passed"]}
+
+    def test_an_invalid_rule_fails_cleanly(self, bundle):
+        bad = copy.deepcopy(bundle)
+        bad["mitigation"]["rule"] = {"type": "cross_check", "id_a": "0x999", "id_b": "0x2B0",
+                                     "field": "distance_m", "tol": 1, "max_skew_ms": 5}
+        failed = {c["name"] for c in audit(bad)["checks"] if not c["passed"]}
+        assert {"rule_is_valid", "rule_fpr_reproduces", "rule_catches_the_violation_in_time"} <= failed
+
+    def test_the_audit_is_deterministic(self, bundle):
+        assert audit(bundle) == audit(bundle)
+
+
+class TestRender:
+
+    def test_markdown_shows_every_link_and_the_audit_result(self, bundle):
+        text = render_markdown(bundle, audit(bundle))
+        for needle in ("G1.", "S1. Specification", "S2. Counter-example", "S3. Threat", "S4. Mitigation",
+                       "Residual risk", "dual_masquerade", "9/9 checks re-verified", "[PASS]", "not a certified safety case"):
+            assert needle in text
+
+    def test_failures_are_visible_in_the_document(self, bundle):
+        bad = copy.deepcopy(bundle)
+        bad["violation"]["recorded"]["e2e_latency_ms"] += 5.0
+        assert "[FAIL]" in render_markdown(bad, audit(bad))
+
+    def test_it_renders_without_an_audit(self, bundle):
+        assert "Audit:" not in render_markdown(bundle)
