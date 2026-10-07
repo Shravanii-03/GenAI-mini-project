@@ -142,6 +142,54 @@ fitting, half held out). Round 1: red attacks each hardened monitor again.
 * 9 LLM calls in total (3 per seed); no invalid rules after validation, 6-8 proposals per seed rejected by the
   verifier.
 
+## E8 - real attacks on the ROAD dataset (`experiments/e8_road_validation.py`)
+
+ROAD (Oak Ridge National Laboratory, CC-BY 4.0, https://zenodo.org/records/10462796) holds real CAN
+captures from one vehicle with physically verified attacks. It is **not** in this repository; the data was
+downloaded to `GenAI_project_data/road` (557 MB zip, 3 GB extracted) and `ROAD_DIR` points at it. Signals are
+anonymised, so every detector here is semantics-free and learned from normal driving only.
+
+* **Setup:** training on 7 normal captures (3,812 s, dyno); rule selection on 4 held-out normal captures
+  (2,778 s, of which 2,270 s are real-road driving); attacks are never used for learning or selection.
+  The deliberately abnormal "exercise all bits" capture is excluded. 13 masquerade captures with a known onset
+  are replayed (the 4 accelerator attacks begin before the capture and are skipped).
+* **Selection:** signal rules were accepted only with zero false alarms on the held-out normal captures:
+  range 568/664, jump 596/664, redundancy pair 10/34. All accepted rules fused: 0 false-alarm events on the
+  validation data.
+
+| Attack (captures) | frame-rate IDS | range | jump | redundancy pair | all signal rules fused |
+|---|---|---|---|---|---|
+| correlated signal (3) | 2/3, median 8.9 s | 3/3, 0 ms | 0/3 | 0/3 | 3/3, 0 ms |
+| max speedometer (3) | 2/3, median 34.8 s | 3/3, 7 ms | 3/3, 6.7 s | 3/3, 4 ms | 3/3, 4 ms |
+| max engine coolant (1) | 0/1 | 0/1 | 0/1 | 1/1, 0 ms | 1/1, 0 ms |
+| reverse light off (3) | 1/3, 15.6 s | 0/3 | 0/3 | 0/3 | 0/3 |
+| reverse light on (3) | 3/3, 15.5 s | 0/3 | 0/3 | 0/3 | 0/3 |
+
+Share of the 13 captures detected within 100 ms: fused signal rules 0.54, range 0.46, redundancy pair 0.31,
+jump 0.08, frame-rate IDS 0.00 (it reaches 0.62 only after seconds).
+
+* **What it supports:** a semantics-free redundancy cross-check catches a real single-signal forgery (max
+  speedometer, engine coolant) within a few milliseconds of the onset at zero false alarms on held-out normal
+  data, and range checks catch extreme forged values immediately.
+* **Frame-rate IDS:** in masquerade captures genuine frames are replaced, so the frame rate is unchanged and a
+  rate-based detector has no signal by construction. On real data my simple per-ID rate IDS could not be tuned to
+  a usable false-alarm rate (even its least sensitive setting gave 316 events, about 409/h, on held-out normal
+  driving), so its late "detections" (8-35 s) are indistinguishable from false alarms. This reflects the
+  limits of this baseline, not of every timing IDS.
+* **What it does not support:** in-range semantic forgeries are missed entirely (reverse-light flags, 0/6 by
+  every signal rule). ROAD's "correlated signal attack" forges four values to extremes that are inconsistent with
+  each other and with normal driving, so it is easy; the consistent dual-sensor attacker of the emulation is **not
+  present in ROAD**, so the irreducible-residual finding is untested on real data.
+* **Real-world friction the emulation hid:** only 10 of 34 learned redundancy pairs survived the zero-false-alarm
+  check on held-out data. A cross-check between wheel-speed signals is a natural candidate, but wheels legitimately
+  differ in corners and on real roads, so tolerances learned on dyno data fail to transfer. Redundancy is not
+  free in practice.
+* **Contamination caveat:** before the injection starts, the fused rules still raised 5 false-alarm events in
+  217 s of normal driving inside the attack captures (captures start with transients and other conditions), so
+  zero false alarms on the validation captures does not guarantee a low rate elsewhere.
+* Small sample: 13 attack captures from one vehicle, 3 per family at most. There is no braking plant in ROAD, so
+  this validates detector behaviour, not hazard outcomes or the detection margin.
+
 ## Evidence chain and pipeline (`python -m sdv`, `sdv/evidence`)
 
 * One command takes a requirement in plain English through spec extraction, red team, blue team, a second red
@@ -165,6 +213,7 @@ fitting, half held out). Round 1: red attacks each hardened monitor again.
 * LLM refusals occurred in an early generation attempt (stealth framing); refusals are
   retried and never cached.
 * E6 uses 3 seeds and 60 samples per family per round; the held-out set per seed is about 22-25 cases.
+* ROAD results are descriptive (13 captures, one vehicle); see the E8 section for what they do and do not support.
 * The Docker image has not been built (Docker is not installed on the development machine); the dependency
   list was checked by installing `requirements.txt` into a fresh virtual environment and running the tests.
 * Raw LLM replies live in `outputs/llm_cache/` (not committed). Keep a copy: they are the evidence
