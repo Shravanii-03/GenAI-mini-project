@@ -120,8 +120,20 @@ def main():
         return 1
 
     client = carla.Client(args.host, args.port)
-    client.set_timeout(30.0)
-    world = client.load_world(args.town)
+    client.set_timeout(180.0)               # software rendering can take minutes to load a map
+    import time
+    for attempt in range(20):               # wait for a server that is still starting up
+        try:
+            current = client.get_world().get_map().name
+            print(f"connected to the server (current map: {current})", flush=True)
+            break
+        except RuntimeError as error:
+            print(f"waiting for the server ({attempt + 1}/20): {str(error)[:80]}", flush=True)
+            time.sleep(15)
+    else:
+        print("could not reach the server; check that it is running (see docs/CARLA.md)")
+        return 1
+    world = client.get_world() if current.endswith(args.town) else client.load_world(args.town)
     settings = world.get_settings()
     settings.synchronous_mode, settings.fixed_delta_seconds = True, DT
     world.apply_settings(settings)
