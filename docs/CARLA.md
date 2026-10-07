@@ -29,3 +29,8 @@ of each model. Expect the assumed parameters to be off (CARLA's brake torque mod
   assumed-vs-fitted gap as the calibration the emulator needs.
 - Large error even with fitted parameters: the plant is too simple (load transfer, ABS, tyre slip); say so and bound the
   claims accordingly.
+
+## Colab notebook (untested)
+`docs/colab_carla.ipynb` walks through the Colab route (project zip, CARLA server download, a Python 3.10 conda environment,
+headless server, the check, downloading the JSON). It was written without being able to run it, so each cell notes what is
+likely to break. Give it about an hour; if it does not work, list the CARLA check as future work rather than forcing it.
