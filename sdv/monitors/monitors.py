@@ -26,7 +26,11 @@ Context = namedtuple("Context", "end_us t_appear_us bitrate")
 
 def observe(chain):
     """Bus-visible view of a finished run (no sender, no attack label)."""
-    frames = [Observed(f.t_rx_us, f.can_id, f.dlc, f.data) for f in chain.bus.log]
+    hidden = ("forged", "holds_key")        # simulator-internal flags; a bus observer never sees them
+    frames = [Observed(f.t_rx_us, f.can_id, f.dlc,
+                       f.data if not any(k in f.data for k in hidden)
+                       else {k: v for k, v in f.data.items() if k not in hidden})
+              for f in chain.bus.log]
     ctx = Context(chain.sim.now, chain.t_appear_us, chain.bus.bitrate)
     return frames, ctx
 

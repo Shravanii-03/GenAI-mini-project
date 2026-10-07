@@ -39,6 +39,11 @@ STEPS = [
      ["experiments/e10_bound_validation.py", "--scenarios", "6", "--samples", "120"], False),
     ("E11 sensitivity to the assumed ECU timings",
      ["experiments/e11_sensitivity.py", "--scenarios", "5", "--samples", "80"], False),
+    ("E12 defences: gateway guard + authentication (hazard, cost, adaptive attacker)",
+     ["experiments/e12_defences.py", "--scenarios", "6", "--samples", "100", "--benign", "100", "--es-budget", "100"],
+     False),
+    ("E12b adversarial search for a counter-example to the bound",
+     ["experiments/e12b_bound_adversarial.py", "--scenarios", "4", "--budget", "200"], False),
     ("End-to-end pipeline", ["-m", "sdv", "--blue", "enumerate", "--n", "40", "--out", "outputs/pipeline_run"], True),
 ]
 

@@ -27,6 +27,12 @@ Assumptions that make the bound conditional (reported, never hidden):
       holding frames happen at one gateway, and a redundant channel is attacked only if the family says so
     * the bus model is the emulator's (classical CAN, worst-case stuffing, queued instances never merged)
 
+Defences modelled (see brake_chain.py): with gateway_guard a flood from the untrusted segment never reaches the
+safety bus, so it adds nothing to the bound (a flood from a node on the safety bus still does); with auth a forged
+frame is rejected, so a forging attack on a channel behaves like suppression of that channel until its window ends,
+and if every channel is forged a fail-safe watchdog brakes after watchdog_ms of silence. An attacker that holds the
+key (holds_key) is not stopped by authentication.
+
 With the radar failover policies perception triggers on the EARLIER of the two channels, so a single-channel
 attack is bounded by the other channel's benign path; bus-level attacks (floods) hit both channels.
 """
@@ -43,6 +49,7 @@ BITRATE = 500_000
 TAU_US = 1_000_000 / BITRATE            # one bit time
 NOISE_Z = 4.0
 FLOOD_FAMILIES = ("dos_flood", "priority_abuse", "low_slow_dos")
+FORGING = ("masquerade", "dual_masquerade", "sensor_drift_spoof")
 
 
 def _c_us(dlc=8):
@@ -142,6 +149,8 @@ def _channel_trigger_ms(attack, channel, scenario, chain):
     s_rel, e_rel = _window_rel_ms(attack)
     v0 = scenario.v0_kmh / 3.6
     name = attack.name
+    if (chain.auth and name in FORGING and not getattr(attack, "holds_key", False)):
+        return max(base, e_rel + chain.sample_period_ms)       # forged frames are rejected: silence until the window ends
     if name == "selective_suppression":
         if attack.k == 1:
             return max(base, e_rel + chain.sample_period_ms)
@@ -179,10 +188,13 @@ def latency_bound_ms(scenario, attack=None, chain=None, z=4.0) -> Bound:
     chain = chain or ChainParams.from_config()
     if isinstance(attack, PhantomObstacle):
         raise ValueError("phantom_obstacle is an availability attack; the latency bound does not apply")
+    if (attack is not None and attack.name in FLOOD_FAMILIES and chain.gateway_guard
+            and getattr(attack, "segment", "untrusted") == "untrusted"):
+        attack = None                      # dropped by the gateway guard before arbitration
     sigma = chain.jitter_sigma
     load = 1.0 + chain.load_gain * scenario.cpu_load ** 2
     jhi = _jitter_hi(sigma, z)
-    P = chain.perception_ms * load * jhi
+    P = (chain.perception_ms + (chain.auth_verify_ms if chain.auth else 0.0)) * load * jhi
     D = chain.decision_ms * load * jhi
     A = chain.actuator_ms * jhi
     hit = _attacked_channels(attack)
@@ -229,6 +241,13 @@ def latency_bound_ms(scenario, attack=None, chain=None, z=4.0) -> Bound:
         t_trig = _channel_trigger_ms(attack if (under and not flood) else None, name, scenario, chain)
         paths[name] = t_trig + resp(can_id)
     entry = min(paths.values())
+    if (chain.auth and attack is not None and attack.name in FORGING and not getattr(attack, "holds_key", False)
+            and hit >= set(channels)):
+        # every channel is forged and rejected: the watchdog fires wd after the last valid frame, if the window lasts
+        s_rel, e_rel = _window_rel_ms(attack)
+        t_wd = max(0.0, s_rel) + max(resp(c) for c in channels.values()) + chain.watchdog_ms + chain.watchdog_check_ms
+        if e_rel > t_wd:
+            entry = min(entry, t_wd)
 
     after = resp(DETECT_ID) + resp(BRAKE_ID)
     total = entry + P + D + A + after

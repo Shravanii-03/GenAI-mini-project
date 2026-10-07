@@ -14,6 +14,7 @@ Times are relative to the moment the obstacle becomes a threat.
 import random
 
 from sdv.schemas import CanFrame
+from sdv.bus.guard import SAFETY_BUS_SRC, UNTRUSTED_SRC
 from sdv.system.brake_chain import BRAKE_ID, RADAR_ID, SENSOR_ID
 
 # Capabilities
@@ -53,9 +54,14 @@ class DoSFlood(Attack):
     capability = NODE
     PARAM_BOUNDS = {"rate_hz": (200, 6000), "duration_ms": (20, 400), "start_offset_ms": (-100, 100)}
 
-    def __init__(self, rate_hz=3000, can_id=0x010, **kw):
+    def __init__(self, rate_hz=3000, can_id=0x010, segment="untrusted", **kw):
         super().__init__(**kw)
         self.rate_hz, self.can_id = rate_hz, can_id
+        self.segment = segment      # "untrusted" (behind the gateway guard) or "safety" (a node on the safety bus)
+
+    @property
+    def _src(self):
+        return SAFETY_BUS_SRC if self.segment == "safety" else UNTRUSTED_SRC
 
     def _install(self, chain, start, end):
         period_us = max(1, int(1_000_000 / self.rate_hz))
@@ -63,7 +69,7 @@ class DoSFlood(Attack):
         def emit():
             if chain.sim.now >= end:
                 return
-            chain.bus.send(CanFrame(can_id=self.can_id, src="attacker", attack=True))
+            chain.bus.send(CanFrame(can_id=self.can_id, src=self._src, attack=True))
             chain.sim.schedule(period_us, emit)
 
         chain.sim.schedule_at(start, emit)
@@ -89,9 +95,14 @@ class LowSlowDoS(Attack):
     PARAM_BOUNDS = {"duty": (0.05, 0.6), "period_ms": (10, 100),
                     "duration_ms": (50, 600), "start_offset_ms": (-100, 100)}
 
-    def __init__(self, duty=0.3, period_ms=50.0, burst_rate_hz=3000, can_id=0x010, **kw):
+    def __init__(self, duty=0.3, period_ms=50.0, burst_rate_hz=3000, can_id=0x010, segment="untrusted", **kw):
         super().__init__(**kw)
         self.duty, self.period_ms, self.burst_rate_hz, self.can_id = duty, period_ms, burst_rate_hz, can_id
+        self.segment = segment
+
+    @property
+    def _src(self):
+        return SAFETY_BUS_SRC if self.segment == "safety" else UNTRUSTED_SRC
 
     def _install(self, chain, start, end):
         period_us = int(self.period_ms * 1000)
@@ -104,7 +115,7 @@ class LowSlowDoS(Attack):
                 return
             phase = (now - start) % period_us
             if phase < on_us:
-                chain.bus.send(CanFrame(can_id=self.can_id, src="attacker", attack=True))
+                chain.bus.send(CanFrame(can_id=self.can_id, src=self._src, attack=True))
                 chain.sim.schedule(gap_us, emit)
             else:
                 chain.sim.schedule(period_us - phase, emit)
@@ -149,15 +160,16 @@ class SensorDriftSpoof(_FilterAttack):
     name = "sensor_drift_spoof"
     PARAM_BOUNDS = {"rate_m_per_s": (1, 30), "duration_ms": (50, 800), "start_offset_ms": (-400, 50)}
 
-    def __init__(self, rate_m_per_s=10.0, **kw):
+    def __init__(self, rate_m_per_s=10.0, holds_key=False, **kw):
         super().__init__(**kw)
-        self.rate_m_per_s = rate_m_per_s
+        self.rate_m_per_s, self.holds_key = rate_m_per_s, holds_key
 
     def _make_filter(self, start, end):
         def flt(frame, now):
             if (start <= now < end and frame.can_id == SENSOR_ID
                     and frame.data.get("distance_m") is not None):
                 frame.data["distance_m"] += self.rate_m_per_s * (now - start) / 1e6
+                frame.data["forged"], frame.data["holds_key"] = True, self.holds_key
                 frame.attack = True
             return frame, 0
         return flt
@@ -170,15 +182,16 @@ class Masquerade(_FilterAttack):
     PARAM_BOUNDS = {"bias_m": (2, 40), "phase_shift_ms": (0, 5),
                     "duration_ms": (50, 800), "start_offset_ms": (-400, 50)}
 
-    def __init__(self, bias_m=15.0, phase_shift_ms=1.0, **kw):
+    def __init__(self, bias_m=15.0, phase_shift_ms=1.0, holds_key=False, **kw):
         super().__init__(**kw)
-        self.bias_m, self.phase_shift_ms = bias_m, phase_shift_ms
+        self.bias_m, self.phase_shift_ms, self.holds_key = bias_m, phase_shift_ms, holds_key
 
     def _make_filter(self, start, end):
         def flt(frame, now):
             if (start <= now < end and frame.can_id == SENSOR_ID
                     and frame.data.get("distance_m") is not None):
                 frame.data["distance_m"] += self.bias_m
+                frame.data["forged"], frame.data["holds_key"] = True, self.holds_key
                 frame.attack = True
                 return frame, int(self.phase_shift_ms * 1000)
             return frame, 0
@@ -194,15 +207,16 @@ class DualMasquerade(_FilterAttack):
     name = "dual_masquerade"
     PARAM_BOUNDS = {"bias_m": (2, 40), "duration_ms": (50, 800), "start_offset_ms": (-400, 50)}
 
-    def __init__(self, bias_m=15.0, **kw):
+    def __init__(self, bias_m=15.0, holds_key=False, **kw):
         super().__init__(**kw)
-        self.bias_m = bias_m
+        self.bias_m, self.holds_key = bias_m, holds_key
 
     def _make_filter(self, start, end):
         def flt(frame, now):
             if (start <= now < end and frame.can_id in (SENSOR_ID, RADAR_ID)
                     and frame.data.get("distance_m") is not None):
                 frame.data["distance_m"] += self.bias_m
+                frame.data["forged"], frame.data["holds_key"] = True, self.holds_key
                 frame.attack = True
             return frame, 0
         return flt
@@ -215,15 +229,16 @@ class PhantomObstacle(_FilterAttack):
     name = "phantom_obstacle"
     capability = GATEWAY
 
-    def __init__(self, channel_id=RADAR_ID, report_m=8.0, **kw):
+    def __init__(self, channel_id=RADAR_ID, report_m=8.0, holds_key=False, **kw):
         super().__init__(**kw)
-        self.channel_id, self.report_m = channel_id, report_m
+        self.channel_id, self.report_m, self.holds_key = channel_id, report_m, holds_key
 
     def _make_filter(self, start, end):
         def flt(frame, now):
             if (start <= now < end and frame.can_id == self.channel_id
                     and frame.data.get("distance_m") is not None):
                 frame.data["distance_m"] = self.report_m
+                frame.data["forged"], frame.data["holds_key"] = True, self.holds_key
                 frame.attack = True
             return frame, 0
         return flt

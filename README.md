@@ -51,6 +51,7 @@ streamlit run dashboard/app.py     # dashboard
 | `sdv/system` | Emulated sensor, perception, decision and actuator chain, with optional failover to a redundant radar |
 | `sdv/plant` | Braking model with an exact point of no return |
 | `sdv/attacks` | Eight bus-level attack families (plus the dual-sensor attacker and an availability attack) with capabilities and search bounds |
+| `sdv/bus/guard.py` | Gateway guard (whitelist + token bucket) between an untrusted segment and the safety bus |
 | `sdv/analysis` | Attack-aware worst-case latency bound (CAN response-time analysis + attacker model) and the attack space it proves safe |
 | `sdv/monitors` | Deadline (STL robustness), frequency IDS, plausibility, fused monitors |
 | `sdv/metrics` | Detection margin and run-level F1 |
@@ -58,6 +59,7 @@ streamlit run dashboard/app.py     # dashboard
 | `sdv/rag` | Normalised KB corpora, BM25, legacy TF-IDF wrapper, optional dense/hybrid, Recall@k/MRR |
 | `sdv/blue` | Monitor rule language, deterministic verifier, exhaustive and random baselines, LLM blue agent |
 | `sdv/realdata` | ROAD dataset loader and semantics-free detectors (real attacks; data stays outside the repo) |
+| `sdv/carla_check` | Pure helpers for the CARLA plant check (`experiments/e13_carla_plant.py`, not yet run; see `docs/CARLA.md`) |
 | `sdv/evidence` | Evidence bundle, auditor that re-runs every claim (incl. failover and bound checks), GSN-style rendering |
 | `sdv/pipeline.py` | End-to-end orchestrator (`python -m sdv`) |
 | `sdv/llm` | Disk-cached, rate-limit-aware LLM calls |

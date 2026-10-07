@@ -275,6 +275,50 @@ timings; hazards that also occur without an attack are not counted):
 * What does change: slower ECUs make even benign scenarios unsafe (11/40 at 2x), which is a property of the scenario choice,
   not of the attacks. Absolute hazard volumes therefore depend on the assumed timings and should not be quoted as real-world rates.
 
+## E12 - closing the two remaining holes: gateway guard and message authentication (`experiments/e12_defences.py --scenarios 6 --samples 100 --benign 100 --es-budget 100`)
+
+Two defences on top of the E9 radar failover (`radar_or`):
+
+* **Gateway guard** (`sdv/bus/guard.py`): a gateway between an untrusted segment (OBD-II, infotainment) and the safety bus
+  forwards only whitelisted identifiers (the two infotainment messages in the catalog) through a token bucket at 2x their
+  nominal rate. A flood injected from that segment never reaches arbitration.
+* **Message authentication + fail-safe watchdog** (idealised SecOC-style MAC, same frame size, 0.5 ms assumed verification
+  time): a frame whose payload was changed after signing is rejected unless the attacker holds the key. If neither channel
+  delivers a valid frame for 30 ms, perception brakes (fail-safe).
+
+Two attacker variants were added so the residual is explicit: a flood from a node **on the safety bus** (the guard cannot
+see it) and forging attackers that **hold the signing key**.
+
+Hazard volume (share of the attack parameter space that causes a collision; Wilson 95% intervals in the log):
+
+| attack variant | radar_or | +guard | +auth | +guard+auth |
+|---|---|---|---|---|
+| dos flood (untrusted segment) | 25.2% | **0.0%** | 23.2% | **0.0%** |
+| dual masquerade (both channels forged) | 42.0% | 42.0% | **1.0%** | **1.0%** |
+| dos flood (node on the safety bus) | 25.3% | 25.3% | 23.0% | 23.0% |
+| dual masquerade, attacker holds the key | 42.8% | 42.8% | 42.8% | 42.8% |
+| masquerade, gateway delay, suppression, jitter, drift, priority abuse, low-and-slow DoS | 0.0% | 0.0% | 0.0% | 0.0% |
+
+* Adaptive attacker ((1+1)-ES, 100 evaluations, 6 scenarios), scenarios where a hazard was found with all defences on:
+  untrusted-segment floods 0/6, dual forgery 1/6, **safety-bus flood 5/6, key-holding dual forgery 6/6**.
+* **What remains, stated plainly:** with all three defences the only hazards left are (1) a flood from a node already on the
+  safety bus, and (2) forging attackers that hold the key. Authentication moves the trust to key management; the guard
+  moves it to the network architecture. Neither is a general solution, and the 1% dual-forgery residue is a scenario whose
+  point of no return is shorter than the watchdog path can meet.
+* **Benign cost:** the guard costs nothing (identical latencies). Authentication adds about 1.0 ms (74.5 -> 75.4 ms mean).
+  0/100 benign collisions and 0/100 spurious watchdog triggers in every configuration.
+* **Availability cost (measured):** authentication closes the E9 hole (a forged near-obstacle on one channel provokes
+  unwanted braking 100/100 times without it, 0/100 with it), but opens the mirror one: corrupting **both** channels now makes
+  the fail-safe watchdog brake with nothing in the way (0/100 -> 100/100). A key-holding attacker can still force unwanted
+  braking (100/100). Fail-safe behaviour trades integrity for availability; it is a design choice, not a free win.
+* **The analytic bound stays sound under every defence:** 0 violations in 31,200 runs (E12 part A), and 0 of 260 adversarial
+  searches (`experiments/e12b_bound_adversarial.py`, 5 configurations x 13 attack variants x 4 scenarios, 200 evaluations each)
+  found a counter-example. The bound extends to the defences: the guard removes untrusted-segment floods from it, and with
+  authentication a forged channel counts as silent until its window ends (or the watchdog fires).
+* Assumptions: MAC verification is idealised (no forgery without the key, truncated-MAC collision probability ignored,
+  freshness handling and key distribution not modelled); the guard assumes the flood really originates behind it; the
+  watchdog threshold (30 ms) and verification time are assumed values.
+
 ## Evidence chain and pipeline (`python -m sdv`, `sdv/evidence`)
 
 * One command takes a requirement in plain English through spec extraction, red team, blue team, a second red

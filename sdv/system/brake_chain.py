@@ -20,6 +20,15 @@ Optional mitigation (ChainParams.mitigation), applied inside perception so it ad
     disagree_brake  radar_or, plus a precautionary trigger as soon as the two channels disagree
                     by more than disagree_tol_m (fresh frames only)
 
+Two further, independent defences (both off by default):
+
+    gateway_guard   a gateway between an untrusted segment and the safety bus drops frames the segment may not
+                    send and rate-limits the rest (sdv/bus/guard.py); it stops floods injected from that segment
+    auth            idealised message authentication (SecOC-style truncated MAC with freshness, same frame size):
+                    a frame whose payload was changed after the sender signed it is rejected, unless the attacker
+                    holds the key. Verification adds auth_verify_ms to perception. With auth, a fail-safe watchdog
+                    brakes when neither channel has delivered a valid frame for watchdog_ms.
+
 Compute-time means are ASSUMED parameters (config.yaml, section "chain") until
 they are calibrated against measurements of real code.
 """
@@ -29,6 +38,7 @@ from dataclasses import dataclass, replace
 
 import config
 from sdv.bus.can_bus import CanBus
+from sdv.bus.guard import GatewayGuard
 from sdv.schemas import CanFrame, Scenario
 from sdv.sim.engine import Simulator
 from sdv.traffic.background import BackgroundTraffic
@@ -59,6 +69,11 @@ class ChainParams:
     mitigation: str = "none"        # none | radar_or | disagree_brake (both need the radar channel)
     disagree_tol_m: float = 3.0
     disagree_fresh_ms: float = 30.0
+    gateway_guard: bool = False
+    auth: bool = False
+    auth_verify_ms: float = 0.5     # ASSUMED MAC verification time per frame (hardware security module)
+    watchdog_ms: float = 30.0       # fail-safe: no valid frame on any channel for this long -> brake (auth only)
+    watchdog_check_ms: float = 5.0
 
     @classmethod
     def from_config(cls):
@@ -92,6 +107,13 @@ class BrakeChain:
         self._cmd_started = False
         self._cmd_received = False
         self.trigger_source = None      # which channel started the braking chain
+        self.rejected_frames = 0        # frames dropped by message authentication
+        self._last_valid_us = None
+        self._watchdog_on = False
+        self.guard = None
+        if self.params.gateway_guard:
+            self.guard = GatewayGuard()
+            self.bus.add_tx_filter(self.guard)
         self._last = {}                 # channel name -> (rx time us, distance_m) of the latest frame with an obstacle
         self.bus.subscribe(self._on_frame)
 
@@ -163,12 +185,21 @@ class BrakeChain:
             return None
         return d / v
 
-    def _start_chain(self, frame: CanFrame, source: str):
+    def _start_chain(self, frame, source: str):
         self._detected = True
         self.trigger_source = source
-        self.timeline["sensor_enq"] = frame.t_enqueued_us
+        self.timeline["sensor_enq"] = frame.t_enqueued_us if frame is not None else self.sim.now
         self.timeline["sensor_rx"] = self.sim.now
-        self.sim.schedule(self._compute_us(self.params.perception_ms), self._send_detect)
+        extra = self.params.auth_verify_ms if self.params.auth else 0.0
+        self.sim.schedule(self._compute_us(self.params.perception_ms + extra), self._send_detect)
+
+    def _watchdog_tick(self):
+        if self._detected:
+            return
+        if self.sim.now - self._last_valid_us > self.params.watchdog_ms * 1000:
+            self._start_chain(None, "watchdog")
+            return
+        self.sim.schedule(int(self.params.watchdog_check_ms * 1000), self._watchdog_tick)
 
     def _channels_disagree(self, now: int) -> bool:
         a, b = self._last.get("sensor"), self._last.get("radar")
@@ -183,6 +214,14 @@ class BrakeChain:
         mode = self.params.mitigation
         if frame.can_id in (SENSOR_ID, RADAR_ID) and (frame.can_id == SENSOR_ID or mode != "none"):
             channel = "sensor" if frame.can_id == SENSOR_ID else "radar"
+            if self.params.auth:
+                if frame.data.get("forged") and not frame.data.get("holds_key"):
+                    self.rejected_frames += 1          # MAC verification fails; the frame is discarded
+                    return
+                self._last_valid_us = now
+                if not self._watchdog_on:
+                    self._watchdog_on = True
+                    self.sim.schedule(int(self.params.watchdog_check_ms * 1000), self._watchdog_tick)
             if frame.data.get("obstacle") and not self._detected:
                 d = frame.data.get("distance_m")
                 if d is not None:
