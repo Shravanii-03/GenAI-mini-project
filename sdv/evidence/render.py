@@ -59,6 +59,16 @@ def render_markdown(bundle: dict, report: dict = None) -> str:
             f"{fo['latest_safe_latency_ms']:.1f} ms: {proof}{tick('failover_bound_is_sound')}",
             "",
         ]
+    defences = bundle.get("defences")
+    if defences:
+        lines += ["## S6. Defence configurations (same attack, same seed)"]
+        for name, d in defences.items():
+            outcome = "no collision" if d["effective"] else "collision"
+            proof = "bound proves safe" if d["bound_proves_safe"] else "bound does not prove safety"
+            lines.append(f"- `{name}`: latency {d['e2e_latency_ms']:.1f} ms, {outcome}; analytic worst case "
+                         f"{d['latency_bound_ms']:.1f} ms vs point of no return {d['latest_safe_latency_ms']:.1f} ms, "
+                         f"{proof}{tick(f'defence[{name}]_reproduces')}{tick(f'defence[{name}]_bound_is_sound')}")
+        lines += [""]
     lines += ["## Residual risk"]
     residual = bundle.get("residual_risk") or {}
     lines += [f"- `{fam}`: {info}" for fam, info in residual.items()] or ["- none recorded"]

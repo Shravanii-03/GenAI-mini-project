@@ -41,32 +41,54 @@ def _attack_file():
     return _kb_dir() / "attack_patterns.json"
 
 
-def failover_params():
-    """Perception with the redundant radar and OR-voting (see sdv/system/brake_chain.py)."""
+DEFENCE_CONFIGS = {
+    "radar_or": {"mitigation": "radar_or"},
+    "+guard": {"mitigation": "radar_or", "gateway_guard": True},
+    "+auth": {"mitigation": "radar_or", "auth": True},
+    "+guard+auth": {"mitigation": "radar_or", "gateway_guard": True, "auth": True},
+}
+
+
+def defence_params(name: str):
+    """Chain parameters for one defence configuration (see sdv/system/brake_chain.py)."""
     import dataclasses
     from sdv.blue.loop import radar_params
-    return dataclasses.replace(radar_params(), mitigation="radar_or")
+    return dataclasses.replace(radar_params(), **DEFENCE_CONFIGS[name])
 
 
-def failover_record(case: dict) -> dict:
-    """Re-simulate the case under the radar failover, with the analytic bound and the point of no return."""
+def failover_params():
+    """Perception with the redundant radar and OR-voting."""
+    return defence_params("radar_or")
+
+
+def config_record(case: dict, name: str) -> dict:
+    """Re-simulate the case under one defence configuration, with the analytic bound and the point of no return."""
     from sdv.analysis.bounds import latency_bound_ms
     from sdv.attacks.library import make_attack
     from sdv.runner import execute
     from sdv.schemas import Scenario
     scenario = Scenario(**case["scenario"])
-    params = failover_params()
+    params = defence_params(name)
     result, _ = execute(scenario, case["seed"], params=params,
                         attacks=[make_attack(case["family"], **case["theta"])])
     bound = latency_bound_ms(scenario, make_attack(case["family"], **case["theta"]), params).total_ms
-    return {"policy": "radar_or", "e2e_latency_ms": result.e2e_latency_ms,
+    return {"policy": name, "e2e_latency_ms": result.e2e_latency_ms,
             "collision": result.outcome.collision, "effective": not result.outcome.collision,
             "latency_bound_ms": bound, "latest_safe_latency_ms": result.latest_safe_latency_ms,
             "bound_proves_safe": bound <= result.latest_safe_latency_ms}
 
 
+def failover_record(case: dict) -> dict:
+    return config_record(case, "radar_or")
+
+
+def defence_records(case: dict) -> dict:
+    return {name: config_record(case, name) for name in DEFENCE_CONFIGS}
+
+
 def build_bundle(requirement: dict, spec: dict, case: dict, rule_verdict: dict, calibration: dict,
-                 residual: dict = None, retriever=None, with_failover: bool = False) -> dict:
+                 residual: dict = None, retriever=None, with_failover: bool = False,
+                 with_defences: bool = False) -> dict:
     """Assemble the bundle from a missed-hazard case and the verified rule that now covers it.
 
     requirement  {"id", "text", "method"}; spec  extracted dict (deadline_ms, formula, ...);
@@ -97,6 +119,8 @@ def build_bundle(requirement: dict, spec: dict, case: dict, rule_verdict: dict, 
     }
     if with_failover:
         bundle["failover"] = failover_record(case)
+    if with_defences:
+        bundle["defences"] = defence_records(case)
     return bundle
 
 

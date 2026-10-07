@@ -79,11 +79,11 @@ class TestPipelineRun:
 
     def test_the_evidence_bundle_is_written_and_passes_its_audit(self, run):
         summary, out = run
-        assert summary["evidence"]["all_passed"] and summary["evidence"]["audit_total"] == 12
+        assert summary["evidence"]["all_passed"] and summary["evidence"]["audit_total"] == 20
         for name in ("pipeline_summary.json", "evidence_bundle.json", "evidence.md"):
             assert (out / name).exists()
         text = (out / "evidence.md").read_text(encoding="utf-8")
-        assert "12/12 checks re-verified" in text and "dual_masquerade" in text
+        assert "20/20 checks re-verified" in text and "dual_masquerade" in text
         assert json.loads((out / "evidence_bundle.json").read_text())["spec"]["deadline_ms"] == 100.0
 
     def test_the_summary_text_mentions_every_stage(self, run):

@@ -323,10 +323,14 @@ Hazard volume (share of the attack parameter space that causes a collision; Wils
 
 * One command takes a requirement in plain English through spec extraction, red team, blue team, a second red
   round and an audited evidence bundle (about 13 s for 40 samples per family, no API key with `--blue enumerate`).
-* The auditor re-runs every claim (10 checks: formula, bound, violation reproduces, attack and KB citation,
+* The auditor re-runs every claim (10 base checks: formula, bound, violation reproduces, attack and KB citation,
   declared threat mapping, rule validity, benign false-alarm rate, in-time detection). Tamper tests confirm
   that falsified latencies, collision flags, attack parameters, KB fields, an unparseable formula, a rule that
   alarms on benign traffic and a rule that does not cover the violation are each caught.
+* The bundle also records the same attack under the radar failover and under four defence configurations (`radar_or`,
+  `+guard`, `+auth`, `+guard+auth`); the auditor re-runs each (outcome reproduces; analytic bound dominates the re-run and
+  its "proves safe" verdict matches), 20 checks in a full bundle. Tamper tests catch a falsified latency or a tampered
+  bound in any configuration.
 * **A defect found by reading the first generated document:** retrieval matched the sensor masquerade to the
   knowledge-base pattern "DoS on CAN Bus", and the original audit passed because it only checked that the
   cited pattern existed. The bundle now cites an explicitly declared family -> pattern mapping
@@ -345,5 +349,9 @@ Hazard volume (share of the attack parameter space that causes a collision; Wils
 * ROAD results are descriptive (13 captures, one vehicle); see the E8 section for what they do and do not support.
 * The Docker image has not been built (Docker is not installed on the development machine); the dependency
   list was checked by installing `requirements.txt` into a fresh virtual environment and running the tests.
-* Raw LLM replies live in `outputs/llm_cache/` (not committed). Keep a copy: they are the evidence
-  behind the E4 tables and make every number reproducible offline with `--offline`.
+* Raw LLM replies live in `outputs/llm_cache/` (committed, about 1 MB); they are the evidence behind the E4/E6
+  tables and make every number reproducible offline with `--offline`. The gpt-oss-120b E4 run is incomplete (RAG 83/120
+  requirements, no validator-only arm); the table reports the matched subset.
+* **Freeze (2026-10-07):** `python experiments/reproduce_all.py` ran end to end (16 steps, all ok). E1 and E9-E12 reproduce
+  the recorded tables line for line; E2-E6 and the pipeline ran without error. E13 (CARLA) is not part of it: it has never
+  been run.

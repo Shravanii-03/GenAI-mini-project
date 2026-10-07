@@ -194,3 +194,34 @@ class TestFailoverEvidence:
         rec = failover_record({"scenario": scen.model_dump(), "family": "dual_masquerade", "seed": 1,
                                "theta": {"bias_m": 40.0, "duration_ms": 800.0, "start_offset_ms": 0.0}})
         assert rec["effective"] is False and rec["bound_proves_safe"] is False
+
+
+class TestDefenceEvidence:
+
+    @pytest.fixture(scope="class")
+    def with_defences(self, bundle):
+        from sdv.evidence.chain import defence_records
+        b = copy.deepcopy(bundle)
+        case = {"scenario": b["violation"]["scenario"], "family": b["violation"]["attack"]["family"],
+                "theta": b["violation"]["attack"]["params"], "seed": b["violation"]["seed"]}
+        b["defences"] = defence_records(case)
+        return b
+
+    def test_an_honest_defence_record_passes_every_check(self, with_defences):
+        report = audit(with_defences)
+        assert report["all_passed"] and report["total"] == 18          # 10 base + 2 per configuration
+        assert set(with_defences["defences"]) == {"radar_or", "+guard", "+auth", "+guard+auth"}
+
+    def test_a_falsified_outcome_in_one_configuration_is_caught(self, with_defences):
+        bad = copy.deepcopy(with_defences)
+        bad["defences"]["+auth"]["e2e_latency_ms"] += 7.0
+        assert "defence[+auth]_reproduces" in {c["name"] for c in audit(bad)["checks"] if not c["passed"]}
+
+    def test_a_tampered_bound_in_one_configuration_is_caught(self, with_defences):
+        bad = copy.deepcopy(with_defences)
+        bad["defences"]["+guard"]["latency_bound_ms"] *= 0.4
+        assert "defence[+guard]_bound_is_sound" in {c["name"] for c in audit(bad)["checks"] if not c["passed"]}
+
+    def test_rendering_lists_every_configuration(self, with_defences):
+        text = render_markdown(with_defences, audit(with_defences))
+        assert "S6. Defence configurations" in text and all(f"`{n}`" in text for n in with_defences["defences"])
