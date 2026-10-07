@@ -13,7 +13,7 @@ from sdv.rag.kb import load_corpora
 from sdv.rag.retrievers import BM25Retriever
 from sdv.spec import stl
 
-BUNDLE_VERSION = 1
+BUNDLE_VERSION = 2
 
 
 def _kb_attack_patterns():
@@ -41,8 +41,32 @@ def _attack_file():
     return _kb_dir() / "attack_patterns.json"
 
 
+def failover_params():
+    """Perception with the redundant radar and OR-voting (see sdv/system/brake_chain.py)."""
+    import dataclasses
+    from sdv.blue.loop import radar_params
+    return dataclasses.replace(radar_params(), mitigation="radar_or")
+
+
+def failover_record(case: dict) -> dict:
+    """Re-simulate the case under the radar failover, with the analytic bound and the point of no return."""
+    from sdv.analysis.bounds import latency_bound_ms
+    from sdv.attacks.library import make_attack
+    from sdv.runner import execute
+    from sdv.schemas import Scenario
+    scenario = Scenario(**case["scenario"])
+    params = failover_params()
+    result, _ = execute(scenario, case["seed"], params=params,
+                        attacks=[make_attack(case["family"], **case["theta"])])
+    bound = latency_bound_ms(scenario, make_attack(case["family"], **case["theta"]), params).total_ms
+    return {"policy": "radar_or", "e2e_latency_ms": result.e2e_latency_ms,
+            "collision": result.outcome.collision, "effective": not result.outcome.collision,
+            "latency_bound_ms": bound, "latest_safe_latency_ms": result.latest_safe_latency_ms,
+            "bound_proves_safe": bound <= result.latest_safe_latency_ms}
+
+
 def build_bundle(requirement: dict, spec: dict, case: dict, rule_verdict: dict, calibration: dict,
-                 residual: dict = None, retriever=None) -> dict:
+                 residual: dict = None, retriever=None, with_failover: bool = False) -> dict:
     """Assemble the bundle from a missed-hazard case and the verified rule that now covers it.
 
     requirement  {"id", "text", "method"}; spec  extracted dict (deadline_ms, formula, ...);
@@ -52,7 +76,7 @@ def build_bundle(requirement: dict, spec: dict, case: dict, rule_verdict: dict, 
     result = case["result"]
     robustness = stl.parse(spec["formula"]).robustness(result.e2e_latency_ms)
     family = case["family"]
-    return {
+    bundle = {
         "version": BUNDLE_VERSION,
         "requirement": requirement,
         "spec": {k: spec.get(k) for k in ("deadline_ms", "formula", "trigger", "response", "component")},
@@ -71,6 +95,9 @@ def build_bundle(requirement: dict, spec: dict, case: dict, rule_verdict: dict, 
         "calibration": calibration,
         "residual_risk": residual or {},
     }
+    if with_failover:
+        bundle["failover"] = failover_record(case)
+    return bundle
 
 
 def kb_ids_by_kind():

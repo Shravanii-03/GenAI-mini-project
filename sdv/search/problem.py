@@ -46,12 +46,13 @@ def random_tight_scenario(rng: random.Random) -> Scenario:
 
 
 class AttackSearchProblem:
-    def __init__(self, family: str, scenario: Scenario, mode: str = "hazard", monitor=None):
+    def __init__(self, family: str, scenario: Scenario, mode: str = "hazard", monitor=None, chain_params=None):
         if mode not in ("hazard", "stealth"):
             raise ValueError("mode must be 'hazard' or 'stealth'")
         if mode == "stealth" and monitor is None:
             raise ValueError("stealth mode needs a trained monitor")
         self.family, self.scenario, self.mode, self.monitor = family, scenario, mode, monitor
+        self.chain_params = chain_params          # None = defaults from config
         self.bounds = dict(ALL_ATTACKS[family].PARAM_BOUNDS)
         self.keys = list(self.bounds)
         self.dim = len(self.keys)
@@ -70,7 +71,7 @@ class AttackSearchProblem:
     def evaluate(self, u, eval_seed: int) -> dict:
         self.evaluations += 1
         attack = make_attack(self.family, **self.decode(u))
-        result, chain = execute(self.scenario, eval_seed, attacks=[attack])
+        result, chain = execute(self.scenario, eval_seed, self.chain_params, attacks=[attack])
         system = clip(result.margin_ms) if result.margin_ms is not None else -CLIP_MS
         detector = None
         if self.mode == "hazard":

@@ -208,6 +208,27 @@ class DualMasquerade(_FilterAttack):
         return flt
 
 
+class PhantomObstacle(_FilterAttack):
+    """Availability attack: report an obstacle much closer than it is on ONE channel, to provoke braking
+    when nothing is in the way. Not in ALL_ATTACKS (the hazard searches look for collisions, not for
+    unwanted braking); used to measure what redundant voting costs."""
+    name = "phantom_obstacle"
+    capability = GATEWAY
+
+    def __init__(self, channel_id=RADAR_ID, report_m=8.0, **kw):
+        super().__init__(**kw)
+        self.channel_id, self.report_m = channel_id, report_m
+
+    def _make_filter(self, start, end):
+        def flt(frame, now):
+            if (start <= now < end and frame.can_id == self.channel_id
+                    and frame.data.get("distance_m") is not None):
+                frame.data["distance_m"] = self.report_m
+                frame.attack = True
+            return frame, 0
+        return flt
+
+
 class GatewayDelay(_FilterAttack):
     """Hold forwarded frames of one ID for a fixed time."""
     name = "gateway_delay"
@@ -272,4 +293,4 @@ def make_attack(name: str, **params) -> Attack:
     return ALL_ATTACKS[name](**params)
 
 
-__all__ = ["ATTACKS", "ALL_ATTACKS", "KB_PATTERN_FOR", "make_attack", "Attack", "BRAKE_ID"]
+__all__ = ["ATTACKS", "ALL_ATTACKS", "PhantomObstacle", "KB_PATTERN_FOR", "make_attack", "Attack", "BRAKE_ID"]

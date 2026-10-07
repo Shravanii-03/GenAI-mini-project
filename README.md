@@ -48,15 +48,17 @@ streamlit run dashboard/app.py     # dashboard
 | Module | Purpose |
 |---|---|
 | `sdv/sim`, `sdv/bus` | Discrete-event engine and CAN emulator (arbitration, bit-accurate timing) |
-| `sdv/system` | Emulated sensor, perception, decision and actuator chain |
+| `sdv/system` | Emulated sensor, perception, decision and actuator chain, with optional failover to a redundant radar |
 | `sdv/plant` | Braking model with an exact point of no return |
-| `sdv/attacks` | Eight bus-level attack families with capabilities and search bounds |
+| `sdv/attacks` | Eight bus-level attack families (plus the dual-sensor attacker and an availability attack) with capabilities and search bounds |
+| `sdv/analysis` | Attack-aware worst-case latency bound (CAN response-time analysis + attacker model) and the attack space it proves safe |
 | `sdv/monitors` | Deadline (STL robustness), frequency IDS, plausibility, fused monitors |
 | `sdv/metrics` | Detection margin and run-level F1 |
 | `sdv/spec` | Natural-language requirement -> validated timing spec (bounded-response STL, deterministic validator, repair loop) |
 | `sdv/rag` | Normalised KB corpora, BM25, legacy TF-IDF wrapper, optional dense/hybrid, Recall@k/MRR |
 | `sdv/blue` | Monitor rule language, deterministic verifier, exhaustive and random baselines, LLM blue agent |
-| `sdv/evidence` | Evidence bundle, auditor that re-runs every claim, GSN-style rendering |
+| `sdv/realdata` | ROAD dataset loader and semantics-free detectors (real attacks; data stays outside the repo) |
+| `sdv/evidence` | Evidence bundle, auditor that re-runs every claim (incl. failover and bound checks), GSN-style rendering |
 | `sdv/pipeline.py` | End-to-end orchestrator (`python -m sdv`) |
 | `sdv/llm` | Disk-cached, rate-limit-aware LLM calls |
 | `datasets/benchmark` | 120 labelled timing requirements, 106 labelled retrieval queries |

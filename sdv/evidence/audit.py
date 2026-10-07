@@ -16,6 +16,12 @@ Checks (each is recomputed, none is taken on trust):
                                    and equals the recorded value
   rule_catches_the_violation_in_time  with the rule deployed, the recorded attack is flagged before the
                                    point of no return
+Optional (bundles built with a failover record):
+  failover_reproduces              re-simulating the same attack under the radar failover gives the recorded
+                                   latency and collision flag (an ineffective failover must be recorded as such)
+  failover_bound_is_sound          the recomputed analytic bound dominates the re-simulated latency, and its
+                                   "proves safe" verdict equals the recorded one; a bound that proves safety
+                                   must come with a collision-free re-run
 Coverage is the share of checks that pass.
 """
 import json
@@ -40,6 +46,30 @@ def _rerun(violation):
     scenario = Scenario(**violation["scenario"])
     attack = make_attack(violation["attack"]["family"], **violation["attack"]["params"])
     return execute(scenario, violation["seed"], params=radar_params(), attacks=[attack])
+
+
+def _audit_failover(bundle: dict) -> list:
+    from sdv.analysis.bounds import latency_bound_ms
+    from sdv.evidence.chain import failover_params
+    rec, vio = bundle["failover"], bundle["violation"]
+    scenario = Scenario(**vio["scenario"])
+    params = failover_params()
+    family, theta = vio["attack"]["family"], vio["attack"]["params"]
+    result, _ = execute(scenario, vio["seed"], params=params, attacks=[make_attack(family, **theta)])
+    latency = result.e2e_latency_ms
+    same = (latency is not None and rec["e2e_latency_ms"] is not None
+            and abs(latency - rec["e2e_latency_ms"]) < TOL
+            and result.outcome.collision == rec["collision"] and rec["effective"] == (not rec["collision"]))
+    bound = latency_bound_ms(scenario, make_attack(family, **theta), params).total_ms
+    proves = bound <= result.latest_safe_latency_ms
+    sound = (latency is not None and latency <= bound + TOL and abs(bound - rec["latency_bound_ms"]) < 1e-6
+             and proves == rec["bound_proves_safe"] and (not proves or not result.outcome.collision))
+    return [_check("failover_reproduces", same,
+                   f"re-run latency {latency} vs recorded {rec['e2e_latency_ms']}, "
+                   f"collision={result.outcome.collision}"),
+            _check("failover_bound_is_sound", sound,
+                   f"bound {bound:.1f} ms vs observed {latency} ms, point of no return "
+                   f"{result.latest_safe_latency_ms:.1f} ms, proves safe={proves}")]
 
 
 def audit(bundle: dict) -> dict:
@@ -103,6 +133,9 @@ def audit(bundle: dict) -> dict:
         detected, in_time = case_outcome(case, monitor.first_alarm_us(frames, ctx))
         checks.append(_check("rule_catches_the_violation_in_time", in_time,
                              f"detected={detected}, in_time={in_time}"))
+
+    if "failover" in bundle:
+        checks += _audit_failover(bundle)
 
     passed = sum(c["passed"] for c in checks)
     return {"checks": checks, "passed": passed, "total": len(checks), "coverage": passed / len(checks),

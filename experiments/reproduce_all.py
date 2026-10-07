@@ -32,6 +32,13 @@ STEPS = [
     ("E6 red/blue loop (qwen, cached replies)",
      ["experiments/e6_redblue.py", "--seeds", "1,2,3", "--n", "60", "--model", "qwen/qwen3.8-27b", "--offline"],
      False),
+    ("E9 radar failover (collisions avoided, cost, adaptive attacker)",
+     ["experiments/e9_mitigation.py", "--scenarios", "6", "--samples", "120", "--benign", "100", "--es-budget", "150"],
+     False),
+    ("E10 analytic latency bound (soundness, tightness, proven-safe share)",
+     ["experiments/e10_bound_validation.py", "--scenarios", "6", "--samples", "120"], False),
+    ("E11 sensitivity to the assumed ECU timings",
+     ["experiments/e11_sensitivity.py", "--scenarios", "5", "--samples", "80"], False),
     ("End-to-end pipeline", ["-m", "sdv", "--blue", "enumerate", "--n", "40", "--out", "outputs/pipeline_run"], True),
 ]
 

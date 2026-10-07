@@ -109,10 +109,12 @@ def run_pipeline(requirement: str, seed: int = 1, n_per_family: int = 40, blue: 
                    None)
         if hit is not None:
             bundle = build_bundle({"id": "REQ-1", "text": requirement, "method": method}, spec, hit,
-                                  accepted[0], calibration, residual)
+                                  accepted[0], calibration, residual, with_failover=True)
             report = audit(bundle)
             summary["evidence"] = {"audit_passed": report["passed"], "audit_total": report["total"],
-                                   "all_passed": report["all_passed"]}
+                                   "all_passed": report["all_passed"],
+                                   "failover_effective": bundle["failover"]["effective"],
+                                   "failover_bound_proves_safe": bundle["failover"]["bound_proves_safe"]}
             if out_dir:
                 os.makedirs(out_dir, exist_ok=True)
                 with open(os.path.join(out_dir, "evidence_bundle.json"), "w", encoding="utf-8") as f:
@@ -149,7 +151,9 @@ def format_summary(s: dict) -> str:
     ]
     if s["evidence"]:
         e = s["evidence"]
-        lines.append(f"evidence    : audit {e['audit_passed']}/{e['audit_total']} checks re-verified")
+        lines.append(f"evidence    : audit {e['audit_passed']}/{e['audit_total']} checks re-verified; "
+                     f"radar failover {'prevents' if e['failover_effective'] else 'does not prevent'} the case's "
+                     f"collision (analytic bound {'proves' if e['failover_bound_proves_safe'] else 'does not prove'} safety)")
     return "\n".join(lines)
 
 

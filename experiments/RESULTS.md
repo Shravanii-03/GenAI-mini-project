@@ -190,6 +190,91 @@ jump 0.08, frame-rate IDS 0.00 (it reaches 0.62 only after seconds).
 * Small sample: 13 attack captures from one vehicle, 3 per family at most. There is no braking plant in ROAD, so
   this validates detector behaviour, not hazard outcomes or the detection margin.
 
+## E9 - mitigation: failover to the redundant sensor (`experiments/e9_mitigation.py --scenarios 6 --samples 120 --benign 100 --es-budget 150`)
+
+Perception normally trusts the primary sensor only. `radar_or` also reads the independent radar channel and brakes
+when EITHER channel reports a time-to-collision at or below the trigger (no added latency: both are read in
+parallel). `disagree_brake` additionally brakes as soon as the channels disagree by more than 3 m. Same scenarios,
+attack parameters and seeds in every arm; the radar is on the bus in every arm so bus load is identical.
+
+| attack family | none | radar_or | disagree_brake |
+|---|---|---|---|
+| masquerade | 42.9% [39.3, 46.6] | **0.0%** [0.0, 0.5] | 0.0% |
+| gateway delay | 20.3% [17.5, 23.4] | **0.0%** | 0.0% |
+| selective suppression | 3.5% [2.4, 5.1] | **0.0%** | 0.0% |
+| jitter injection | 1.9% [1.2, 3.2] | **0.0%** | 0.0% |
+| sensor drift | 0.1% | 0.0% | 0.0% |
+| dos flood | 24.6% [21.6, 27.9] | 24.6% | 24.6% |
+| dual masquerade (both channels forged) | 45.3% [41.7, 48.9] | **45.0%** | 45.0% |
+| priority abuse, low-and-slow DoS | 0.0% | 0.0% | 0.0% |
+
+(hazard volume = share of the attack parameter space that causes a collision, with Wilson 95% intervals.)
+
+* **What it supports:** the failover removes every hazard that needs only the primary channel (masquerade, gateway
+  delay, suppression, jitter): 0 collisions in 720 sampled attacks per family. An adaptive attacker ((1+1)-ES, 150
+  evaluations, 6 scenarios) finds a hazard against the unprotected chain in 6/6 scenarios for masquerade and in 0/6
+  once the failover is on. It does **not** help against floods (the attacker sits on the shared bus, so both channels
+  are delayed) or the dual-sensor attacker (45.3% -> 45.0%), where ES still succeeds in 6/6 scenarios.
+* **Benign cost:** none in latency (mean 77.0 -> 74.5 ms, since two channels can only trigger earlier), 0/100 benign
+  collisions, 0/100 precautionary triggers.
+* **Negative result:** `disagree_brake` is identical to `radar_or`. In these scenarios the channels only disagree once the
+  attack is already hiding the real distance, and by then the radar's own TTC has triggered.
+* **The price (measured, part D):** with `radar_or`, an attacker who forges only the radar channel to report a near obstacle
+  triggers unwanted braking in 100/100 trials when nothing is in the way (0/100 without the failover, where the radar is
+  ignored). The primary sensor can already cause this (100/100 in every arm). Redundant OR-voting trades an integrity
+  hole for an availability hole; a real system needs plausibility gating or authentication, which is out of scope here.
+* Emulation only; the radar is assumed independent, with the same sampling period and noise as the primary sensor.
+
+## E10 - analytic worst-case latency bound (`sdv/analysis/bounds.py`, `experiments/e10_bound_validation.py --scenarios 6 --samples 120`)
+
+For a scenario and an attack instance the module returns an upper bound on obstacle-appearance -> brake-onset latency that
+should hold for every random draw (sampling phase, sensor noise, compute jitter, background phase). Components: the time of
+the first sensor frame that reports TTC <= trigger (including how long a forged distance can delay it), CAN frame response
+times from non-preemptive fixed-priority response-time analysis over the catalogued background traffic with the attacker as a
+frame-budgeted stream (and a busy-period argument for floods whose backlog outlives the flood), and compute-time WCETs
+(mean x load factor x exp(4 sigma - sigma^2/2)). Comparing the bound with the exact point of no return gives a verdict:
+bound <= latest safe latency means **proven safe for every seed**.
+
+* **Soundness:** 0 violations in 12,960 simulated runs (9 families x 720 samples x 2 perception policies), and 0 of 90
+  adversarial searches ((1+1)-ES maximising observed - bound, 250 evaluations each, 5 scenarios) found a counter-example.
+  No simulated collision was ever labelled proven safe ("hazard & proven" column: 0 in every row).
+* **The adversarial search earned its keep:** an earlier version of the bound was violated in 1 of 27 searches (a flood that
+  ends just before the obstacle appears but leaves a queue of ~550 frames that is still draining). Two earlier flood
+  versions were also wrong (queue backlog ignored; flood started before the obstacle). All three are fixed and have
+  regression tests in `tests/test_sdv_bounds.py`.
+* **Tightness:** the median bound is about 1.5-2.1x the observed latency (p95 2-6x for the spoofing families). It is
+  deliberately conservative: it stacks worst-case compute times and uses the critical instant on the bus.
+* **Proven-safe share of the attack space** (with the failover on): selective suppression, drift, masquerade, gateway
+  delay and jitter are proven safe in 83% of sampled attacks and the remaining 17% are "unknown" (no simulated hazard: the
+  scenario draw whose benign worst case already exceeds its point of no return cannot be certified). Floods: 41% proven
+  safe, 26% hazardous, 34% unknown. Dual masquerade: 38% proven safe, 42% hazardous, 21% unknown.
+* **Headline** (60 km/h, obstacle 24 m, CPU load 0.3, point of no return 353 ms, benign bound 140 ms): a flood starting when
+  the obstacle appears is proven safe up to 400 ms at <= 3000 frames/s, up to 184 ms at 4000 frames/s and up to 122 ms at
+  6000 frames/s.
+* **Conditions on the claim:** compute times never exceed the declared WCET (a 4-sigma draw has probability 3e-5 per
+  stage), the attacker behaves as the emulated families do, and the bus is the emulated one. The bound is a proof for the
+  model, not for a real vehicle, and an "unknown" verdict means only that the bound is too coarse to decide.
+
+## E11 - sensitivity to the assumed ECU timings (`experiments/e11_sensitivity.py --scenarios 5 --samples 80`)
+
+The ECU compute times are assumptions. They are scaled (0.5x, 1x, 1.5x, 2x on perception, decision and actuator) and the
+jitter is raised to 0.30. Attack-induced hazard volume, policy `none` -> `radar_or` (scenarios stay tight at the default
+timings; hazards that also occur without an attack are not counted):
+
+| timing | benign collisions | masquerade | gateway delay | dos flood | dual masquerade |
+|---|---|---|---|---|---|
+| 0.5x | 0/40 | 37% -> 0% | 12% -> 0% | 19% -> 19% | 38% -> 36% |
+| 1x (default) | 0/40 | 40% -> 0% | 22% -> 0% | 24% -> 24% | 40% -> 40% |
+| 1.5x | 6/40 | 38% -> 2% | 26% -> 2% | 30% -> 30% | 38% -> 38% |
+| 2x | 11/40 | 39% -> 0% | 26% -> 0% | 29% -> 28% | 38% -> 38% |
+| jitter 0.30 | 0/40 | 42% -> 0% | 23% -> 0% | 24% -> 24% | 41% -> 40% |
+
+* The qualitative findings do not depend on the assumed timings: single-channel attacks are removed by the failover (at most 2%
+  left), floods and the dual-sensor attacker stay at about the same hazard volume.
+* The analytic bound stayed sound: 0 violations in 36,000 runs across the five settings.
+* What does change: slower ECUs make even benign scenarios unsafe (11/40 at 2x), which is a property of the scenario choice,
+  not of the attacks. Absolute hazard volumes therefore depend on the assumed timings and should not be quoted as real-world rates.
+
 ## Evidence chain and pipeline (`python -m sdv`, `sdv/evidence`)
 
 * One command takes a requirement in plain English through spec extraction, red team, blue team, a second red

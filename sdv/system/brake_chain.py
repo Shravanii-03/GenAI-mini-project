@@ -12,12 +12,20 @@ from the obstacle becoming a threat to brake onset, and is the sum of sampling
 wait, bus queueing/arbitration, ECU compute and actuator response. It responds
 to CPU load, background traffic and anything an attacker does on the bus.
 
+Optional mitigation (ChainParams.mitigation), applied inside perception so it adds no latency:
+
+    none            perception trusts the primary sensor only
+    radar_or        perception also evaluates the redundant radar and triggers when EITHER
+                    channel reports a time-to-collision at or below the trigger
+    disagree_brake  radar_or, plus a precautionary trigger as soon as the two channels disagree
+                    by more than disagree_tol_m (fresh frames only)
+
 Compute-time means are ASSUMED parameters (config.yaml, section "chain") until
 they are calibrated against measurements of real code.
 """
 import math
 import random
-from dataclasses import dataclass
+from dataclasses import dataclass, replace
 
 import config
 from sdv.bus.can_bus import CanBus
@@ -30,6 +38,7 @@ DETECT_ID = 0x1C0
 BRAKE_ID = 0x1A0
 RADAR_ID = 0x2B0        # redundant, independent distance sensor (optional)
 CHAIN_IDS = (SENSOR_ID, DETECT_ID, BRAKE_ID, RADAR_ID)
+MITIGATIONS = ("none", "radar_or", "disagree_brake")
 
 
 @dataclass
@@ -47,6 +56,9 @@ class ChainParams:
     sensor_noise_m: float = 0.1
     radar: bool = False             # add the redundant radar channel (used by monitors, not by perception)
     radar_noise_m: float = 0.1
+    mitigation: str = "none"        # none | radar_or | disagree_brake (both need the radar channel)
+    disagree_tol_m: float = 3.0
+    disagree_fresh_ms: float = 30.0
 
     @classmethod
     def from_config(cls):
@@ -59,6 +71,10 @@ class BrakeChain:
                  attacks=(), background: bool = True):
         self.scenario = scenario
         self.params = params or ChainParams.from_config()
+        if self.params.mitigation not in MITIGATIONS:
+            raise ValueError(f"mitigation must be one of {MITIGATIONS}")
+        if self.params.mitigation != "none" and not self.params.radar:
+            self.params = replace(self.params, radar=True)
         self.rng = random.Random(seed)
         self.sim = Simulator()
         self.bus = CanBus(self.sim)
@@ -75,6 +91,8 @@ class BrakeChain:
         self._detected = False
         self._cmd_started = False
         self._cmd_received = False
+        self.trigger_source = None      # which channel started the braking chain
+        self._last = {}                 # channel name -> (rx time us, distance_m) of the latest frame with an obstacle
         self.bus.subscribe(self._on_frame)
 
     # ── timing helpers ──────────────────────────────────────────────────────
@@ -145,15 +163,35 @@ class BrakeChain:
             return None
         return d / v
 
+    def _start_chain(self, frame: CanFrame, source: str):
+        self._detected = True
+        self.trigger_source = source
+        self.timeline["sensor_enq"] = frame.t_enqueued_us
+        self.timeline["sensor_rx"] = self.sim.now
+        self.sim.schedule(self._compute_us(self.params.perception_ms), self._send_detect)
+
+    def _channels_disagree(self, now: int) -> bool:
+        a, b = self._last.get("sensor"), self._last.get("radar")
+        if a is None or b is None:
+            return False
+        fresh = self.params.disagree_fresh_ms * 1000
+        return (now - a[0] <= fresh and now - b[0] <= fresh
+                and abs(a[1] - b[1]) > self.params.disagree_tol_m)
+
     def _on_frame(self, frame: CanFrame):
         now = self.sim.now
-        if frame.can_id == SENSOR_ID and frame.data.get("obstacle") and not self._detected:
-            ttc = self._reported_ttc(frame)
-            if ttc is not None and ttc <= self.params.ttc_trigger_s:
-                self._detected = True
-                self.timeline["sensor_enq"] = frame.t_enqueued_us
-                self.timeline["sensor_rx"] = now
-                self.sim.schedule(self._compute_us(self.params.perception_ms), self._send_detect)
+        mode = self.params.mitigation
+        if frame.can_id in (SENSOR_ID, RADAR_ID) and (frame.can_id == SENSOR_ID or mode != "none"):
+            channel = "sensor" if frame.can_id == SENSOR_ID else "radar"
+            if frame.data.get("obstacle") and not self._detected:
+                d = frame.data.get("distance_m")
+                if d is not None:
+                    self._last[channel] = (now, d)
+                ttc = self._reported_ttc(frame)
+                if ttc is not None and ttc <= self.params.ttc_trigger_s:
+                    self._start_chain(frame, channel)
+                elif mode == "disagree_brake" and self._channels_disagree(now):
+                    self._start_chain(frame, "disagreement")
         elif frame.can_id == DETECT_ID and not self._cmd_started:
             self._cmd_started = True
             self.timeline["detect_rx"] = now

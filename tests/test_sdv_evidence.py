@@ -150,3 +150,47 @@ class TestRender:
 
     def test_it_renders_without_an_audit(self, bundle):
         assert "Audit:" not in render_markdown(bundle)
+
+
+class TestFailoverEvidence:
+
+    @pytest.fixture(scope="class")
+    def with_failover(self, bundle):
+        from sdv.evidence.chain import failover_record
+        b = copy.deepcopy(bundle)
+        case = {"scenario": b["violation"]["scenario"], "family": b["violation"]["attack"]["family"],
+                "theta": b["violation"]["attack"]["params"], "seed": b["violation"]["seed"]}
+        b["failover"] = failover_record(case)
+        return b
+
+    def test_an_honest_failover_record_passes_and_the_masquerade_is_prevented(self, with_failover):
+        report = audit(with_failover)
+        assert report["all_passed"] and report["total"] == 12
+        assert with_failover["failover"]["effective"] is True
+
+    def test_a_falsified_failover_outcome_is_caught(self, with_failover):
+        bad = copy.deepcopy(with_failover)
+        bad["failover"]["e2e_latency_ms"] += 5.0
+        assert "failover_reproduces" in {c["name"] for c in audit(bad)["checks"] if not c["passed"]}
+
+    def test_a_falsified_safety_claim_is_caught(self, with_failover):
+        bad = copy.deepcopy(with_failover)
+        bad["failover"]["bound_proves_safe"] = not bad["failover"]["bound_proves_safe"]
+        assert "failover_bound_is_sound" in {c["name"] for c in audit(bad)["checks"] if not c["passed"]}
+
+    def test_a_tampered_bound_is_caught(self, with_failover):
+        bad = copy.deepcopy(with_failover)
+        bad["failover"]["latency_bound_ms"] *= 0.5
+        assert "failover_bound_is_sound" in {c["name"] for c in audit(bad)["checks"] if not c["passed"]}
+
+    def test_rendering_shows_the_failover_section(self, with_failover):
+        text = render_markdown(with_failover, audit(with_failover))
+        assert "S5. Failover to the redundant sensor" in text and "12/12 checks re-verified" in text
+
+    def test_a_dual_sensor_attack_is_recorded_as_not_prevented(self):
+        from sdv.evidence.chain import failover_record
+        from sdv.schemas import Scenario
+        scen = Scenario(v0_kmh=60, d0_m=22, cpu_load=0.3)
+        rec = failover_record({"scenario": scen.model_dump(), "family": "dual_masquerade", "seed": 1,
+                               "theta": {"bias_m": 40.0, "duration_ms": 800.0, "start_offset_ms": 0.0}})
+        assert rec["effective"] is False and rec["bound_proves_safe"] is False

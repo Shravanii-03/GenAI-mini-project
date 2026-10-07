@@ -44,8 +44,22 @@ def render_markdown(bundle: dict, report: dict = None) -> str:
         f"- Verified false-alarm rate {ver['fpr']:.3f} (cap {ver['fpr_cap']}), turns {ver['new_timely']} missed "
         f"hazard(s) into in-time detections{tick('rule_fpr_reproduces')}{tick('rule_catches_the_violation_in_time')}",
         "",
-        "## Residual risk",
     ]
+    fo = bundle.get("failover")
+    if fo:
+        verdict = ("the collision is prevented" if fo["effective"]
+                   else "the collision still occurs: redundancy does not help against this attack")
+        proof = ("the bound proves no collision for any seed" if fo["bound_proves_safe"]
+                 else "the bound is too conservative to prove safety (simulation decides)")
+        lines += [
+            "## S5. Failover to the redundant sensor",
+            f"- Policy `{fo['policy']}`: latency {fo['e2e_latency_ms']:.1f} ms; {verdict}"
+            f"{tick('failover_reproduces')}",
+            f"- Analytic worst-case latency {fo['latency_bound_ms']:.1f} ms vs point of no return "
+            f"{fo['latest_safe_latency_ms']:.1f} ms: {proof}{tick('failover_bound_is_sound')}",
+            "",
+        ]
+    lines += ["## Residual risk"]
     residual = bundle.get("residual_risk") or {}
     lines += [f"- `{fam}`: {info}" for fam, info in residual.items()] or ["- none recorded"]
     if report:
