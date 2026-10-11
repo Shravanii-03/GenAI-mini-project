@@ -34,8 +34,10 @@ DT = 0.005
 
 
 class Trial:
-    def __init__(self, carla, world, ego_bp, obstacle_bp):
+    def __init__(self, carla, world, ego_bp, obstacle_bp, tire_friction=0.8):
         self.carla, self.world, self.ego_bp, self.obstacle_bp = carla, world, ego_bp, obstacle_bp
+        self.tire_friction = tire_friction      # CARLA's default (about 3.5) allows braking no road car can reach
+        self.dt_seen = []                       # simulated seconds per tick, as reported by CARLA itself
 
     def _spawn_points(self, gap):
         spawns = self.world.get_map().get_spawn_points()
@@ -54,6 +56,11 @@ class Trial:
         try:
             ego = world.spawn_actor(self.ego_bp, ego_tf)
             actors.append(ego)
+            if self.tire_friction is not None:
+                control = ego.get_physics_control()
+                for wheel in control.wheels:
+                    wheel.tire_friction = self.tire_friction
+                ego.apply_physics_control(control)
             if obstacle:
                 obs = world.spawn_actor(self.obstacle_bp, obs_tf)
                 actors.append(obs)
@@ -76,6 +83,8 @@ class Trial:
                 world.tick()
             hits.clear()
 
+            clock = lambda: world.get_snapshot().timestamp.elapsed_seconds
+            start = clock()
             t, trace, braking = 0.0, [], False
             t_brake = latency_ms / 1000.0
             while t < max_s:
@@ -86,7 +95,8 @@ class Trial:
                 elif not braking:
                     ego.set_target_velocity(carla.Vector3D(forward.x * v0, forward.y * v0, 0.0))
                 world.tick()
-                t += DT
+                t = clock() - start             # CARLA's own simulated time, not an assumed step
+                self.dt_seen.append(world.get_snapshot().timestamp.delta_seconds)
                 vel = ego.get_velocity()
                 speed = math.sqrt(vel.x ** 2 + vel.y ** 2)
                 if braking:
@@ -112,6 +122,9 @@ def main():
     ap.add_argument("--port", type=int, default=2000)
     ap.add_argument("--town", default="Town04")
     ap.add_argument("--out", default="outputs/e13_carla.json")
+    ap.add_argument("--tire-friction", type=float, default=0.8,
+                    help="wheel friction (the emulator assumes 0.8 on dry road); use 0 to keep CARLA's default")
+    ap.add_argument("--max-latency-ms", type=float, default=2500.0, help="upper limit of the point-of-no-return search")
     args = ap.parse_args()
     try:
         import carla
@@ -138,7 +151,8 @@ def main():
     settings.synchronous_mode, settings.fixed_delta_seconds = True, DT
     world.apply_settings(settings)
     library = world.get_blueprint_library()
-    trial = Trial(carla, world, library.find("vehicle.tesla.model3"), library.find("vehicle.audi.a2"))
+    trial = Trial(carla, world, library.find("vehicle.tesla.model3"), library.find("vehicle.audi.a2"),
+                  tire_friction=args.tire_friction or None)
     try:
         assumed = (decel_for_road("dry"), ramp_seconds())
         rows = []
@@ -149,26 +163,34 @@ def main():
             t, sp = np.array(trace).T
             sp = np.concatenate([[v / 3.6], sp])
             t = np.concatenate([[0.0], t])
-            fits[v] = fit_braking(t, sp)
+            fits[v] = fit_braking(t, sp, ramp_grid=np.linspace(0.0, 1.0, 101))
             print(f"  {v} km/h: decel {fits[v]['decel']:.2f} m/s^2, ramp {fits[v]['ramp_s'] * 1000:.0f} ms, "
                   f"rmse {fits[v]['rmse']:.2f} m/s   (assumed {assumed[0]:.2f} m/s^2, {assumed[1] * 1000:.0f} ms)")
+            if fits[v]["decel"] > 12.0:
+                print(f"    WARNING: {fits[v]['decel']:.1f} m/s^2 is above any road-tyre limit; the setup is not realistic")
+            if fits[v]["ramp_s"] >= 0.99:
+                print("    WARNING: the fitted ramp hit the edge of the search range")
+        print(f"simulated time per tick seen: min {min(trial.dt_seen):.4f} s, max {max(trial.dt_seen):.4f} s "
+              f"(script assumed {DT} s)")
         print("\nscenario            CARLA PONR   assumed model   fitted model")
         for v, gap in SCENARIOS:
             collides = lambda ms, v=v, gap=gap: trial.run(v, gap, ms)[0]
-            ponr = bisect_ponr(collides, 0.0, 1200.0, tol_ms=5.0)
+            ponr = bisect_ponr(collides, 0.0, args.max_latency_ms, tol_ms=5.0)
             v_ms = v / 3.6
             row = {"v_kmh": v, "gap_m": gap, "carla_ms": ponr,
                    "assumed_ms": closed_form_ponr_ms(v_ms, gap, *assumed),
                    "fitted_ms": closed_form_ponr_ms(v_ms, gap, fits[v]["decel"], fits[v]["ramp_s"])}
             rows.append(row)
-            shown = "collides at 0" if ponr is None else f"{ponr:7.0f} ms"
+            row["capped"] = ponr is not None and ponr >= args.max_latency_ms - 1e-9
+            shown = ("collides at 0" if ponr is None else f"{ponr:7.0f} ms" + (" (CAPPED: never collided)" if row["capped"] else ""))
             print(f"{v:>3} km/h, {gap:>4.0f} m   {shown:>12}   {row['assumed_ms']:>10.0f} ms   {row['fitted_ms']:>9.0f} ms")
         summary = summarise(rows)
         print("\n" + json.dumps(summary, indent=2))
         os.makedirs(os.path.dirname(args.out) or ".", exist_ok=True)
         with open(args.out, "w", encoding="utf-8") as f:
-            json.dump({"rows": rows, "fits": fits, "summary": summary, "assumed": {"decel": assumed[0],
-                       "ramp_s": assumed[1]}}, f, indent=2, default=float)
+            json.dump({"rows": rows, "fits": fits, "summary": summary, "tire_friction": args.tire_friction,
+                       "dt_seen": [min(trial.dt_seen), max(trial.dt_seen)],
+                       "assumed": {"decel": assumed[0], "ramp_s": assumed[1]}}, f, indent=2, default=float)
     finally:
         settings.synchronous_mode = False
         world.apply_settings(settings)

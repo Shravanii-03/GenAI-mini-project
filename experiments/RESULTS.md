@@ -319,6 +319,21 @@ Hazard volume (share of the attack parameter space that causes a collision; Wils
   freshness handling and key distribution not modelled); the guard assumes the flood really originates behind it; the
   watchdog threshold (30 ms) and verification time are assumed values.
 
+## E13 - CARLA check of the braking plant (`experiments/e13_carla_plant.py`)
+
+**Run 1 (CARLA 0.9.15 on a Colab T4, server with `-nullrhi`, CARLA's default tyre friction): inconclusive, not validation.**
+Raw output: `experiments/results/e13_carla_run1_default_friction.json`.
+
+* Fitted CARLA braking was 25-28 m/s^2 (about 2.6-2.9 g) with the ramp stuck at the edge of the search grid (0.4 s) and a fit
+  error of about 1 m/s. No road car can brake like that (friction limit about 0.8 g), so the setup, not the physics model,
+  was unrealistic. The probable cause is CARLA's default wheel friction, which the script had not changed.
+* CARLA's points of no return (834-1200 ms) were far above the emulator's closed form with its assumed parameters
+  (mean absolute error 519 ms). Two scenarios returned exactly 1200 ms, the upper limit of the search: no collision occurred.
+* With CARLA's own fitted parameters the closed form matched CARLA's point of no return to 74 ms on average (bias +74 ms),
+  so the *shape* of the plant (hold speed, ramp, constant deceleration) is consistent with CARLA; the *numbers* were not tested.
+* Fix made after this run: set wheel friction to the emulator's assumed 0.8, read time from CARLA's own clock instead of
+  assuming 5 ms steps, widen the ramp search, raise the search limit to 2.5 s, and warn on implausible fits. Run 2 is pending.
+
 ## Evidence chain and pipeline (`python -m sdv`, `sdv/evidence`)
 
 * One command takes a requirement in plain English through spec extraction, red team, blue team, a second red
