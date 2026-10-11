@@ -38,20 +38,29 @@ class Trial:
         self.carla, self.world, self.ego_bp, self.obstacle_bp = carla, world, ego_bp, obstacle_bp
         self.tire_friction = tire_friction      # CARLA's default (about 3.5) allows braking no road car can reach
         self.dt_seen = []                       # simulated seconds per tick, as reported by CARLA itself
+        self.friction_readback = None
+        self.settled_speed = None
 
-    def _spawn_points(self, gap):
+    def _spawn_point(self, run_m):
+        """A spawn transform with a straight, drivable stretch of at least run_m metres ahead."""
         spawns = self.world.get_map().get_spawn_points()
         for tf in spawns:
             wp = self.world.get_map().get_waypoint(tf.location)
-            ahead = wp.next(gap + 12.0)
+            ahead = wp.next(run_m)
             if ahead and abs(((ahead[0].transform.rotation.yaw - tf.rotation.yaw + 180) % 360) - 180) < 2.0:
-                return tf, ahead[0].transform
-        raise RuntimeError("no straight stretch long enough for this gap; try another town")
+                return tf
+        raise RuntimeError("no straight stretch long enough; try another town")
 
-    def run(self, v0_kmh, gap_m, latency_ms, obstacle=True, max_s=20.0):
-        """Returns (collided, speed trace after brake onset as (t, v))."""
+    def run(self, v0_kmh, gap_m, latency_ms, obstacle=True, max_s=20.0, settle_s=3.0):
+        """Returns (collided, speed trace after brake onset as (t, v)).
+
+        The ego drives at v0 under a throttle controller for settle_s seconds first, so the wheels spin at the
+        right speed (teleporting a car to a speed leaves the wheels at rest and it skids when braked). The
+        obstacle then appears gap_m ahead and the latency clock starts."""
         carla, world = self.carla, self.world
-        ego_tf, obs_tf = self._spawn_points(gap_m if obstacle else 300.0)
+        v0 = v0_kmh / 3.6
+        ego_tf = self._spawn_point(v0 * settle_s * 1.2 + (gap_m if obstacle else 120.0) + 20.0)
+        forward = ego_tf.get_forward_vector()
         actors = []
         try:
             ego = world.spawn_actor(self.ego_bp, ego_tf)
@@ -61,26 +70,41 @@ class Trial:
                 for wheel in control.wheels:
                     wheel.tire_friction = self.tire_friction
                 ego.apply_physics_control(control)
-            if obstacle:
-                obs = world.spawn_actor(self.obstacle_bp, obs_tf)
-                actors.append(obs)
-                # put the obstacle's rear bumper gap_m ahead of the ego's front bumper
-                forward = ego_tf.get_forward_vector()
-                centre = gap_m + ego.bounding_box.extent.x + obs.bounding_box.extent.x
-                obs.set_transform(carla.Transform(ego_tf.location + forward * centre, ego_tf.rotation))
-                obs.apply_control(carla.VehicleControl(hand_brake=True))
+                self.friction_readback = [round(w.tire_friction, 2) for w in ego.get_physics_control().wheels]
             sensor = world.spawn_actor(world.get_blueprint_library().find("sensor.other.collision"),
                                        carla.Transform(), attach_to=ego)
             actors.append(sensor)
             hits = []
             sensor.listen(lambda event: hits.append(event))
 
-            v0 = v0_kmh / 3.6
-            forward = ego_tf.get_forward_vector()
+            def speed_now():
+                vel = ego.get_velocity()
+                return math.sqrt(vel.x ** 2 + vel.y ** 2)
+
+            def hold_speed():
+                throttle = min(1.0, max(0.0, 0.4 + 0.5 * (v0 - speed_now())))
+                ego.apply_control(carla.VehicleControl(throttle=throttle, brake=0.0))
+
             ego.set_target_velocity(carla.Vector3D(forward.x * v0, forward.y * v0, 0.0))
-            for _ in range(20):                         # let the physics settle without letting the speed drift
-                ego.set_target_velocity(carla.Vector3D(forward.x * v0, forward.y * v0, 0.0))
+            for _ in range(int(settle_s / DT)):
+                hold_speed()
                 world.tick()
+            self.settled_speed = speed_now()
+            if obstacle:
+                here = ego.get_transform()
+                fwd = here.get_forward_vector()
+                probe = world.spawn_actor(self.obstacle_bp, ego_tf)      # only to read the obstacle's length
+                ext = probe.bounding_box.extent.x
+                probe.destroy()
+                centre = gap_m + ego.bounding_box.extent.x + ext
+                target = carla.Location(here.location.x + fwd.x * centre, here.location.y + fwd.y * centre,
+                                        here.location.z)
+                wp = world.get_map().get_waypoint(target, project_to_road=True)
+                obs_tf = wp.transform
+                obs_tf.location.z += 0.5
+                obs = world.spawn_actor(self.obstacle_bp, obs_tf)
+                actors.append(obs)
+                obs.apply_control(carla.VehicleControl(hand_brake=True))
             hits.clear()
 
             clock = lambda: world.get_snapshot().timestamp.elapsed_seconds
@@ -93,12 +117,11 @@ class Trial:
                     braking = True
                     onset = t
                 elif not braking:
-                    ego.set_target_velocity(carla.Vector3D(forward.x * v0, forward.y * v0, 0.0))
+                    hold_speed()
                 world.tick()
                 t = clock() - start             # CARLA's own simulated time, not an assumed step
                 self.dt_seen.append(world.get_snapshot().timestamp.delta_seconds)
-                vel = ego.get_velocity()
-                speed = math.sqrt(vel.x ** 2 + vel.y ** 2)
+                speed = speed_now()
                 if braking:
                     trace.append((t - onset, speed))
                 if hits and obstacle:
@@ -124,6 +147,7 @@ def main():
     ap.add_argument("--out", default="outputs/e13_carla.json")
     ap.add_argument("--tire-friction", type=float, default=0.8,
                     help="wheel friction (the emulator assumes 0.8 on dry road); use 0 to keep CARLA's default")
+    ap.add_argument("--calibration-only", action="store_true", help="only fit the braking response, then stop")
     ap.add_argument("--max-latency-ms", type=float, default=2500.0, help="upper limit of the point-of-no-return search")
     args = ap.parse_args()
     try:
@@ -158,18 +182,32 @@ def main():
         rows = []
         print("calibration (no obstacle):")
         fits = {}
+        traces = {}
         for v in sorted({s[0] for s in SCENARIOS}):
             _, trace = trial.run(v, 300.0, 0.0, obstacle=False)
             t, sp = np.array(trace).T
             sp = np.concatenate([[v / 3.6], sp])
             t = np.concatenate([[0.0], t])
             fits[v] = fit_braking(t, sp, ramp_grid=np.linspace(0.0, 1.0, 101))
+            traces[str(v)] = [[float(a), float(b)] for a, b in zip(t, sp)]
+            i = int(np.searchsorted(t, 1.0))
+            direct = (sp[0] - sp[min(i, len(sp) - 1)]) / max(t[min(i, len(t) - 1)], 1e-9)
+            fits[v]["direct_mean_decel_first_1s"] = float(direct)
+            print(f"  {v} km/h: wheels friction read back {trial.friction_readback}, speed before braking "
+                  f"{trial.settled_speed:.2f} m/s (target {v / 3.6:.2f}); mean deceleration over the first second "
+                  f"{direct:.1f} m/s^2 (no fit)")
             print(f"  {v} km/h: decel {fits[v]['decel']:.2f} m/s^2, ramp {fits[v]['ramp_s'] * 1000:.0f} ms, "
                   f"rmse {fits[v]['rmse']:.2f} m/s   (assumed {assumed[0]:.2f} m/s^2, {assumed[1] * 1000:.0f} ms)")
             if fits[v]["decel"] > 12.0:
                 print(f"    WARNING: {fits[v]['decel']:.1f} m/s^2 is above any road-tyre limit; the setup is not realistic")
             if fits[v]["ramp_s"] >= 0.99:
                 print("    WARNING: the fitted ramp hit the edge of the search range")
+        if args.calibration_only:
+            os.makedirs(os.path.dirname(args.out) or ".", exist_ok=True)
+            with open(args.out, "w", encoding="utf-8") as f:
+                json.dump({"fits": fits, "traces": traces, "tire_friction": args.tire_friction}, f, indent=2,
+                          default=float)
+            return 0
         print(f"simulated time per tick seen: min {min(trial.dt_seen):.4f} s, max {max(trial.dt_seen):.4f} s "
               f"(script assumed {DT} s)")
         print("\nscenario            CARLA PONR   assumed model   fitted model")
@@ -188,7 +226,7 @@ def main():
         print("\n" + json.dumps(summary, indent=2))
         os.makedirs(os.path.dirname(args.out) or ".", exist_ok=True)
         with open(args.out, "w", encoding="utf-8") as f:
-            json.dump({"rows": rows, "fits": fits, "summary": summary, "tire_friction": args.tire_friction,
+            json.dump({"rows": rows, "fits": fits, "traces": traces, "summary": summary, "tire_friction": args.tire_friction,
                        "dt_seen": [min(trial.dt_seen), max(trial.dt_seen)],
                        "assumed": {"decel": assumed[0], "ramp_s": assumed[1]}}, f, indent=2, default=float)
     finally:

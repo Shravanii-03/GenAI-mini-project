@@ -332,7 +332,20 @@ Raw output: `experiments/results/e13_carla_run1_default_friction.json`.
 * With CARLA's own fitted parameters the closed form matched CARLA's point of no return to 74 ms on average (bias +74 ms),
   so the *shape* of the plant (hold speed, ramp, constant deceleration) is consistent with CARLA; the *numbers* were not tested.
 * Fix made after this run: set wheel friction to the emulator's assumed 0.8, read time from CARLA's own clock instead of
-  assuming 5 ms steps, widen the ramp search, raise the search limit to 2.5 s, and warn on implausible fits. Run 2 is pending.
+  assuming 5 ms steps, widen the ramp search, raise the search limit to 2.5 s, and warn on implausible fits.
+
+**Run 2 (same setup, wheel friction set to 0.8, CARLA's own clock): still not validation.**
+* Fitted deceleration 29-60 m/s^2 (still 3-4x any road-car limit) with ramps of 440-970 ms; every tick was exactly 5.0 ms,
+  so the clock was not the problem.
+* CARLA points of no return (km/h, gap): 40/14 835 ms, 50/20 972, 60/24 918, 60/30 1289, 70/32 1079, 80/45 1416.
+  Emulator closed form with assumed parameters: 527, 530, 353, 713, 382, 584 (mean absolute error 570 ms, i.e. far off).
+  Closed form with CARLA's fitted parameters: mean absolute error 26 ms, bias +26 ms.
+* Setting the wheel friction changed almost nothing (835 vs 834 ms, 972 vs 975 ms), so friction was not the cause, or the
+  override did not take effect in this headless (`-nullrhi`) mode. Leading suspicion: the ego was teleported to speed with
+  `set_target_velocity`, so its wheels start at rest and skid under braking. Run 3 starts the car by driving it up to speed
+  under a throttle controller, places the obstacle afterwards, reads the friction back, and saves the raw speed traces.
+* What can be said now: the plant's shape (hold, ramp, constant deceleration) reproduces CARLA's results once its parameters are
+  fitted; whether the emulator's numbers are realistic is **untested**.
 
 ## Evidence chain and pipeline (`python -m sdv`, `sdv/evidence`)
 
