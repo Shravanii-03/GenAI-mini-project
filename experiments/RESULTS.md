@@ -358,6 +358,24 @@ Raw output: `experiments/results/e13_carla_run1_default_friction.json`.
 * Caveat: the wheel-friction override in runs 1-3 did not take effect (the API returns a copy of the wheel list and the
   script did not assign it back; the read-back showed 3.5). These runs used CARLA's default friction. Fixed afterwards.
 
+**Run 4 (full check; wheel friction override now in effect, read back as 0.8; ego driven up to speed): the plant's structure
+agrees with CARLA, the emulator's default numbers do not.** (Numbers transcribed from the console output; the JSON file did
+not download.)
+* CARLA's Model 3 braked at 4.7-5.5 m/s^2 (mean over the first second) at 40-80 km/h, fitted 4.86 / 5.14 / 5.31 / 5.40 / 5.48
+  m/s^2 with ramps of 70 / 70 / 50 / 20 / 0 ms and fit errors of 0.04-0.11 m/s. CARLA's friction setting is a scale factor,
+  not a friction coefficient: 0.8 here corresponds to about 0.54 g, not 0.8 g.
+* Points of no return (km/h, gap): CARLA vs closed form with CARLA's fitted parameters vs emulator defaults:
+  40/14 73 vs 81 vs 527 ms; 50/20 49 vs 54 vs 530; 60/30 195 vs 207 vs 713; 80/45 15 vs -4 vs 584; 60/24 and 70/32:
+  CARLA collides even at zero latency, and the fitted closed form also predicts unavoidable collision (-153 and -164 ms).
+* Mean absolute error of the closed form against CARLA: 11 ms with the fitted parameters (bias +1.5 ms, n = 4, plus two
+  scenarios where both agree the collision is unavoidable); 506 ms with the emulator's default parameters.
+* **Reading:** the model structure (hold speed, short ramp, constant deceleration) reproduces a physics engine's point of
+  no return to about 10 ms once two parameters are calibrated. The emulator's default parameters (7.85 m/s^2, 50 ms) are
+  more optimistic than this CARLA vehicle; they are within the range of real passenger cars, so this is a statement about the
+  parameters' sensitivity, not proof that they are wrong. The conclusions' sensitivity to the braking parameters is tested in E14.
+* Limits: one vehicle model, one town, a straight road, headless physics (`-nullrhi`), 5 ms ticks, speed-dependent braking
+  approximated by a constant value, a point-of-no-return search tolerance of 5 ms.
+
 ## Evidence chain and pipeline (`python -m sdv`, `sdv/evidence`)
 
 * One command takes a requirement in plain English through spec extraction, red team, blue team, a second red
