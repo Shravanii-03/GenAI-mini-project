@@ -67,8 +67,10 @@ class Trial:
             actors.append(ego)
             if self.tire_friction is not None:
                 control = ego.get_physics_control()
-                for wheel in control.wheels:
+                wheels = control.wheels              # a copy: it has to be assigned back (run 3 found this out)
+                for wheel in wheels:
                     wheel.tire_friction = self.tire_friction
+                control.wheels = wheels
                 ego.apply_physics_control(control)
                 self.friction_readback = [round(w.tire_friction, 2) for w in ego.get_physics_control().wheels]
             sensor = world.spawn_actor(world.get_blueprint_library().find("sensor.other.collision"),

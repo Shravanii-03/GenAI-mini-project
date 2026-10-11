@@ -347,6 +347,17 @@ Raw output: `experiments/results/e13_carla_run1_default_friction.json`.
 * What can be said now: the plant's shape (hold, ramp, constant deceleration) reproduces CARLA's results once its parameters are
   fitted; whether the emulator's numbers are realistic is **untested**.
 
+**Run 3, calibration only (ego driven up to speed under throttle control instead of teleported): realistic braking.**
+* Mean deceleration over the first second 5.8 / 6.6 / 7.4 / 8.1 / 8.7 m/s^2 at 40 / 50 / 60 / 70 / 80 km/h; fitted
+  5.76 / 6.34 / 6.98 / 7.57 / 8.10 m/s^2 with ramps of 0-40 ms and fit errors of 0.17-0.51 m/s. The earlier 25-60 m/s^2 was
+  therefore caused by the teleport start (wheels at rest), not by the plant or the clock.
+* The emulator assumes a constant 7.85 m/s^2 and a 50 ms ramp. CARLA's braking depends on speed, so the constant-deceleration
+  model is only approximately right; at 60 km/h CARLA is weaker than assumed (6.98 vs 7.85 m/s^2), which would make the
+  emulator's points of no return somewhat optimistic (about 250 ms instead of 353 ms for 60 km/h, 24 m: a computed estimate,
+  to be replaced by the measured value from the full run).
+* Caveat: the wheel-friction override in runs 1-3 did not take effect (the API returns a copy of the wheel list and the
+  script did not assign it back; the read-back showed 3.5). These runs used CARLA's default friction. Fixed afterwards.
+
 ## Evidence chain and pipeline (`python -m sdv`, `sdv/evidence`)
 
 * One command takes a requirement in plain English through spec extraction, red team, blue team, a second red
