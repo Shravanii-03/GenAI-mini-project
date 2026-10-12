@@ -44,6 +44,8 @@ STEPS = [
      False),
     ("E12b adversarial search for a counter-example to the bound",
      ["experiments/e12b_bound_adversarial.py", "--scenarios", "4", "--budget", "200"], False),
+    ("E14 sensitivity to the braking physics",
+     ["experiments/e14_plant_sensitivity.py", "--scenarios", "5", "--samples", "80"], False),
     ("End-to-end pipeline", ["-m", "sdv", "--blue", "enumerate", "--n", "40", "--out", "outputs/pipeline_run"], True),
 ]
 

@@ -376,6 +376,26 @@ not download.)
 * Limits: one vehicle model, one town, a straight road, headless physics (`-nullrhi`), 5 ms ticks, speed-dependent braking
   approximated by a constant value, a point-of-no-return search tolerance of 5 ms.
 
+## E14 - sensitivity to the braking physics (`experiments/e14_plant_sensitivity.py --scenarios 5 --samples 80`)
+
+The CARLA check (E13) showed a physics engine's vehicle brakes more weakly than the emulator's default. Braking strength is varied
+here (decel = mu * g; scenarios are redrawn to stay tight for each setting). Attack-induced hazard volume, `none / radar_or /
+all defences` (radar failover, gateway guard, authentication):
+
+| braking | masquerade | gateway delay | DoS flood | dual masquerade | flood from a safety-bus node | dual attacker with the key |
+|---|---|---|---|---|---|---|
+| 0.54 g (CARLA-like, 5.3 m/s^2) | 59 / 0 / 0 | 28 / 0 / 0 | 26 / 26 / 0 | 55 / 54 / 1 | 26 / 26 / 23 | 54 / 53 / 53 |
+| 0.65 g | 52 / 0 / 0 | 23 / 0 / 0 | 20 / 20 / 0 | 46 / 45 / 2 | 29 / 28 / 26 | 47 / 46 / 46 |
+| 0.80 g (default) | 43 / 0 / 0 | 23 / 0 / 0 | 26 / 26 / 0 | 41 / 40 / 1 | 21 / 20 / 19 | 41 / 40 / 40 |
+| 0.90 g | 39 / 0 / 0 | 22 / 0 / 0 | 24 / 24 / 0 | 39 / 39 / 2 | 21 / 21 / 18 | 40 / 40 / 40 |
+
+* The ranking of defences and the list of residual holes do not change with braking strength: failover removes single-channel
+  attacks, the guard removes untrusted-segment floods, authentication plus the watchdog removes dual forgery (1-2% left), and the
+  safety-bus flood and the key holder remain (18-26% and 40-53%).
+* Weaker braking raises the absolute hazard volumes (for example masquerade without defences 39% at 0.9 g, 59% at 0.54 g). The
+  absolute percentages therefore depend on the assumed braking and should not be quoted as real-world rates.
+* Benign collisions: 0/40 in every setting. The analytic bound stayed sound: 0 violations in 7,200 runs per setting.
+
 ## Evidence chain and pipeline (`python -m sdv`, `sdv/evidence`)
 
 * One command takes a requirement in plain English through spec extraction, red team, blue team, a second red
