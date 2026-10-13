@@ -88,7 +88,7 @@ def defence_records(case: dict) -> dict:
 
 def build_bundle(requirement: dict, spec: dict, case: dict, rule_verdict: dict, calibration: dict,
                  residual: dict = None, retriever=None, with_failover: bool = False,
-                 with_defences: bool = False) -> dict:
+                 with_defences: bool = False, plant_profile: dict = None) -> dict:
     """Assemble the bundle from a missed-hazard case and the verified rule that now covers it.
 
     requirement  {"id", "text", "method"}; spec  extracted dict (deadline_ms, formula, ...);
@@ -121,6 +121,8 @@ def build_bundle(requirement: dict, spec: dict, case: dict, rule_verdict: dict, 
         bundle["failover"] = failover_record(case)
     if with_defences:
         bundle["defences"] = defence_records(case)
+    if plant_profile is not None:
+        bundle["plant_profile"] = plant_profile      # the auditor re-applies it before re-running anything
     return bundle
 
 

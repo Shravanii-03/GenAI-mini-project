@@ -1,0 +1,7 @@
+{
+  "name": "carla-model3-60kmh",
+  "decel_ms2": 5.31,
+  "brake_ramp_ms": 50,
+  "source": "CARLA 0.9.15, vehicle.tesla.model3, Town04, wheel friction 0.8 (a scale factor, about 0.54 g), e13_carla_plant.py run 4, fit at 60 km/h",
+  "notes": "Transcribed from the console output of run 4 (the JSON file was not saved). Fitted deceleration at 40/50/60/70/80 km/h was 4.86/5.14/5.31/5.40/5.48 m/s^2 with ramps of 70/70/50/20/0 ms: braking depends weakly on speed and this profile uses one value. See experiments/RESULTS.md, E13."
+}

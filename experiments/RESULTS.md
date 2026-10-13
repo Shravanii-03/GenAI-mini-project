@@ -414,6 +414,22 @@ all defences` (radar failover, gateway guard, authentication):
   (`KB_PATTERN_FOR`, the authors' judgement), records what retrieval suggested next to it, and the auditor
   fails a bundle that cites a real but wrong pattern.
 * The bundle is machine-checked consistency on an emulated system, not a certified safety case.
+* **Pipeline stages added after the freeze (requirement conformance, defence assessment, calibrated plant profile).**
+  * *Conformance:* every simulated benign run meets "brake within 100 ms" at the default settings (slowest about 91-101 ms, the
+    baseline chain misses it in some draws), but the analytic worst case is about 147-149 ms, so 100 ms is **not provable**; the
+    smallest provable deadline for this chain is about 150 ms. The bound is dominated by the assumed compute-time worst cases
+    (perception, decision and actuator together about 136 of 149 ms), so this is a statement about those assumptions.
+  * *Defence assessment:* reproduces the E12 picture automatically. At 40 samples per variant under the CARLA-like plant: failover
+    removes the single-channel attacks, the guard removes the untrusted-segment flood, authentication plus the watchdog leaves the
+    dual-sensor attacker at about 2%; the safety-bus flood (about 32%) and the key holder (about 65%) stay open. It reports 95% upper
+    bounds because zero hazards in 40 samples still allows 9%.
+  * *Two defects found while building it:* (1) the auditor caught that a rule verified alone can push the **deployed** monitor over
+    the false-alarm cap (0.017 alone, 0.033 deployed); the pipeline now has a deployment check that drops such rules. (2) The first
+    assessment cycled through only 6 scenarios, so one very tight scenario counted as about 1/6 of the sample and showed a 15% residual
+    for the dual-sensor attacker; with one fresh scenario per sample it is 2%, in line with E14.
+  * *Calibrated plant:* `experiments/profiles/carla_model3.json` (5.31 m/s^2, 50 ms ramp, from CARLA run 4, transcribed from console
+    output). The plant changes hazard outcomes and points of no return, not the end-to-end latency, so the conformance numbers do
+    not change with the profile.
 
 ## Caveats
 

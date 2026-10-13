@@ -85,6 +85,13 @@ def _audit_config(rec: dict, vio: dict, config_name: str, label: str) -> list:
 
 
 def audit(bundle: dict) -> dict:
+    """Re-run every claim; a bundle built for a calibrated plant is audited under that plant."""
+    from sdv.plant.profile import apply_profile
+    with apply_profile(bundle.get("plant_profile")):
+        return _audit(bundle)
+
+
+def _audit(bundle: dict) -> dict:
     checks = []
     spec, violation = bundle["spec"], bundle["violation"]
 

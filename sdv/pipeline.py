@@ -15,6 +15,8 @@ import json
 import os
 import random
 
+from sdv.analysis.conformance import check_requirement, format_conformance
+from sdv.analysis.defence_assessment import assess, format_assessment
 from sdv.attacks.library import ALL_ATTACKS
 from sdv.blue.agent import blue_step_llm
 from sdv.blue.loop import (
@@ -26,6 +28,7 @@ from sdv.blue.verify import case_outcome, false_alarm_rate
 from sdv.evidence.audit import audit
 from sdv.evidence.chain import build_bundle
 from sdv.evidence.render import render_markdown
+from sdv.plant.profile import apply_profile, load_profile
 from sdv.spec import stl
 from sdv.spec.regex_baseline import regex_deadline
 
@@ -49,10 +52,22 @@ def extract_spec(text: str, llm=None):
 
 
 def run_pipeline(requirement: str, seed: int = 1, n_per_family: int = 40, blue: str = "enumerate",
-                 spec_llm=None, blue_llm=None, out_dir: str = None) -> dict:
+                 spec_llm=None, blue_llm=None, out_dir: str = None, plant_profile=None,
+                 assess_defences: bool = True, assess_n: int = 40) -> dict:
+    """plant_profile: None (configured defaults), a profile dict or a path to a profile JSON (sdv/plant/profile.py)."""
+    if isinstance(plant_profile, (str, os.PathLike)):
+        plant_profile = load_profile(plant_profile)
+    with apply_profile(plant_profile):
+        return _run_pipeline(requirement, seed, n_per_family, blue, spec_llm, blue_llm, out_dir, plant_profile,
+                             assess_defences, assess_n)
+
+
+def _run_pipeline(requirement, seed, n_per_family, blue, spec_llm, blue_llm, out_dir, plant_profile,
+                  assess_defences, assess_n) -> dict:
     spec, method = extract_spec(requirement, spec_llm)
     if spec is None:
         return {"error": method, "requirement": requirement}
+    conformance = check_requirement(spec["deadline_ms"], seed=seed)
 
     calibration = {"train_seed0": 2_000_000 + seed * 1000, "n_train": 60,
                    "benign_seed0": 2_100_000 + seed * 1000, "n_benign": 60, "fpr_cap": FPR_CAP}
@@ -83,6 +98,13 @@ def run_pipeline(requirement: str, seed: int = 1, n_per_family: int = 40, blue: 
 
     rules = [a["rule"] for a in accepted]
     monitor1 = deployed(base, rules)
+    # Deployment check. Rules are verified one at a time, but what ships is base monitors + rules; that combination must
+    # respect the false-alarm cap too (the auditor measures it). Drop the most recent rule until it does.
+    dropped = []
+    while rules and false_alarm_rate(monitor1, verify_set) > FPR_CAP:
+        dropped.append(rules.pop())
+        accepted = accepted[:len(rules)]
+        monitor1 = deployed(base, rules)
     after = [dict(c) for c in hazards0]
     refresh_alarms(after, monitor1)
     _, missed1, stats1 = collect_cases(monitor1, families, n_per_family, random.Random(seed * 7 + 2))
@@ -93,10 +115,13 @@ def run_pipeline(requirement: str, seed: int = 1, n_per_family: int = 40, blue: 
         "in_time_before": timely_rate([dict(c) for c in hazards0]),
         "in_time_after": timely_rate(after),
         "fpr_before": false_alarm_rate(monitor0, test_benign), "fpr_after": false_alarm_rate(monitor1, test_benign),
-        "rules": rules, "blue_cost": cost,
+        "rules": rules, "rules_dropped_by_deployment_check": dropped, "blue_cost": cost,
         "round1_missed": {f: s["missed"] for f, s in stats1.items() if s["missed"]},
         "round1_sampled_per_family": n_per_family, "evidence": None,
+        "plant_profile": plant_profile, "conformance": conformance, "defence_assessment": None,
     }
+    if assess_defences:
+        summary["defence_assessment"] = assess(n_per_variant=assess_n, seed=seed)
     residual = {f: f"{s['missed']}/{s['sampled']} sampled attacks still cause a collision with no in-time alarm"
                 for f, s in stats1.items() if s["missed"]}
     summary["residual_risk"] = residual
@@ -110,7 +135,7 @@ def run_pipeline(requirement: str, seed: int = 1, n_per_family: int = 40, blue: 
         if hit is not None:
             bundle = build_bundle({"id": "REQ-1", "text": requirement, "method": method}, spec, hit,
                                   accepted[0], calibration, residual, with_failover=True,
-                                  with_defences=True)
+                                  with_defences=True, plant_profile=plant_profile)
             report = audit(bundle)
             summary["evidence"] = {"audit_passed": report["passed"], "audit_total": report["total"],
                                    "all_passed": report["all_passed"],
@@ -125,6 +150,11 @@ def run_pipeline(requirement: str, seed: int = 1, n_per_family: int = 40, blue: 
                     f.write(render_markdown(bundle, report))
     if out_dir:
         os.makedirs(out_dir, exist_ok=True)
+        with open(os.path.join(out_dir, "assessment.md"), "w", encoding="utf-8") as f:
+            f.write("# Requirement conformance and defence assessment\n\n```\n" + format_conformance(conformance) + "\n")
+            if summary["defence_assessment"]:
+                f.write("\n" + format_assessment(summary["defence_assessment"]) + "\n")
+            f.write("```\n")
         with open(os.path.join(out_dir, "pipeline_summary.json"), "w", encoding="utf-8") as f:
             json.dump(summary, f, indent=2, default=str)
     return summary
@@ -139,18 +169,26 @@ def format_summary(s: dict) -> str:
     if "error" in s:
         return f"pipeline stopped: {s['error']}"
     lines = [
+        f"plant       : {s['plant_profile']['name'] + ' (' + str(s['plant_profile']['decel_ms2']) + ' m/s^2, ramp ' + str(s['plant_profile']['brake_ramp_ms']) + ' ms)' if s.get('plant_profile') else 'configured defaults'}",
         f"requirement : {s['requirement']}",
         f"spec        : deadline {s['spec']['deadline_ms']:g} ms, {s['spec']['formula']}  [{s['spec_method']}]",
         f"red round 0 : {s['hazards_round0']} attack-induced hazards, {s['missed_round0']} with no in-time alarm",
         f"blue ({s['blue']}) : {len(s['rules'])} verified rule(s) {s['blue_cost']}",
     ]
     lines += [f"              {r}" for r in s["rules"]]
+    if s.get("rules_dropped_by_deployment_check"):
+        lines.append(f"              dropped by the deployment check (combined false-alarm rate over the cap): "
+                     f"{len(s['rules_dropped_by_deployment_check'])} rule(s)")
     lines += [
         f"hazards flagged in time: {s['in_time_before']:.2f} -> {s['in_time_after']:.2f}; "
         f"false-alarm rate {s['fpr_before']:.2f} -> {s['fpr_after']:.2f}",
         "residual risk (red round 1, sampled attacks that still cause a collision unnoticed): "
         + (", ".join(f"{f} {n}/{s['round1_sampled_per_family']}" for f, n in s["round1_missed"].items()) or "none"),
     ]
+    if s.get("conformance"):
+        lines.append(format_conformance(s["conformance"]))
+    if s.get("defence_assessment"):
+        lines.append(format_assessment(s["defence_assessment"]))
     if s["evidence"]:
         e = s["evidence"]
         lines.append(f"evidence    : audit {e['audit_passed']}/{e['audit_total']} checks re-verified; "
@@ -168,13 +206,18 @@ def main(argv=None):
     ap.add_argument("--blue", choices=["enumerate", "random", "llm", "none"], default="enumerate")
     ap.add_argument("--llm-model", default=None, help="use this Groq model for the spec agent and/or blue agent")
     ap.add_argument("--out", default="outputs/pipeline_run")
+    ap.add_argument("--plant-profile", default=None,
+                    help="JSON with calibrated braking parameters (see sdv/plant/profile.py, experiments/profiles/)")
+    ap.add_argument("--no-assess", action="store_true", help="skip the defence assessment stage (the slowest)")
+    ap.add_argument("--assess-n", type=int, default=40, help="sampled attacks per variant in the defence assessment")
     args = ap.parse_args(argv)
     llm = None
     if args.llm_model:
         from sdv.llm.cached import CachedLLM
         llm = CachedLLM(args.llm_model, max_tokens=700)
-    summary = run_pipeline(args.requirement, args.seed, args.n, args.blue,
-                           spec_llm=llm, blue_llm=llm, out_dir=args.out)
+    summary = run_pipeline(args.requirement, args.seed, args.n, args.blue, spec_llm=llm, blue_llm=llm, out_dir=args.out,
+                           plant_profile=args.plant_profile, assess_defences=not args.no_assess,
+                           assess_n=args.assess_n)
     print(format_summary(summary))
     if "error" not in summary:
         print(f"\nfiles written to {args.out}/")

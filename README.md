@@ -79,6 +79,21 @@ python experiments/reproduce_all.py --quick     # regenerate the result tables o
 docker build -t sdv-safety . && docker run --rm sdv-safety     # tests in a container
 ```
 
+The pipeline has three stages beyond the red/blue loop:
+
+- **Requirement conformance:** the extracted deadline is compared with the analytic worst case. For the default chain
+  "brake within 100 ms" is met by every simulated run but **cannot be proven** (the analytic worst case is about 150 ms,
+  mostly from assumed compute-time worst cases), and the report states the smallest deadline that can be proven.
+- **Defence assessment** (`--assess-n N`, `--no-assess` to skip): hazard share per attack variant under five defence
+  configurations, the cheapest sufficient defence for each, and the attacks no defence stops. It prints 95% upper bounds,
+  because a small sample cannot certify a defence.
+- **Calibrated plant** (`--plant-profile experiments/profiles/carla_model3.json`): braking parameters measured in CARLA
+  replace the defaults for the whole run, including the audit. `python -m sdv.plant.profile --from-carla e13.json --out p.json`
+  makes a profile from a CARLA run.
+
+A deployment check also drops any verified rule that would push the *deployed* monitor (baseline monitors plus rules) over
+the false-alarm cap; the auditor measures the deployed monitor, so the pipeline must too.
+
 `--blue llm --llm-model <groq model>` lets an LLM propose the monitor rules (needs `GROQ_API_KEY`); every
 proposal still has to pass the same deterministic verifier. Experiment results and their caveats are in
 `experiments/RESULTS.md`.
