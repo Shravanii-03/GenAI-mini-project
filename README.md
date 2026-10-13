@@ -94,6 +94,10 @@ The pipeline has three stages beyond the red/blue loop:
 A deployment check also drops any verified rule that would push the *deployed* monitor (baseline monitors plus rules) over
 the false-alarm cap; the auditor measures the deployed monitor, so the pipeline must too.
 
+A browser front end for the rebuilt pipeline: `streamlit run dashboard/rebuilt_app.py` (an attack explorer for single emulated runs,
+a pipeline runner, the conformance and defence tables, the audited evidence with a button that re-runs every check, and the
+experiment results). The older `dashboard/app.py` belongs to the original synthetic pipeline and no longer runs its analysis.
+
 `--blue llm --llm-model <groq model>` lets an LLM propose the monitor rules (needs `GROQ_API_KEY`); every
 proposal still has to pass the same deterministic verifier. Experiment results and their caveats are in
 `experiments/RESULTS.md`.
