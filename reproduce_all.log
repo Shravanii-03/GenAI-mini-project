@@ -1,0 +1,618 @@
+
+==============================================================================
+=== Phase 1 demo (latency vs load, hazard vs distance)
+==============================================================================
+
+1) End-to-end latency vs ECU CPU load (300 seeded runs each)
+ load    mean     p95     max   >100ms   dominant stage
+  0.1    71.7    83.1    93.0      0%   perception (25 ms)
+  0.3    76.4    88.7    98.1      0%   perception (28 ms)
+  0.5    86.0    98.3   108.0      4%   perception (34 ms)
+  0.7   100.4   116.5   131.1     47%   perception (43 ms)
+  0.9   119.9   141.0   163.2     99%   perception (56 ms)
+
+2) Same latency, different obstacle distance (60 km/h, dry, load 0.7)
+ d0 (m)  safe limit  mean lat  collisions
+   19.0        53ms     100ms       100%
+   19.5        83ms     100ms        98%
+   20.0       113ms     100ms         8%
+   20.5       143ms     100ms         0%
+   21.0       173ms     100ms         0%
+   22.0       233ms     100ms         0%
+
+3) One run, stage breakdown (ms)
+   sampling      0.28
+   sensor_bus    0.27
+   perception   49.81
+   detect_bus    0.73
+   decision     22.77
+   cmd_bus       0.27
+   actuator     33.58
+   TOTAL       107.70   point of no return: 473.2 ms   margin: +365.5 ms   collision: False
+--- Phase 1 demo (latency vs load, hazard vs distance): ok in 8s
+
+==============================================================================
+=== E1 detector comparison
+==============================================================================
+
+E1 pilot: 300 samples x 8 families, 307 attack-induced hazards, mitigation response 20 ms
+
+monitor           recall    FPR     F1   timely  med margin
+deadline            0.02   0.01   0.03     0.08        66ms
+deadline_oracle     0.19   0.00   0.31     0.99        54ms
+frequency           0.64   0.00   0.78     0.60       148ms
+plausibility        0.43   0.00   0.60     0.08      -128ms
+timing_only         0.64   0.01   0.78     0.60       148ms
+fused               0.90   0.01   0.95     0.63       105ms
+
+ranking by F1:              fused > frequency > timing_only > plausibility > deadline
+ranking by timely-rate:     fused > frequency > timing_only > deadline > plausibility
+rankings differ:            True
+
+Per-family recall / timely rate (deployable monitors)
+family                                deadline             frequency          plausibility           timing_only                 fused
+dos_flood                         0.11 /  0.35          1.00 /  1.00          0.00 /  0.00          1.00 /  1.00          1.00 /  1.00
+priority_abuse                    0.00 /     -          1.00 /     -          0.00 /     -          1.00 /     -          1.00 /     -
+low_slow_dos                      0.01 /     -          1.00 /     -          0.00 /     -          1.00 /     -          1.00 /     -
+selective_suppression             0.00 /  0.00          0.24 /  0.92          0.94 /  0.08          0.24 /  0.92          0.98 /  1.00
+sensor_drift_spoof                0.00 /     -          0.00 /     -          0.74 /     -          0.00 /     -          0.74 /     -
+masquerade                        0.01 /  0.00          0.00 /  0.00          0.60 /  0.07          0.01 /  0.00          0.60 /  0.07
+gateway_delay                     0.00 /  0.00          0.96 /  1.00          0.25 /  0.09          0.96 /  1.00          0.96 /  1.00
+jitter_injection                  0.00 /  0.00          0.94 /  1.00          0.88 /  1.00          0.94 /  1.00          0.95 /  1.00
+--- E1 detector comparison: ok in 25s
+
+==============================================================================
+=== E3 detector tuning sweep
+==============================================================================
+480 samples, 36 x 16 fused configurations
+
+hazard runs: tuning half 34, held-out half 29
+Spearman correlation between F1 and timely-rate across 576 configurations (tuning half): -0.57
+
+selection rule    configuration                                                  tune F1 tune timely  HELD-OUT F1  timely   FPR
+F1-optimal        freq|gap=1.5|win=50ms|tol=0.2 + plaus|win=10|tol=0.6m             0.95        0.50         0.95    0.69  0.01
+margin-optimal    freq|gap=1.5|win=50ms|tol=0.2 + plaus|win=10|tol=0.6m             0.95        0.50         0.95    0.69  0.01
+
+held-out timely-rate gain of margin-optimal over F1-optimal: +0.000 (95% bootstrap CI [+0.000, +0.000], 29 paired hazard runs)
+
+what limits the F1-optimal configuration? attack-induced hazards by family (all samples)
+family                   hazards  detected  in time   median detection delay
+dos_flood                     14        14       14   0 ms after attack start
+selective_suppression          4         4        4   9 ms after attack start
+masquerade                    26        21        0   546 ms after attack start
+gateway_delay                 18        18       18   11 ms after attack start
+jitter_injection               1         1        1   13 ms after attack start
+
+timeliness bought with false alarms: margin-optimal configuration at each allowed FPR (chosen on the tuning half, held-out values shown)
+ FPR cap  configs  held-out timely  held-out F1  held-out FPR
+    0.02      468             0.69         0.95          0.01
+    0.05      468             0.69         0.95          0.01
+    0.10      468             0.69         0.95          0.01
+    0.20      468             0.69         0.95          0.01
+    0.50      576             0.72         0.79          0.43
+  F1-opt                      0.69         0.95          0.01
+
+top 5 by tuning F1 (held-out values shown)
+  F1 0.95  timely 0.69  FPR 0.01   freq|gap=1.5|win=50ms|tol=0.2 + plaus|win=10|tol=0.6m
+  F1 0.95  timely 0.69  FPR 0.01   freq|gap=1.5|win=50ms|tol=0.4 + plaus|win=10|tol=0.6m
+  F1 0.95  timely 0.69  FPR 0.01   freq|gap=1.5|win=50ms|tol=0.6 + plaus|win=10|tol=0.6m
+  F1 0.95  timely 0.69  FPR 0.01   freq|gap=1.5|win=100ms|tol=0.2 + plaus|win=10|tol=0.6m
+  F1 0.95  timely 0.69  FPR 0.01   freq|gap=1.5|win=100ms|tol=0.4 + plaus|win=10|tol=0.6m
+top 5 by tuning timely-rate with FPR cap (held-out values shown)
+  F1 0.95  timely 0.69  FPR 0.01   freq|gap=1.5|win=50ms|tol=0.2 + plaus|win=10|tol=0.6m
+  F1 0.95  timely 0.69  FPR 0.01   freq|gap=1.5|win=50ms|tol=0.4 + plaus|win=10|tol=0.6m
+  F1 0.95  timely 0.69  FPR 0.01   freq|gap=1.5|win=50ms|tol=0.6 + plaus|win=10|tol=0.6m
+  F1 0.95  timely 0.69  FPR 0.01   freq|gap=1.5|win=100ms|tol=0.2 + plaus|win=10|tol=0.6m
+  F1 0.95  timely 0.69  FPR 0.01   freq|gap=1.5|win=100ms|tol=0.4 + plaus|win=10|tol=0.6m
+--- E3 detector tuning sweep: ok in 8s
+
+==============================================================================
+=== Hazard volume per attack family
+==============================================================================
+family                    hazard volume   most severe hazard found
+dos_flood                        24.7%   {'rate_hz': 5721.6, 'duration_ms': 394.2, 'start_offset_ms': 20.5}
+priority_abuse                    0.0%   None
+low_slow_dos                      0.0%   None
+selective_suppression             3.5%   {'k': 1, 'duration_ms': 794.2, 'start_offset_ms': -18.4}
+sensor_drift_spoof                0.1%   {'rate_m_per_s': 28.7, 'duration_ms': 701.7, 'start_offset_ms': -382.6}
+masquerade                       42.9%   {'bias_m': 32.2, 'phase_shift_ms': 4.5, 'duration_ms': 794.6, 'start_offset_ms': -22.4}
+gateway_delay                    20.3%   {'delay_ms': 189.4, 'duration_ms': 478.2, 'start_offset_ms': -10.0}
+jitter_injection                  1.9%   {'delay_ms': 98.6, 'duration_ms': 568.3, 'start_offset_ms': -82.5, 'seed': 0}
+--- Hazard volume per attack family: ok in 23s
+
+==============================================================================
+=== E2 attack search
+==============================================================================
+320 tasks x 6 methods, budget 50, 2 workers
+
+[hazard] pooled over 8 families x 20 trials
+method          n          success rate       median sims to first hazard
+random        160    0.55 [0.47, 0.63]          20 [8, 51]
+grid          160    0.44 [0.37, 0.52]         51+ [12, 51]
+q_learning    160    0.56 [0.49, 0.64]          19 [6, 51]
+es            160    0.52 [0.44, 0.59]          22 [8, 51]
+bayes_opt     160    0.58 [0.50, 0.65]          16 [8, 38]
+llm_bo        160    0.57 [0.49, 0.64]           1 [1, 51]
+
+[hazard] success rate by family (n=20 per cell)
+family                       random       grid q_learning         es  bayes_opt     llm_bo
+dos_flood                      1.00       1.00       1.00       1.00       1.00       1.00
+priority_abuse                 0.05       0.05       0.05       0.05       0.05       0.05
+low_slow_dos                   0.05       0.05       0.05       0.05       0.05       0.05
+selective_suppression          0.90       0.05       1.00       0.65       1.00       1.00
+sensor_drift_spoof             0.05       0.05       0.05       0.10       0.15       0.05
+masquerade                     1.00       1.00       1.00       1.00       1.00       1.00
+gateway_delay                  1.00       1.00       1.00       0.95       1.00       1.00
+jitter_injection               0.35       0.35       0.35       0.35       0.40       0.40
+
+[stealth] pooled over 8 families x 20 trials
+method          n          success rate       median sims to first hazard
+random        160    0.17 [0.12, 0.23]         51+ [51, 51]
+grid          160    0.17 [0.12, 0.23]         51+ [51, 51]
+q_learning    160    0.14 [0.09, 0.20]         51+ [51, 51]
+es            160    0.17 [0.12, 0.23]         51+ [51, 51]
+bayes_opt     160    0.17 [0.12, 0.23]         51+ [51, 51]
+llm_bo        160    0.17 [0.12, 0.23]         51+ [51, 51]
+
+[stealth] success rate by family (n=20 per cell)
+family                       random       grid q_learning         es  bayes_opt     llm_bo
+dos_flood                      0.05       0.10       0.00       0.05       0.05       0.05
+priority_abuse                 0.05       0.05       0.00       0.05       0.05       0.05
+low_slow_dos                   0.05       0.00       0.00       0.05       0.05       0.05
+selective_suppression          0.05       0.05       0.05       0.05       0.05       0.05
+sensor_drift_spoof             0.05       0.05       0.05       0.05       0.05       0.05
+masquerade                     1.00       1.00       1.00       1.00       1.00       1.00
+gateway_delay                  0.05       0.05       0.00       0.05       0.05       0.05
+jitter_injection               0.05       0.05       0.00       0.05       0.05       0.05
+
+LLM prior unavailable in 0 (mode, family, trial) cells
+--- E2 attack search: ok in 143s
+
+==============================================================================
+=== E4 spec extraction (qwen, cached replies)
+==============================================================================
+[baseline] done (60 cache hits, 0 API calls so far)
+[eager] done (120 cache hits, 0 API calls so far)
+[rag] done (180 cache hits, 0 API calls so far)
+[rag_validator] done (240 cache hits, 0 API calls so far)
+
+qwen/qwen3.8-27b | retriever=bm25 | requirements=60
+condition         n        deadline  unresolved  component   exact  VSS F1  CAN F1  invalid VSS  invalid CAN
+regex            60    0.88 [0.78,0.94]     0.92       0.00    0.00    0.00    0.00     0/0          0/0     
+baseline         60    1.00 [0.94,1.00]     1.00       0.90    0.90    0.06    0.00     2/3          0/0     
+eager            60    0.98 [0.91,1.00]     0.98       0.80    0.80    0.02    0.00    69/80         0/0     
+rag              60    1.00 [0.94,1.00]     1.00       0.80    0.80    0.85    0.46     0/39         0/27    
+rag_validator    60    1.00 [0.94,1.00]     1.00       0.80    0.80    0.85    0.46     0/39         0/27    
+
+validator effect: first-reply validity -> final validity, repairs used
+  rag_validator   valid first try 1.00 -> after repair 1.00; mean repairs 0.00
+
+exact-match accuracy by category
+category                regex       baseline          eager            rag  rag_validator
+derived                  0.29           1.00           1.00           1.00           1.00
+distractor               1.00           1.00           1.00           1.00           1.00
+explicit                 1.00           1.00           1.00           1.00           1.00
+format                   0.80           1.00           1.00           1.00           1.00
+multi_clause             1.00           1.00           1.00           1.00           1.00
+no_deadline              1.00           1.00           1.00           1.00           1.00
+units                    0.88           1.00           0.88           1.00           1.00
+vague                    1.00           1.00           1.00           1.00           1.00
+(category table shows deadline accuracy)
+--- E4 spec extraction (qwen, cached replies): ok in 0s
+
+==============================================================================
+=== E4 spec extraction (gpt-oss-120b, cached replies)
+==============================================================================
+[baseline] done (120 cache hits, 0 API calls so far)
+[eager] done (240 cache hits, 0 API calls so far)
+[rag] done (360 cache hits, 0 API calls so far)
+[rag_validator] done (480 cache hits, 0 API calls so far)
+
+matched subset: 120 requirements available in every condition
+
+openai/gpt-oss-120b | retriever=bm25 | requirements=120
+condition         n        deadline  unresolved  component   exact  VSS F1  CAN F1  invalid VSS  invalid CAN
+regex           120    0.86 [0.78,0.91]     0.92       0.00    0.00    0.00    0.00     0/0          0/0     
+baseline        120    0.99 [0.95,1.00]     1.00       0.88    0.87    0.03    0.07     1/2          0/1     
+eager           120    0.98 [0.94,1.00]     0.99       0.85    0.84    0.02    0.03   172/185       93/117   
+rag             120    0.99 [0.95,1.00]     1.00       0.85    0.84    0.88    0.63     0/64         0/47    
+rag_validator   120    0.99 [0.95,1.00]     1.00       0.85    0.84    0.88    0.63     0/64         0/47    
+
+validator effect: first-reply validity -> final validity, repairs used
+  rag_validator   valid first try 1.00 -> after repair 1.00; mean repairs 0.00
+
+exact-match accuracy by category
+category                regex       baseline          eager            rag  rag_validator
+derived                  0.20           1.00           1.00           1.00           1.00
+distractor               1.00           1.00           1.00           1.00           1.00
+explicit                 1.00           1.00           1.00           1.00           1.00
+format                   0.80           1.00           1.00           1.00           1.00
+multi_clause             1.00           0.90           0.90           0.90           0.90
+no_deadline              1.00           1.00           0.93           1.00           1.00
+units                    0.80           1.00           1.00           1.00           1.00
+vague                    1.00           1.00           1.00           1.00           1.00
+(category table shows deadline accuracy)
+--- E4 spec extraction (gpt-oss-120b, cached replies): ok in 0s
+
+==============================================================================
+=== E5 retrieval (hand-made KB)
+==============================================================================
+corpus sizes: {'vss': 26, 'can': 11, 'attack': 8, 'rule': 12}
+
+all queries (n=106)
+retriever         R@1    R@3    R@5    MRR   MRR 95% CI
+tfidf_legacy     0.55   0.63   0.72   0.60   [0.52, 0.69]
+bm25             0.65   0.72   0.75   0.69   [0.60, 0.77]
+chance           0.07   0.21   0.35   0.22
+
+keyword queries (n=53)
+retriever         R@1    R@3    R@5    MRR   MRR 95% CI
+tfidf_legacy     0.85   0.89   0.91   0.87   [0.78, 0.95]
+bm25             1.00   1.00   1.00   1.00   [1.00, 1.00]
+chance           0.07   0.21   0.35   0.22
+
+paraphrase queries (n=53)
+retriever         R@1    R@3    R@5    MRR   MRR 95% CI
+tfidf_legacy     0.25   0.38   0.53   0.34   [0.23, 0.46]
+bm25             0.30   0.43   0.49   0.38   [0.26, 0.50]
+chance           0.07   0.21   0.35   0.22
+
+by corpus, paraphrase queries only: MRR (chance in brackets)
+corpus    size    tfidf_legacy            bm25
+vss         26    0.32 (0.15)    0.32 (0.15)
+can         11    0.14 (0.27)    0.14 (0.27)
+attack       8    0.73 (0.34)    0.78 (0.34)
+rule        12    0.29 (0.26)    0.48 (0.26)
+--- E5 retrieval (hand-made KB): ok in 0s
+
+==============================================================================
+=== E5 retrieval (real VSS v6.1)
+==============================================================================
+corpus sizes: {'vss': 1382, 'can': 11, 'attack': 8, 'rule': 12}
+
+all queries (n=32)
+retriever         R@1    R@3    R@5    MRR   MRR 95% CI
+tfidf_legacy     0.34   0.50   0.56   0.43   [0.28, 0.59]
+bm25             0.50   0.56   0.59   0.53   [0.37, 0.70]
+chance           0.00   0.00   0.00   0.01
+
+keyword queries (n=16)
+retriever         R@1    R@3    R@5    MRR   MRR 95% CI
+tfidf_legacy     0.62   0.75   0.88   0.72   [0.52, 0.91]
+bm25             0.81   0.94   1.00   0.88   [0.74, 1.00]
+chance           0.00   0.00   0.00   0.01
+
+paraphrase queries (n=16)
+retriever         R@1    R@3    R@5    MRR   MRR 95% CI
+tfidf_legacy     0.06   0.25   0.25   0.15   [0.03, 0.29]
+bm25             0.19   0.19   0.19   0.19   [0.00, 0.38]
+chance           0.00   0.00   0.00   0.01
+
+by corpus, paraphrase queries only: MRR (chance in brackets)
+corpus    size    tfidf_legacy            bm25
+vss       1382    0.15 (0.01)    0.19 (0.01)
+--- E5 retrieval (real VSS v6.1): ok in 3s
+
+==============================================================================
+=== E6 red/blue loop (qwen, cached replies)
+==============================================================================
+
+Round 0 (baseline monitors, radar present but unused), 60 samples per family
+family                    seed1: hazards/missed  seed2: hazards/missed  seed3: hazards/missed
+dos_flood                          15/0                   16/0                   17/0        
+priority_abuse                      0/0                    0/0                    0/0        
+low_slow_dos                        0/0                    0/0                    0/0        
+selective_suppression               4/0                    3/0                    3/0        
+sensor_drift_spoof                  0/0                    0/0                    0/0        
+masquerade                         26/23                  27/24                  25/23       
+gateway_delay                      15/0                   20/1                   17/0        
+jitter_injection                    0/0                    1/0                    0/0        
+dual_masquerade                    24/22                  25/22                  29/28       
+ALL                                84/45                  92/47                  91/51       
+baseline false-alarm rate on held-out benign runs: 0.01, 0.00, 0.02
+
+Blue arms (means over 3 seeds; held-out = missed attacks the arm never saw)
+arm          held-out in time  all hazards in time    FPR  round-1 evading volume  proposals to first rule
+none                     0.00                 0.46   0.01                   0.094                      nan   (n=3)
+random                   0.53                 0.75   0.01                   0.048                        1   (n=3)
+enumerate                0.53                 0.75   0.02                   0.048                       52   (n=3)
+llm                      0.53                 0.75   0.01                   0.048                        1   (n=3)
+
+Round 1: evading hazards per family under each arm (missed / sampled), summed over seeds
+family                          none      random   enumerate         llm
+dos_flood                    0/180       0/180       0/180       0/180  
+priority_abuse               0/180       0/180       0/180       0/180  
+low_slow_dos                 0/180       0/180       0/180       0/180  
+selective_suppression        0/180       0/180       0/180       0/180  
+sensor_drift_spoof           0/180       0/180       0/180       0/180  
+masquerade                  73/180       0/180       0/180       0/180  
+gateway_delay                0/180       0/180       0/180       0/180  
+jitter_injection             0/180       0/180       0/180       0/180  
+dual_masquerade             80/180      78/180      78/180      78/180  
+
+Accepted rules
+  seed 1 enumerate : cross_check(0x2A0,0x2B0, tol=1, skew=15ms)
+  seed 1 llm       : cross_check(0x2A0,0x2B0, tol=1, skew=10ms)
+  seed 1 random    : jump(0x2B0, max_step=1.0); cross_check(0x2A0,0x2B0, tol=1, skew=30ms)
+  seed 2 enumerate : cross_check(0x2A0,0x2B0, tol=1, skew=15ms); cross_check(0x2A0,0x2B0, tol=0.5, skew=5ms)
+  seed 2 llm       : cross_check(0x2A0,0x2B0, tol=1, skew=10ms)
+  seed 2 random    : jump(0x2A0, max_step=2.0); cross_check(0x2A0,0x2B0, tol=3, skew=5ms); drift(0x2B0, window=5, slack_m=0.5)
+  seed 3 enumerate : cross_check(0x2A0,0x2B0, tol=1, skew=15ms)
+  seed 3 llm       : cross_check(0x2A0,0x2B0, tol=2, skew=10ms)
+  seed 3 random    : cross_check(0x2A0,0x2B0, tol=5, skew=30ms)
+
+LLM qwen/qwen3.8-27b: 9 cache hits, 0 API calls
+  seed 1: 3 calls, 7 valid proposals, 0 invalid, 6 rejected by the verifier
+  seed 2: 3 calls, 9 valid proposals, 0 invalid, 8 rejected by the verifier
+  seed 3: 3 calls, 7 valid proposals, 0 invalid, 6 rejected by the verifier
+--- E6 red/blue loop (qwen, cached replies): ok in 100s
+
+==============================================================================
+=== E9 radar failover (collisions avoided, cost, adaptive attacker)
+==============================================================================
+A. hazard volume (share of attack parameter space that causes a collision) and mean impact speed
+family                                        none                  radar_or            disagree_brake
+dos_flood                  27.8% [24.6%,31.2%]  1.90   27.4% [24.2%,30.7%]  1.87   27.4% [24.2%,30.7%]  1.87
+priority_abuse              0.0% [0.0%,0.5%]  0.00    0.0% [0.0%,0.5%]  0.00    0.0% [0.0%,0.5%]  0.00
+low_slow_dos                0.0% [0.0%,0.5%]  0.00    0.0% [0.0%,0.5%]  0.00    0.0% [0.0%,0.5%]  0.00
+selective_suppression       3.9% [2.7%,5.6%]  0.33    0.0% [0.0%,0.5%]  0.00    0.0% [0.0%,0.5%]  0.00
+sensor_drift_spoof          0.0% [0.0%,0.5%]  0.00    0.0% [0.0%,0.5%]  0.00    0.0% [0.0%,0.5%]  0.00
+masquerade                 44.9% [41.3%,48.5%]  3.31    0.0% [0.0%,0.5%]  0.00    0.0% [0.0%,0.5%]  0.00
+gateway_delay              25.3% [22.2%,28.6%]  0.94    0.0% [0.0%,0.5%]  0.00    0.0% [0.0%,0.5%]  0.00
+jitter_injection            2.6% [1.7%,4.1%]  0.04    0.0% [0.0%,0.5%]  0.00    0.0% [0.0%,0.5%]  0.00
+dual_masquerade            47.8% [44.2%,51.4%]  3.50   47.5% [43.9%,51.2%]  3.46   47.5% [43.9%,51.2%]  3.46
+ALL (equal weight/run)                       16.9%                      8.3%                      8.3%
+
+B. cost on benign runs (no attack)
+  none             mean e2e latency   77.0 ms  collisions 0/100  precautionary triggers 0/100
+  radar_or         mean e2e latency   74.5 ms  collisions 0/100  precautionary triggers 0/100
+  disagree_brake   mean e2e latency   74.5 ms  collisions 0/100  precautionary triggers 0/100
+  radar_or         paired latency change vs none: mean -2.50 ms, max +4.32 ms
+  disagree_brake   paired latency change vs none: mean -2.50 ms, max +4.32 ms
+
+C. adaptive attacker: (1+1)-ES, 150 evaluations per family and scenario, against the mitigated system
+family                                none          radar_or    disagree_brake   (scenarios where a hazard was found)
+dos_flood                              5/6               5/6               5/6
+priority_abuse                         0/6               0/6               0/6
+low_slow_dos                           0/6               0/6               0/6
+selective_suppression                  2/6               0/6               0/6
+sensor_drift_spoof                     1/6               0/6               0/6
+masquerade                             6/6               0/6               0/6
+gateway_delay                          4/6               0/6               0/6
+jitter_injection                       1/6               0/6               0/6
+dual_masquerade                        6/6               6/6               6/6
+
+D. cost of redundancy: an attacker forges a near obstacle on ONE channel when nothing is in the way (obstacle 250 m ahead; braking is unwanted)
+forged channel                  none          radar_or    disagree_brake   (unwanted brake events)
+primary sensor               100/100           100/100           100/100
+radar                          0/100           100/100           100/100
+--- E9 radar failover (collisions avoided, cost, adaptive attacker): ok in 144s
+
+==============================================================================
+=== E10 analytic latency bound (soundness, tightness, proven-safe share)
+==============================================================================
+
+=== perception policy: none ===
+family                  runs  violations  bound/obs med    p95  hazard  proven safe  unknown  hazard&proven
+dos_flood                720           0           1.88   5.90   24.4%        29.2%    46.4%              0
+priority_abuse           720           0           1.96   4.59    0.0%        51.4%    48.6%              0
+low_slow_dos             720           0           2.01   3.92    0.0%        46.0%    54.0%              0
+selective_suppression    720           0           1.94   2.34    5.4%        55.1%    39.4%              0
+sensor_drift_spoof       720           0           1.98   9.80    0.0%        47.4%    52.6%              0
+masquerade               720           0           1.59   5.86   43.2%        29.0%    27.8%              0
+gateway_delay            720           0           1.90   4.30   27.6%        12.9%    59.4%              0
+jitter_injection         720           0           2.08   3.11    4.2%        24.6%    71.2%              0
+dual_masquerade          720           0           1.55   4.65   45.6%        28.1%    26.4%              0
+total violations 0/6480
+adversarial search for a bound violation: 0/45 searches succeeded (250 evaluations each)
+
+=== perception policy: radar_or ===
+family                  runs  violations  bound/obs med    p95  hazard  proven safe  unknown  hazard&proven
+dos_flood                720           0           1.90   6.27   26.7%        30.3%    43.1%              0
+priority_abuse           720           0           1.99   4.43    0.0%        50.7%    49.3%              0
+low_slow_dos             720           0           2.08   3.86    0.0%        46.5%    53.5%              0
+selective_suppression    720           0           1.88   2.16    0.0%        68.5%    31.5%              0
+sensor_drift_spoof       720           0           1.88   2.16    0.0%        68.5%    31.5%              0
+masquerade               720           0           1.85   2.15    0.0%        68.5%    31.5%              0
+gateway_delay            720           0           1.86   2.15    0.0%        68.5%    31.5%              0
+jitter_injection         720           0           1.87   2.16    0.0%        68.5%    31.5%              0
+dual_masquerade          720           0           1.63   2.95   43.1%        31.8%    25.1%              0
+total violations 0/6480
+adversarial search for a bound violation: 0/45 searches succeeded (250 evaluations each)
+
+Headline: longest flood proven safe (ms), flood starting when the obstacle appears; scenario 60 km/h, obstacle 24 m, cpu load 0.3
+  latest safe latency 353 ms, benign bound 140 ms
+  flood   500 frames/s: proven safe up to 400 ms
+  flood  1000 frames/s: proven safe up to 400 ms
+  flood  2000 frames/s: proven safe up to 400 ms
+  flood  3000 frames/s: proven safe up to 400 ms
+  flood  4000 frames/s: proven safe up to 184 ms
+  flood  6000 frames/s: proven safe up to 122 ms
+--- E10 analytic latency bound (soundness, tightness, proven-safe share): ok in 154s
+
+==============================================================================
+=== E11 sensitivity to the assumed ECU timings
+==============================================================================
+attack-induced hazard volume per family (policy none -> radar_or); scenarios are tight at the DEFAULT timings
+timing assumption  benign coll.       dos_flood  priority_abuse    low_slow_dos  selective_supp  sensor_drift_s      masquerade   gateway_delay  jitter_injecti  dual_masquerad  bound viol.  bound/obs
+0.5x compute               0/40        19%->19%          0%->0%          0%->0%          4%->0%          0%->0%         39%->0%         18%->0%          0%->0%        41%->40%        0/7200       1.97
+1x (default)               0/40        26%->26%          0%->0%          0%->0%          4%->0%          0%->0%         42%->0%         28%->0%          2%->0%        42%->40%        0/7200       1.89
+1.5x compute               6/40        31%->32%          1%->1%          0%->0%          6%->0%          0%->0%         37%->1%         28%->0%          9%->0%        39%->39%        0/7200       1.87
+2x compute                11/40        22%->22%          0%->0%          1%->0%          4%->1%          0%->0%         32%->2%         23%->1%         11%->2%        30%->30%        0/7200       1.85
+1x, jitter 0.30            0/40        25%->25%          0%->0%          0%->0%          4%->0%          0%->0%         43%->0%         30%->0%          4%->0%        42%->42%        0/7200       3.21
+--- E11 sensitivity to the assumed ECU timings: ok in 288s
+
+==============================================================================
+=== E12 defences: gateway guard + authentication (hazard, cost, adaptive attacker)
+==============================================================================
+A. hazard volume (share of the attack parameter space that causes a collision)
+attack variant                                  radar_or                +guard                 +auth           +guard+auth
+dos_flood                            26.2% [22.8%,29.8%]      0.0% [0.0%,0.6%]   23.8% [20.6%,27.4%]      0.0% [0.0%,0.6%]
+priority_abuse                          0.0% [0.0%,0.6%]      0.0% [0.0%,0.6%]      0.0% [0.0%,0.6%]      0.0% [0.0%,0.6%]
+low_slow_dos                            0.0% [0.0%,0.6%]      0.0% [0.0%,0.6%]      0.0% [0.0%,0.6%]      0.0% [0.0%,0.6%]
+selective_suppression                   0.0% [0.0%,0.6%]      0.0% [0.0%,0.6%]      0.0% [0.0%,0.6%]      0.0% [0.0%,0.6%]
+sensor_drift_spoof                      0.0% [0.0%,0.6%]      0.0% [0.0%,0.6%]      0.0% [0.0%,0.6%]      0.0% [0.0%,0.6%]
+masquerade                              0.0% [0.0%,0.6%]      0.0% [0.0%,0.6%]      0.0% [0.0%,0.6%]      0.0% [0.0%,0.6%]
+gateway_delay                           0.0% [0.0%,0.6%]      0.0% [0.0%,0.6%]      0.0% [0.0%,0.6%]      0.0% [0.0%,0.6%]
+jitter_injection                        0.0% [0.0%,0.6%]      0.0% [0.0%,0.6%]      0.0% [0.0%,0.6%]      0.0% [0.0%,0.6%]
+dual_masquerade                      43.3% [39.4%,47.3%]   43.3% [39.4%,47.3%]      4.3% [3.0%,6.3%]      4.3% [3.0%,6.3%]
+dos_flood (safety-bus node)          27.3% [23.9%,31.0%]   27.3% [23.9%,31.0%]   25.0% [21.7%,28.6%]   25.0% [21.7%,28.6%]
+low_slow_dos (safety-bus node)          0.0% [0.0%,0.6%]      0.0% [0.0%,0.6%]      0.0% [0.0%,0.6%]      0.0% [0.0%,0.6%]
+masquerade (holds key)                  0.0% [0.0%,0.6%]      0.0% [0.0%,0.6%]      0.0% [0.0%,0.6%]      0.0% [0.0%,0.6%]
+dual_masquerade (holds key)          43.0% [39.1%,47.0%]   43.0% [39.1%,47.0%]   43.0% [39.1%,47.0%]   43.0% [39.1%,47.0%]
+analytic bound violations: 0/31200
+
+B. cost on benign runs (no attack)
+  radar_or       mean latency   74.5 ms  paired change vs radar_or +0.00 ms  collisions 0/100  watchdog triggers 0/100
+  +guard         mean latency   74.5 ms  paired change vs radar_or +0.00 ms  collisions 0/100  watchdog triggers 0/100
+  +auth          mean latency   75.4 ms  paired change vs radar_or +0.96 ms  collisions 0/100  watchdog triggers 0/100
+  +guard+auth    mean latency   75.4 ms  paired change vs radar_or +0.96 ms  collisions 0/100  watchdog triggers 0/100
+
+C. adaptive attacker: (1+1)-ES, 100 evaluations per variant and scenario (scenarios where a hazard was found)
+attack variant                          radar_or        +guard         +auth   +guard+auth
+dos_flood                                    5/6           0/6           5/6           0/6
+priority_abuse                               0/6           0/6           0/6           0/6
+low_slow_dos                                 0/6           0/6           0/6           0/6
+selective_suppression                        0/6           0/6           0/6           0/6
+sensor_drift_spoof                           0/6           0/6           0/6           0/6
+masquerade                                   0/6           0/6           0/6           0/6
+gateway_delay                                0/6           0/6           0/6           0/6
+jitter_injection                             0/6           0/6           0/6           0/6
+dual_masquerade                              6/6           6/6           1/6           1/6
+dos_flood (safety-bus node)                  5/6           5/6           5/6           5/6
+low_slow_dos (safety-bus node)               0/6           0/6           0/6           0/6
+masquerade (holds key)                       0/6           0/6           0/6           0/6
+dual_masquerade (holds key)                  6/6           6/6           6/6           6/6
+
+D. availability cost: unwanted braking when nothing is in the way (obstacle 250 m ahead), attack runs for 400 ms
+attack                                        radar_or        +guard         +auth   +guard+auth   (unwanted brake events)
+forged near obstacle on radar                  100/100       100/100         0/100         0/100
+forged near obstacle on sensor                 100/100       100/100         0/100         0/100
+forged near obstacle, holds key                100/100       100/100       100/100       100/100
+both channels corrupted (dual forgery)           0/100         0/100       100/100       100/100
+--- E12 defences: gateway guard + authentication (hazard, cost, adaptive attacker): ok in 249s
+
+==============================================================================
+=== E12b adversarial search for a counter-example to the bound
+==============================================================================
+none           searches that found a bound violation: 0/52 (200 evaluations each)
+radar_or       searches that found a bound violation: 0/52 (200 evaluations each)
++guard         searches that found a bound violation: 0/52 (200 evaluations each)
++auth          searches that found a bound violation: 0/52 (200 evaluations each)
++guard+auth    searches that found a bound violation: 0/52 (200 evaluations each)
+total 0/260
+--- E12b adversarial search for a counter-example to the bound: ok in 197s
+
+==============================================================================
+=== E14 sensitivity to the braking physics
+==============================================================================
+attack-induced hazard volume per variant, by defence configuration (none / radar_or / all defences); benign collisions out of 40
+braking                 decel  benign               masquerade            gateway_delay                dos_flood          dual_masquerade   flood (safety-bus node         dual (holds key)   bound viol.
+CARLA-like (0.54 g)      5.30     0/40            59% / 0% / 0%            30% / 0% / 0%           27% / 28% / 0%           56% / 55% / 3%          27% / 27% / 23%          52% / 52% / 52%       0/7200
+weak (0.65 g)            6.38     0/40            52% / 0% / 0%            30% / 0% / 0%           19% / 19% / 0%           46% / 46% / 4%          30% / 29% / 27%          51% / 50% / 50%       0/7200
+default (0.80 g)         7.85     0/40            44% / 0% / 0%            25% / 0% / 0%           28% / 27% / 0%           42% / 42% / 4%          22% / 22% / 20%          42% / 42% / 42%       0/7200
+strong (0.90 g)          8.83     0/40            42% / 0% / 0%            26% / 0% / 0%           26% / 26% / 0%           39% / 38% / 4%          23% / 23% / 21%          40% / 40% / 40%       0/7200
+--- E14 sensitivity to the braking physics: ok in 288s
+
+==============================================================================
+=== E16 embedded C port (reference checks; compiles and replays if a C compiler is on the PATH)
+==============================================================================
+wrote 138 cases to /home/runner/work/GenAI-mini-project/GenAI-mini-project/embedded/cases (337 KB)
+integer reference vs the emulator's floating-point decision: 120/120 identical (trigger sources in these runs, 1 sensor / 2 radar / 4 watchdog: {1: 64, 2: 44, 4: 12})
+integer reference vs the design intent on hand-built edge cases: 18/18
+
+--- C compilation and replay ---
+static check (no float, no allocation, no libc in the module): OK
+compiler: gcc (Ubuntu 13.3.0-6ubuntu2~24.04.1) 13.3.0
+module compiles cleanly with -std=c99 -Wall -Wextra -Wpedantic -Werror
+
+cases replayed: 138 (120 from emulator runs, 18 hand-built edge cases)
+C port == integer reference (code, time, rejected frames): 138/138
+hand-built edge cases matching the design intent:         18/18
+C port == emulator's floating-point decision:             120/120
+
+footprint (host build, -Os; indicative only, an MCU build differs):
+  module: {'text': 490, 'data': 0, 'bss': 0, 'tool': 'size'}
+  SIZEOF state=52 config=24
+  BENCH frames=5000000 ns_per_frame_plus_tick=3.1 sink=0   (host CPU, not an MCU)
+
+RESULT: PASS
+--- E16 embedded C port (reference checks; compiles and replays if a C compiler is on the PATH): ok in 1s
+
+==============================================================================
+=== End-to-end pipeline
+==============================================================================
+plant       : configured defaults
+requirement : Brake within 100 ms if an obstacle is detected.
+spec        : deadline 100 ms, G(obstacle_detected -> F[0,100 ms] brake_applied)  [regex baseline]
+red round 0 : 60 attack-induced hazards, 36 with no in-time alarm
+blue (enumerate) : 1 verified rule(s) {'candidates_evaluated': 104}
+              {'type': 'cross_check', 'id_a': '0x2A0', 'id_b': '0x2B0', 'field': 'distance_m', 'tol': 1.0, 'max_skew_ms': 15.0}
+hazards flagged in time: 0.40 -> 0.70; false-alarm rate 0.01 -> 0.01
+residual risk (red round 1, sampled attacks that still cause a collision unnoticed): dual_masquerade 18/40
+requirement conformance (deadline 100 ms; 36 benign runs over 12 scenarios)
+  baseline       violated in simulation: analytic worst case 147 ms, slowest simulated run 101 ms
+                 smallest deadline that can be proven for this chain: 147 ms
+  all defences   met in simulation only (not provable): analytic worst case 149 ms, slowest simulated run 92 ms
+                 smallest deadline that can be proven for this chain: 149 ms
+defence assessment (40 sampled attacks per variant; hazard share by configuration; bound violations 0/2600)
+  attack variant                           none     radar_or       +guard        +auth  +guard+auth   cheapest sufficient defence
+  dos_flood                                 30%          30%           0%          22%           0%   +guard (95% upper bound on hazard 9%)
+  priority_abuse                             0%           0%           0%           0%           0%   none (95% upper bound on hazard 9%)
+  low_slow_dos                               0%           0%           0%           0%           0%   none (95% upper bound on hazard 9%)
+  selective_suppression                      0%           0%           0%           0%           0%   none (95% upper bound on hazard 9%)
+  sensor_drift_spoof                         0%           0%           0%           0%           0%   none (95% upper bound on hazard 9%)
+  masquerade                                48%           0%           0%           0%           0%   radar_or (95% upper bound on hazard 9%)
+  gateway_delay                             22%           0%           0%           0%           0%   radar_or (95% upper bound on hazard 9%)
+  jitter_injection                           8%           0%           0%           0%           0%   radar_or (95% upper bound on hazard 9%)
+  dual_masquerade                           45%          45%          45%           2%           2%   OPEN (best +auth: 2%)
+  dos_flood (safety-bus node)               32%          32%          32%          32%          32%   OPEN (no defence helps: 32%)
+  low_slow_dos (safety-bus node)             0%           0%           0%           0%           0%   none (95% upper bound on hazard 9%)
+  masquerade (holds key)                    32%           0%           0%           0%           0%   radar_or (95% upper bound on hazard 9%)
+  dual_masquerade (holds key)               42%          42%          42%          42%          42%   OPEN (no defence helps: 42%)
+  open after every defence: dual_masquerade, dos_flood (safety-bus node), dual_masquerade (holds key)
+  (covered = sampled hazard share at most 2%; the 95% upper bound shows how little a small sample can certify: with 40 samples, zero hazards still allows 9%)
+evidence    : audit 20/20 checks re-verified; radar failover prevents the case's collision (analytic bound does not prove safety); collision prevented under: radar_or, +guard, +auth, +guard+auth
+
+files written to outputs/pipeline_run/
+--- End-to-end pipeline: ok in 33s
+
+==============================================================================
+=== End-to-end pipeline, CARLA-calibrated plant
+==============================================================================
+plant       : carla-model3-60kmh (5.31 m/s^2, ramp 50 ms)
+requirement : Brake within 100 ms if an obstacle is detected.
+spec        : deadline 100 ms, G(obstacle_detected -> F[0,100 ms] brake_applied)  [regex baseline]
+red round 0 : 82 attack-induced hazards, 52 with no in-time alarm
+blue (enumerate) : 1 verified rule(s) {'candidates_evaluated': 104}
+              {'type': 'cross_check', 'id_a': '0x2A0', 'id_b': '0x2B0', 'field': 'distance_m', 'tol': 1.0, 'max_skew_ms': 15.0}
+hazards flagged in time: 0.37 -> 0.72; false-alarm rate 0.01 -> 0.01
+residual risk (red round 1, sampled attacks that still cause a collision unnoticed): dual_masquerade 24/40
+requirement conformance (deadline 100 ms; 36 benign runs over 12 scenarios)
+  baseline       violated in simulation: analytic worst case 147 ms, slowest simulated run 101 ms
+                 smallest deadline that can be proven for this chain: 147 ms
+  all defences   met in simulation only (not provable): analytic worst case 149 ms, slowest simulated run 92 ms
+                 smallest deadline that can be proven for this chain: 149 ms
+defence assessment (40 sampled attacks per variant; hazard share by configuration; bound violations 0/2600)
+  attack variant                           none     radar_or       +guard        +auth  +guard+auth   cheapest sufficient defence
+  dos_flood                                 30%          30%           0%          22%           0%   +guard (95% upper bound on hazard 9%)
+  priority_abuse                             0%           0%           0%           0%           0%   none (95% upper bound on hazard 9%)
+  low_slow_dos                               0%           0%           0%           0%           0%   none (95% upper bound on hazard 9%)
+  selective_suppression                      0%           0%           0%           0%           0%   none (95% upper bound on hazard 9%)
+  sensor_drift_spoof                        18%           0%           0%           0%           0%   radar_or (95% upper bound on hazard 9%)
+  masquerade                                62%           0%           0%           0%           0%   radar_or (95% upper bound on hazard 9%)
+  gateway_delay                             22%           0%           0%           0%           0%   radar_or (95% upper bound on hazard 9%)
+  jitter_injection                           8%           0%           0%           0%           0%   radar_or (95% upper bound on hazard 9%)
+  dual_masquerade                           60%          60%          60%           2%           2%   OPEN (best +auth: 2%)
+  dos_flood (safety-bus node)               32%          32%          32%          32%          32%   OPEN (no defence helps: 32%)
+  low_slow_dos (safety-bus node)             0%           0%           0%           0%           0%   none (95% upper bound on hazard 9%)
+  masquerade (holds key)                    42%           0%           0%           0%           0%   radar_or (95% upper bound on hazard 9%)
+  dual_masquerade (holds key)               65%          65%          65%          65%          65%   OPEN (no defence helps: 65%)
+  open after every defence: dual_masquerade, dos_flood (safety-bus node), dual_masquerade (holds key)
+  (covered = sampled hazard share at most 2%; the 95% upper bound shows how little a small sample can certify: with 40 samples, zero hazards still allows 9%)
+evidence    : audit 20/20 checks re-verified; radar failover prevents the case's collision (analytic bound does not prove safety); collision prevented under: radar_or, +guard, +auth, +guard+auth
+
+files written to outputs/pipeline_run_carla/
+--- End-to-end pipeline, CARLA-calibrated plant: ok in 34s
+
+All steps completed.

@@ -1,0 +1,136 @@
+{
+  "version": 2,
+  "requirement": {
+    "id": "REQ-1",
+    "text": "Brake within 100 ms if an obstacle is detected.",
+    "method": "regex baseline"
+  },
+  "spec": {
+    "deadline_ms": 100.0,
+    "formula": "G(obstacle_detected -> F[0,100 ms] brake_applied)",
+    "trigger": "obstacle_detected",
+    "response": "brake_applied",
+    "component": "other"
+  },
+  "violation": {
+    "scenario": {
+      "v0_kmh": 62.35566406711919,
+      "d0_m": 30.64916918316855,
+      "road": "dry",
+      "cpu_load": 0.28131039384515183
+    },
+    "seed": 604131316,
+    "radar": true,
+    "attack": {
+      "family": "sensor_drift_spoof",
+      "params": {
+        "rate_m_per_s": 14.46889597707714,
+        "duration_ms": 545.1656119956572,
+        "start_offset_ms": -360.1678280697764
+      }
+    },
+    "recorded": {
+      "e2e_latency_ms": 268.313,
+      "robustness_ms": -168.313,
+      "collision": true,
+      "latest_safe_latency_ms": 113.52950794183228
+    }
+  },
+  "threat": {
+    "family": "sensor_drift_spoof",
+    "capability": "compromised ECU or gateway between a sender and the bus",
+    "kb_pattern": {
+      "id": "ATK-002",
+      "name": "Sensor Data Injection",
+      "severity": "CRITICAL",
+      "likelihood": "MEDIUM",
+      "tara_risk_score": 0.88,
+      "iso_reference": "ISO_21434",
+      "mitigation": "Sensor data validation, redundant sensing, anomaly detection",
+      "retrieval_suggestion": {
+        "id": "ATK-002",
+        "name": "Sensor Data Injection",
+        "agrees": true
+      }
+    }
+  },
+  "mitigation": {
+    "rule": {
+      "type": "cross_check",
+      "id_a": "0x2A0",
+      "id_b": "0x2B0",
+      "field": "distance_m",
+      "tol": 1.0,
+      "max_skew_ms": 15.0
+    },
+    "verification": {
+      "fpr": 0.0,
+      "fpr_cap": 0.02,
+      "new_timely": 29
+    }
+  },
+  "calibration": {
+    "train_seed0": 2001000,
+    "n_train": 60,
+    "benign_seed0": 2101000,
+    "n_benign": 60,
+    "fpr_cap": 0.02
+  },
+  "residual_risk": {
+    "dual_masquerade": "24/40 sampled attacks still cause a collision with no in-time alarm"
+  },
+  "failover": {
+    "policy": "radar_or",
+    "e2e_latency_ms": 70.012,
+    "collision": false,
+    "effective": true,
+    "latency_bound_ms": 138.36763982614943,
+    "latest_safe_latency_ms": 113.52950794183228,
+    "bound_proves_safe": false
+  },
+  "defences": {
+    "radar_or": {
+      "policy": "radar_or",
+      "e2e_latency_ms": 70.012,
+      "collision": false,
+      "effective": true,
+      "latency_bound_ms": 138.36763982614943,
+      "latest_safe_latency_ms": 113.52950794183228,
+      "bound_proves_safe": false
+    },
+    "+guard": {
+      "policy": "+guard",
+      "e2e_latency_ms": 70.012,
+      "collision": false,
+      "effective": true,
+      "latency_bound_ms": 138.36763982614943,
+      "latest_safe_latency_ms": 113.52950794183228,
+      "bound_proves_safe": false
+    },
+    "+auth": {
+      "policy": "+auth",
+      "e2e_latency_ms": 70.727,
+      "collision": false,
+      "effective": true,
+      "latency_bound_ms": 139.37544318689584,
+      "latest_safe_latency_ms": 113.52950794183228,
+      "bound_proves_safe": false
+    },
+    "+guard+auth": {
+      "policy": "+guard+auth",
+      "e2e_latency_ms": 70.727,
+      "collision": false,
+      "effective": true,
+      "latency_bound_ms": 139.37544318689584,
+      "latest_safe_latency_ms": 113.52950794183228,
+      "bound_proves_safe": false
+    }
+  },
+  "plant_profile": {
+    "name": "carla-model3-60kmh",
+    "decel_ms2": 5.31,
+    "brake_ramp_ms": 50,
+    "source": "CARLA 0.9.15, vehicle.tesla.model3, Town04, wheel friction 0.8 (a scale factor, about 0.54 g), e13_carla_plant.py run 4, fit at 60 km/h",
+    "notes": "Transcribed from the console output of run 4 (the JSON file was not saved). Fitted deceleration at 40/50/60/70/80 km/h was 4.86/5.14/5.31/5.40/5.48 m/s^2 with ramps of 70/70/50/20/0 ms: braking depends weakly on speed and this profile uses one value. See experiments/RESULTS.md, E13."
+  }
+}

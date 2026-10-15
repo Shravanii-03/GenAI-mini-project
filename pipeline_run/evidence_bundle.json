@@ -1,0 +1,130 @@
+{
+  "version": 2,
+  "requirement": {
+    "id": "REQ-1",
+    "text": "Brake within 100 ms if an obstacle is detected.",
+    "method": "regex baseline"
+  },
+  "spec": {
+    "deadline_ms": 100.0,
+    "formula": "G(obstacle_detected -> F[0,100 ms] brake_applied)",
+    "trigger": "obstacle_detected",
+    "response": "brake_applied",
+    "component": "other"
+  },
+  "violation": {
+    "scenario": {
+      "v0_kmh": 60.89799800482294,
+      "d0_m": 20.459288863165526,
+      "road": "dry",
+      "cpu_load": 0.4526772829259311
+    },
+    "seed": 906308217,
+    "radar": true,
+    "attack": {
+      "family": "masquerade",
+      "params": {
+        "bias_m": 14.62450367107581,
+        "phase_shift_ms": 4.180924236713443,
+        "duration_ms": 717.3335964002966,
+        "start_offset_ms": -247.41484544656478
+      }
+    },
+    "recorded": {
+      "e2e_latency_ms": 165.095,
+      "robustness_ms": -65.095,
+      "collision": true,
+      "latest_safe_latency_ms": 106.77032315959084
+    }
+  },
+  "threat": {
+    "family": "masquerade",
+    "capability": "compromised ECU or gateway between a sender and the bus",
+    "kb_pattern": {
+      "id": "ATK-002",
+      "name": "Sensor Data Injection",
+      "severity": "CRITICAL",
+      "likelihood": "MEDIUM",
+      "tara_risk_score": 0.88,
+      "iso_reference": "ISO_21434",
+      "mitigation": "Sensor data validation, redundant sensing, anomaly detection",
+      "retrieval_suggestion": {
+        "id": "ATK-007",
+        "name": "DoS on CAN Bus",
+        "agrees": false
+      }
+    }
+  },
+  "mitigation": {
+    "rule": {
+      "type": "cross_check",
+      "id_a": "0x2A0",
+      "id_b": "0x2B0",
+      "field": "distance_m",
+      "tol": 1.0,
+      "max_skew_ms": 15.0
+    },
+    "verification": {
+      "fpr": 0.0,
+      "fpr_cap": 0.02,
+      "new_timely": 18
+    }
+  },
+  "calibration": {
+    "train_seed0": 2001000,
+    "n_train": 60,
+    "benign_seed0": 2101000,
+    "n_benign": 60,
+    "fpr_cap": 0.02
+  },
+  "residual_risk": {
+    "dual_masquerade": "18/40 sampled attacks still cause a collision with no in-time alarm"
+  },
+  "failover": {
+    "policy": "radar_or",
+    "e2e_latency_ms": 78.286,
+    "collision": false,
+    "effective": true,
+    "latency_bound_ms": 151.9651003873793,
+    "latest_safe_latency_ms": 106.77032315959084,
+    "bound_proves_safe": false
+  },
+  "defences": {
+    "radar_or": {
+      "policy": "radar_or",
+      "e2e_latency_ms": 78.286,
+      "collision": false,
+      "effective": true,
+      "latency_bound_ms": 151.9651003873793,
+      "latest_safe_latency_ms": 106.77032315959084,
+      "bound_proves_safe": false
+    },
+    "+guard": {
+      "policy": "+guard",
+      "e2e_latency_ms": 78.286,
+      "collision": false,
+      "effective": true,
+      "latency_bound_ms": 151.9651003873793,
+      "latest_safe_latency_ms": 106.77032315959084,
+      "bound_proves_safe": false
+    },
+    "+auth": {
+      "policy": "+auth",
+      "e2e_latency_ms": 78.986,
+      "collision": false,
+      "effective": true,
+      "latency_bound_ms": 153.14287200514107,
+      "latest_safe_latency_ms": 106.77032315959084,
+      "bound_proves_safe": false
+    },
+    "+guard+auth": {
+      "policy": "+guard+auth",
+      "e2e_latency_ms": 78.986,
+      "collision": false,
+      "effective": true,
+      "latency_bound_ms": 153.14287200514107,
+      "latest_safe_latency_ms": 106.77032315959084,
+      "bound_proves_safe": false
+    }
+  }
+}

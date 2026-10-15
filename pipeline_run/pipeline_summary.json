@@ -1,0 +1,565 @@
+{
+  "requirement": "Brake within 100 ms if an obstacle is detected.",
+  "spec": {
+    "deadline_ms": 100.0,
+    "component": "other",
+    "trigger": "obstacle_detected",
+    "response": "brake_applied",
+    "formula": "G(obstacle_detected -> F[0,100 ms] brake_applied)"
+  },
+  "spec_method": "regex baseline",
+  "seed": 1,
+  "blue": "enumerate",
+  "hazards_round0": 60,
+  "missed_round0": 36,
+  "in_time_before": 0.4,
+  "in_time_after": 0.7,
+  "fpr_before": 0.0125,
+  "fpr_after": 0.0125,
+  "rules": [
+    {
+      "type": "cross_check",
+      "id_a": "0x2A0",
+      "id_b": "0x2B0",
+      "field": "distance_m",
+      "tol": 1.0,
+      "max_skew_ms": 15.0
+    }
+  ],
+  "rules_dropped_by_deployment_check": [],
+  "blue_cost": {
+    "candidates_evaluated": 104
+  },
+  "round1_missed": {
+    "dual_masquerade": 18
+  },
+  "round1_sampled_per_family": 40,
+  "evidence": {
+    "audit_passed": 20,
+    "audit_total": 20,
+    "all_passed": true,
+    "failover_effective": true,
+    "failover_bound_proves_safe": false,
+    "defences": {
+      "radar_or": true,
+      "+guard": true,
+      "+auth": true,
+      "+guard+auth": true
+    }
+  },
+  "plant_profile": null,
+  "conformance": {
+    "deadline_ms": 100.0,
+    "convention": "latency from the obstacle appearing to brake onset; benign runs over tight scenarios",
+    "n_scenarios": 12,
+    "runs": 36,
+    "configs": {
+      "baseline": {
+        "bound_max_ms": 147.46546023363294,
+        "bound_median_ms": 134.96231831721144,
+        "observed_max_ms": 101.287,
+        "observed_mean_ms": 76.72072222222224,
+        "smallest_provable_deadline_ms": 147.46546023363294,
+        "verdict": "violated in simulation",
+        "worst_case_breakdown_ms": {
+          "trigger+channel": 11.3,
+          "perception": 56.1,
+          "decision": 33.6,
+          "actuator": 45.0,
+          "detect+cmd frames": 1.4
+        }
+      },
+      "all defences": {
+        "bound_max_ms": 148.58698634947288,
+        "bound_median_ms": 135.92755515909613,
+        "observed_max_ms": 91.962,
+        "observed_mean_ms": 73.20125000000002,
+        "smallest_provable_deadline_ms": 148.58698634947288,
+        "verdict": "met in simulation only (not provable)",
+        "worst_case_breakdown_ms": {
+          "trigger+channel": 11.3,
+          "perception": 57.2,
+          "decision": 33.6,
+          "actuator": 45.0,
+          "detect+cmd frames": 1.4
+        }
+      }
+    }
+  },
+  "defence_assessment": {
+    "n_per_variant": 40,
+    "seed": 1,
+    "eps": 0.02,
+    "defences": [
+      "none",
+      "radar_or",
+      "+guard",
+      "+auth",
+      "+guard+auth"
+    ],
+    "rows": [
+      {
+        "variant": "dos_flood",
+        "family": "dos_flood",
+        "extra": {},
+        "n": 40,
+        "hazard": {
+          "none": 0.3,
+          "radar_or": 0.3,
+          "+guard": 0.0,
+          "+auth": 0.225,
+          "+guard+auth": 0.0
+        },
+        "hazard_upper95": {
+          "none": 0.454303106543204,
+          "radar_or": 0.454303106543204,
+          "+guard": 0.08762453925039232,
+          "+auth": 0.3750339640409305,
+          "+guard+auth": 0.08762453925039232
+        },
+        "proven_safe": {
+          "none": 0.3,
+          "radar_or": 0.3,
+          "+guard": 0.65,
+          "+auth": 0.3,
+          "+guard+auth": 0.65
+        }
+      },
+      {
+        "variant": "priority_abuse",
+        "family": "priority_abuse",
+        "extra": {},
+        "n": 40,
+        "hazard": {
+          "none": 0.0,
+          "radar_or": 0.0,
+          "+guard": 0.0,
+          "+auth": 0.0,
+          "+guard+auth": 0.0
+        },
+        "hazard_upper95": {
+          "none": 0.08762453925039232,
+          "radar_or": 0.08762453925039232,
+          "+guard": 0.08762453925039232,
+          "+auth": 0.08762453925039232,
+          "+guard+auth": 0.08762453925039232
+        },
+        "proven_safe": {
+          "none": 0.525,
+          "radar_or": 0.525,
+          "+guard": 0.65,
+          "+auth": 0.525,
+          "+guard+auth": 0.65
+        }
+      },
+      {
+        "variant": "low_slow_dos",
+        "family": "low_slow_dos",
+        "extra": {},
+        "n": 40,
+        "hazard": {
+          "none": 0.0,
+          "radar_or": 0.0,
+          "+guard": 0.0,
+          "+auth": 0.0,
+          "+guard+auth": 0.0
+        },
+        "hazard_upper95": {
+          "none": 0.08762453925039232,
+          "radar_or": 0.08762453925039232,
+          "+guard": 0.08762453925039232,
+          "+auth": 0.08762453925039232,
+          "+guard+auth": 0.08762453925039232
+        },
+        "proven_safe": {
+          "none": 0.525,
+          "radar_or": 0.525,
+          "+guard": 0.65,
+          "+auth": 0.525,
+          "+guard+auth": 0.65
+        }
+      },
+      {
+        "variant": "selective_suppression",
+        "family": "selective_suppression",
+        "extra": {},
+        "n": 40,
+        "hazard": {
+          "none": 0.0,
+          "radar_or": 0.0,
+          "+guard": 0.0,
+          "+auth": 0.0,
+          "+guard+auth": 0.0
+        },
+        "hazard_upper95": {
+          "none": 0.08762453925039232,
+          "radar_or": 0.08762453925039232,
+          "+guard": 0.08762453925039232,
+          "+auth": 0.08762453925039232,
+          "+guard+auth": 0.08762453925039232
+        },
+        "proven_safe": {
+          "none": 0.575,
+          "radar_or": 0.65,
+          "+guard": 0.65,
+          "+auth": 0.65,
+          "+guard+auth": 0.65
+        }
+      },
+      {
+        "variant": "sensor_drift_spoof",
+        "family": "sensor_drift_spoof",
+        "extra": {},
+        "n": 40,
+        "hazard": {
+          "none": 0.0,
+          "radar_or": 0.0,
+          "+guard": 0.0,
+          "+auth": 0.0,
+          "+guard+auth": 0.0
+        },
+        "hazard_upper95": {
+          "none": 0.08762453925039232,
+          "radar_or": 0.08762453925039232,
+          "+guard": 0.08762453925039232,
+          "+auth": 0.08762453925039232,
+          "+guard+auth": 0.08762453925039232
+        },
+        "proven_safe": {
+          "none": 0.35,
+          "radar_or": 0.65,
+          "+guard": 0.65,
+          "+auth": 0.65,
+          "+guard+auth": 0.65
+        }
+      },
+      {
+        "variant": "masquerade",
+        "family": "masquerade",
+        "extra": {},
+        "n": 40,
+        "hazard": {
+          "none": 0.475,
+          "radar_or": 0.0,
+          "+guard": 0.0,
+          "+auth": 0.0,
+          "+guard+auth": 0.0
+        },
+        "hazard_upper95": {
+          "none": 0.6250289314607027,
+          "radar_or": 0.08762453925039232,
+          "+guard": 0.08762453925039232,
+          "+auth": 0.08762453925039232,
+          "+guard+auth": 0.08762453925039232
+        },
+        "proven_safe": {
+          "none": 0.175,
+          "radar_or": 0.65,
+          "+guard": 0.65,
+          "+auth": 0.65,
+          "+guard+auth": 0.65
+        }
+      },
+      {
+        "variant": "gateway_delay",
+        "family": "gateway_delay",
+        "extra": {},
+        "n": 40,
+        "hazard": {
+          "none": 0.225,
+          "radar_or": 0.0,
+          "+guard": 0.0,
+          "+auth": 0.0,
+          "+guard+auth": 0.0
+        },
+        "hazard_upper95": {
+          "none": 0.3750339640409305,
+          "radar_or": 0.08762453925039232,
+          "+guard": 0.08762453925039232,
+          "+auth": 0.08762453925039232,
+          "+guard+auth": 0.08762453925039232
+        },
+        "proven_safe": {
+          "none": 0.15,
+          "radar_or": 0.65,
+          "+guard": 0.65,
+          "+auth": 0.65,
+          "+guard+auth": 0.65
+        }
+      },
+      {
+        "variant": "jitter_injection",
+        "family": "jitter_injection",
+        "extra": {},
+        "n": 40,
+        "hazard": {
+          "none": 0.075,
+          "radar_or": 0.0,
+          "+guard": 0.0,
+          "+auth": 0.0,
+          "+guard+auth": 0.0
+        },
+        "hazard_upper95": {
+          "none": 0.19864530159097524,
+          "radar_or": 0.08762453925039232,
+          "+guard": 0.08762453925039232,
+          "+auth": 0.08762453925039232,
+          "+guard+auth": 0.08762453925039232
+        },
+        "proven_safe": {
+          "none": 0.275,
+          "radar_or": 0.65,
+          "+guard": 0.65,
+          "+auth": 0.65,
+          "+guard+auth": 0.65
+        }
+      },
+      {
+        "variant": "dual_masquerade",
+        "family": "dual_masquerade",
+        "extra": {},
+        "n": 40,
+        "hazard": {
+          "none": 0.45,
+          "radar_or": 0.45,
+          "+guard": 0.45,
+          "+auth": 0.025,
+          "+guard+auth": 0.025
+        },
+        "hazard_upper95": {
+          "none": 0.6017117011155924,
+          "radar_or": 0.6017117011155924,
+          "+guard": 0.6017117011155924,
+          "+auth": 0.1288165948800778,
+          "+guard+auth": 0.1288165948800778
+        },
+        "proven_safe": {
+          "none": 0.275,
+          "radar_or": 0.275,
+          "+guard": 0.275,
+          "+auth": 0.4,
+          "+guard+auth": 0.4
+        }
+      },
+      {
+        "variant": "dos_flood (safety-bus node)",
+        "family": "dos_flood",
+        "extra": {
+          "segment": "safety"
+        },
+        "n": 40,
+        "hazard": {
+          "none": 0.325,
+          "radar_or": 0.325,
+          "+guard": 0.325,
+          "+auth": 0.325,
+          "+guard+auth": 0.325
+        },
+        "hazard_upper95": {
+          "none": 0.4798254191110201,
+          "radar_or": 0.4798254191110201,
+          "+guard": 0.4798254191110201,
+          "+auth": 0.4798254191110201,
+          "+guard+auth": 0.4798254191110201
+        },
+        "proven_safe": {
+          "none": 0.325,
+          "radar_or": 0.325,
+          "+guard": 0.325,
+          "+auth": 0.3,
+          "+guard+auth": 0.3
+        }
+      },
+      {
+        "variant": "low_slow_dos (safety-bus node)",
+        "family": "low_slow_dos",
+        "extra": {
+          "segment": "safety"
+        },
+        "n": 40,
+        "hazard": {
+          "none": 0.0,
+          "radar_or": 0.0,
+          "+guard": 0.0,
+          "+auth": 0.0,
+          "+guard+auth": 0.0
+        },
+        "hazard_upper95": {
+          "none": 0.08762453925039232,
+          "radar_or": 0.08762453925039232,
+          "+guard": 0.08762453925039232,
+          "+auth": 0.08762453925039232,
+          "+guard+auth": 0.08762453925039232
+        },
+        "proven_safe": {
+          "none": 0.45,
+          "radar_or": 0.45,
+          "+guard": 0.45,
+          "+auth": 0.45,
+          "+guard+auth": 0.45
+        }
+      },
+      {
+        "variant": "masquerade (holds key)",
+        "family": "masquerade",
+        "extra": {
+          "holds_key": true
+        },
+        "n": 40,
+        "hazard": {
+          "none": 0.325,
+          "radar_or": 0.0,
+          "+guard": 0.0,
+          "+auth": 0.0,
+          "+guard+auth": 0.0
+        },
+        "hazard_upper95": {
+          "none": 0.4798254191110201,
+          "radar_or": 0.08762453925039232,
+          "+guard": 0.08762453925039232,
+          "+auth": 0.08762453925039232,
+          "+guard+auth": 0.08762453925039232
+        },
+        "proven_safe": {
+          "none": 0.375,
+          "radar_or": 0.65,
+          "+guard": 0.65,
+          "+auth": 0.65,
+          "+guard+auth": 0.65
+        }
+      },
+      {
+        "variant": "dual_masquerade (holds key)",
+        "family": "dual_masquerade",
+        "extra": {
+          "holds_key": true
+        },
+        "n": 40,
+        "hazard": {
+          "none": 0.425,
+          "radar_or": 0.425,
+          "+guard": 0.425,
+          "+auth": 0.425,
+          "+guard+auth": 0.425
+        },
+        "hazard_upper95": {
+          "none": 0.5780519956394001,
+          "radar_or": 0.5780519956394001,
+          "+guard": 0.5780519956394001,
+          "+auth": 0.5780519956394001,
+          "+guard+auth": 0.5780519956394001
+        },
+        "proven_safe": {
+          "none": 0.375,
+          "radar_or": 0.375,
+          "+guard": 0.375,
+          "+auth": 0.375,
+          "+guard+auth": 0.375
+        }
+      }
+    ],
+    "recommendation": [
+      {
+        "variant": "dos_flood",
+        "config": "+guard",
+        "hazard_at_choice": 0.0,
+        "upper95_at_choice": 0.08762453925039232,
+        "best_effort": null
+      },
+      {
+        "variant": "priority_abuse",
+        "config": "none",
+        "hazard_at_choice": 0.0,
+        "upper95_at_choice": 0.08762453925039232,
+        "best_effort": null
+      },
+      {
+        "variant": "low_slow_dos",
+        "config": "none",
+        "hazard_at_choice": 0.0,
+        "upper95_at_choice": 0.08762453925039232,
+        "best_effort": null
+      },
+      {
+        "variant": "selective_suppression",
+        "config": "none",
+        "hazard_at_choice": 0.0,
+        "upper95_at_choice": 0.08762453925039232,
+        "best_effort": null
+      },
+      {
+        "variant": "sensor_drift_spoof",
+        "config": "none",
+        "hazard_at_choice": 0.0,
+        "upper95_at_choice": 0.08762453925039232,
+        "best_effort": null
+      },
+      {
+        "variant": "masquerade",
+        "config": "radar_or",
+        "hazard_at_choice": 0.0,
+        "upper95_at_choice": 0.08762453925039232,
+        "best_effort": null
+      },
+      {
+        "variant": "gateway_delay",
+        "config": "radar_or",
+        "hazard_at_choice": 0.0,
+        "upper95_at_choice": 0.08762453925039232,
+        "best_effort": null
+      },
+      {
+        "variant": "jitter_injection",
+        "config": "radar_or",
+        "hazard_at_choice": 0.0,
+        "upper95_at_choice": 0.08762453925039232,
+        "best_effort": null
+      },
+      {
+        "variant": "dual_masquerade",
+        "config": null,
+        "hazard_at_choice": 0.025,
+        "upper95_at_choice": 0.1288165948800778,
+        "best_effort": "+auth"
+      },
+      {
+        "variant": "dos_flood (safety-bus node)",
+        "config": null,
+        "hazard_at_choice": 0.325,
+        "upper95_at_choice": 0.4798254191110201,
+        "best_effort": "none"
+      },
+      {
+        "variant": "low_slow_dos (safety-bus node)",
+        "config": "none",
+        "hazard_at_choice": 0.0,
+        "upper95_at_choice": 0.08762453925039232,
+        "best_effort": null
+      },
+      {
+        "variant": "masquerade (holds key)",
+        "config": "radar_or",
+        "hazard_at_choice": 0.0,
+        "upper95_at_choice": 0.08762453925039232,
+        "best_effort": null
+      },
+      {
+        "variant": "dual_masquerade (holds key)",
+        "config": null,
+        "hazard_at_choice": 0.425,
+        "upper95_at_choice": 0.5780519956394001,
+        "best_effort": "none"
+      }
+    ],
+    "bound_violations": 0,
+    "bound_runs": 2600,
+    "open": [
+      "dual_masquerade",
+      "dos_flood (safety-bus node)",
+      "dual_masquerade (holds key)"
+    ]
+  },
+  "residual_risk": {
+    "dual_masquerade": "18/40 sampled attacks still cause a collision with no in-time alarm"
+  }
+}
