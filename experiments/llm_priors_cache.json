@@ -1,0 +1,786 @@
+{
+  "7cbaf19249eb8fea": {
+    "family": "dos_flood",
+    "mode": "hazard",
+    "model": "openai/gpt-oss-120b",
+    "proposals": [
+      {
+        "rate_hz": 5000.0,
+        "duration_ms": 300.0,
+        "start_offset_ms": -80.0
+      },
+      {
+        "rate_hz": 3000.0,
+        "duration_ms": 250.0,
+        "start_offset_ms": -50.0
+      },
+      {
+        "rate_hz": 2000.0,
+        "duration_ms": 200.0,
+        "start_offset_ms": -20.0
+      },
+      {
+        "rate_hz": 1500.0,
+        "duration_ms": 150.0,
+        "start_offset_ms": 0.0
+      },
+      {
+        "rate_hz": 1000.0,
+        "duration_ms": 100.0,
+        "start_offset_ms": 20.0
+      },
+      {
+        "rate_hz": 800.0,
+        "duration_ms": 80.0,
+        "start_offset_ms": 40.0
+      },
+      {
+        "rate_hz": 600.0,
+        "duration_ms": 60.0,
+        "start_offset_ms": 60.0
+      },
+      {
+        "rate_hz": 400.0,
+        "duration_ms": 40.0,
+        "start_offset_ms": 80.0
+      }
+    ]
+  },
+  "2db78cf8c06b3ccf": {
+    "family": "low_slow_dos",
+    "mode": "hazard",
+    "model": "openai/gpt-oss-120b",
+    "proposals": [
+      {
+        "duty": 0.6,
+        "period_ms": 20.0,
+        "duration_ms": 200.0,
+        "start_offset_ms": -30.0
+      },
+      {
+        "duty": 0.5,
+        "period_ms": 15.0,
+        "duration_ms": 150.0,
+        "start_offset_ms": 0.0
+      },
+      {
+        "duty": 0.55,
+        "period_ms": 30.0,
+        "duration_ms": 300.0,
+        "start_offset_ms": 20.0
+      },
+      {
+        "duty": 0.4,
+        "period_ms": 10,
+        "duration_ms": 100.0,
+        "start_offset_ms": -10.0
+      },
+      {
+        "duty": 0.45,
+        "period_ms": 25.0,
+        "duration_ms": 250.0,
+        "start_offset_ms": 50.0
+      },
+      {
+        "duty": 0.35,
+        "period_ms": 40.0,
+        "duration_ms": 400.0,
+        "start_offset_ms": -80.0
+      },
+      {
+        "duty": 0.6,
+        "period_ms": 12.0,
+        "duration_ms": 120.0,
+        "start_offset_ms": 10.0
+      },
+      {
+        "duty": 0.5,
+        "period_ms": 50.0,
+        "duration_ms": 500.0,
+        "start_offset_ms": -5.0
+      }
+    ]
+  },
+  "0e54f991148c21ed": {
+    "family": "selective_suppression",
+    "mode": "hazard",
+    "model": "openai/gpt-oss-120b",
+    "proposals": [
+      {
+        "k": 1,
+        "duration_ms": 300.0,
+        "start_offset_ms": -30.0
+      },
+      {
+        "k": 2.0,
+        "duration_ms": 400.0,
+        "start_offset_ms": -10.0
+      },
+      {
+        "k": 3.0,
+        "duration_ms": 250.0,
+        "start_offset_ms": 0.0
+      },
+      {
+        "k": 1,
+        "duration_ms": 150.0,
+        "start_offset_ms": 20.0
+      },
+      {
+        "k": 4.0,
+        "duration_ms": 500.0,
+        "start_offset_ms": -60.0
+      },
+      {
+        "k": 2.0,
+        "duration_ms": 800,
+        "start_offset_ms": -80.0
+      },
+      {
+        "k": 5.0,
+        "duration_ms": 350.0,
+        "start_offset_ms": 10.0
+      },
+      {
+        "k": 1,
+        "duration_ms": 220.0,
+        "start_offset_ms": -5.0
+      }
+    ]
+  },
+  "8655470c9854f9d8": {
+    "family": "sensor_drift_spoof",
+    "mode": "hazard",
+    "model": "openai/gpt-oss-120b",
+    "proposals": [
+      {
+        "rate_m_per_s": 25.0,
+        "duration_ms": 600.0,
+        "start_offset_ms": -300.0
+      },
+      {
+        "rate_m_per_s": 30,
+        "duration_ms": 500.0,
+        "start_offset_ms": -250.0
+      },
+      {
+        "rate_m_per_s": 15.0,
+        "duration_ms": 800,
+        "start_offset_ms": -350.0
+      },
+      {
+        "rate_m_per_s": 10.0,
+        "duration_ms": 400.0,
+        "start_offset_ms": -200.0
+      },
+      {
+        "rate_m_per_s": 20.0,
+        "duration_ms": 300.0,
+        "start_offset_ms": -150.0
+      },
+      {
+        "rate_m_per_s": 5.0,
+        "duration_ms": 700.0,
+        "start_offset_ms": -100.0
+      },
+      {
+        "rate_m_per_s": 28.0,
+        "duration_ms": 550.0,
+        "start_offset_ms": -50.0
+      },
+      {
+        "rate_m_per_s": 12.0,
+        "duration_ms": 650.0,
+        "start_offset_ms": -380.0
+      }
+    ]
+  },
+  "a44b14ba944ddb42": {
+    "family": "masquerade",
+    "mode": "hazard",
+    "model": "openai/gpt-oss-120b",
+    "proposals": [
+      {
+        "bias_m": 38.0,
+        "phase_shift_ms": 4.5,
+        "duration_ms": 600.0,
+        "start_offset_ms": -250.0
+      },
+      {
+        "bias_m": 30.0,
+        "phase_shift_ms": 2.0,
+        "duration_ms": 400.0,
+        "start_offset_ms": -150.0
+      },
+      {
+        "bias_m": 25.0,
+        "phase_shift_ms": 0.5,
+        "duration_ms": 800,
+        "start_offset_ms": -350.0
+      },
+      {
+        "bias_m": 20.0,
+        "phase_shift_ms": 5,
+        "duration_ms": 200.0,
+        "start_offset_ms": -100.0
+      },
+      {
+        "bias_m": 15.0,
+        "phase_shift_ms": 1.0,
+        "duration_ms": 500.0,
+        "start_offset_ms": -50.0
+      },
+      {
+        "bias_m": 40,
+        "phase_shift_ms": 3.0,
+        "duration_ms": 300.0,
+        "start_offset_ms": -200.0
+      },
+      {
+        "bias_m": 10.0,
+        "phase_shift_ms": 4.0,
+        "duration_ms": 700.0,
+        "start_offset_ms": -300.0
+      },
+      {
+        "bias_m": 35.0,
+        "phase_shift_ms": 0,
+        "duration_ms": 550.0,
+        "start_offset_ms": -180.0
+      }
+    ]
+  },
+  "47ad490da1c39e19": {
+    "family": "gateway_delay",
+    "mode": "hazard",
+    "model": "openai/gpt-oss-120b",
+    "proposals": [
+      {
+        "delay_ms": 150.0,
+        "duration_ms": 300.0,
+        "start_offset_ms": -30.0
+      },
+      {
+        "delay_ms": 120.0,
+        "duration_ms": 200.0,
+        "start_offset_ms": 0.0
+      },
+      {
+        "delay_ms": 80.0,
+        "duration_ms": 500.0,
+        "start_offset_ms": 20.0
+      },
+      {
+        "delay_ms": 200,
+        "duration_ms": 250.0,
+        "start_offset_ms": -10.0
+      },
+      {
+        "delay_ms": 60.0,
+        "duration_ms": 800,
+        "start_offset_ms": 50.0
+      },
+      {
+        "delay_ms": 30.0,
+        "duration_ms": 400.0,
+        "start_offset_ms": -80.0
+      },
+      {
+        "delay_ms": 180.0,
+        "duration_ms": 150.0,
+        "start_offset_ms": 70.0
+      },
+      {
+        "delay_ms": 90.0,
+        "duration_ms": 600.0,
+        "start_offset_ms": -5.0
+      }
+    ]
+  },
+  "183803c987b17cd1": {
+    "family": "jitter_injection",
+    "mode": "hazard",
+    "model": "openai/gpt-oss-120b",
+    "proposals": [
+      {
+        "delay_ms": 90.0,
+        "duration_ms": 600.0,
+        "start_offset_ms": 0.0
+      },
+      {
+        "delay_ms": 70.0,
+        "duration_ms": 300.0,
+        "start_offset_ms": -50.0
+      },
+      {
+        "delay_ms": 50.0,
+        "duration_ms": 800,
+        "start_offset_ms": 20.0
+      },
+      {
+        "delay_ms": 100,
+        "duration_ms": 150.0,
+        "start_offset_ms": 80.0
+      },
+      {
+        "delay_ms": 30.0,
+        "duration_ms": 500.0,
+        "start_offset_ms": -80.0
+      },
+      {
+        "delay_ms": 85.0,
+        "duration_ms": 250.0,
+        "start_offset_ms": 40.0
+      },
+      {
+        "delay_ms": 60.0,
+        "duration_ms": 100.0,
+        "start_offset_ms": -20.0
+      },
+      {
+        "delay_ms": 95.0,
+        "duration_ms": 400.0,
+        "start_offset_ms": 10.0
+      }
+    ]
+  },
+  "4973d2fd7aa53da6": {
+    "family": "dos_flood",
+    "mode": "stealth",
+    "model": "openai/gpt-oss-120b",
+    "proposals": [
+      {
+        "rate_hz": 300.0,
+        "duration_ms": 30.0,
+        "start_offset_ms": -80.0
+      },
+      {
+        "rate_hz": 800.0,
+        "duration_ms": 50.0,
+        "start_offset_ms": -40.0
+      },
+      {
+        "rate_hz": 1500.0,
+        "duration_ms": 100.0,
+        "start_offset_ms": -10.0
+      },
+      {
+        "rate_hz": 2500.0,
+        "duration_ms": 150.0,
+        "start_offset_ms": 0.0
+      },
+      {
+        "rate_hz": 3500.0,
+        "duration_ms": 200.0,
+        "start_offset_ms": 20.0
+      },
+      {
+        "rate_hz": 4500.0,
+        "duration_ms": 250.0,
+        "start_offset_ms": 40.0
+      },
+      {
+        "rate_hz": 5500.0,
+        "duration_ms": 300.0,
+        "start_offset_ms": 60.0
+      },
+      {
+        "rate_hz": 6000,
+        "duration_ms": 350.0,
+        "start_offset_ms": 80.0
+      }
+    ]
+  },
+  "cc6142ca84930316": {
+    "family": "priority_abuse",
+    "mode": "stealth",
+    "model": "openai/gpt-oss-120b",
+    "proposals": [
+      {
+        "rate_hz": 850.0,
+        "duration_ms": 180.0,
+        "start_offset_ms": -40.0
+      },
+      {
+        "rate_hz": 1200.0,
+        "duration_ms": 250.0,
+        "start_offset_ms": 10.0
+      },
+      {
+        "rate_hz": 300.0,
+        "duration_ms": 500.0,
+        "start_offset_ms": -80.0
+      },
+      {
+        "rate_hz": 1900.0,
+        "duration_ms": 120.0,
+        "start_offset_ms": 35.0
+      },
+      {
+        "rate_hz": 650.0,
+        "duration_ms": 340.0,
+        "start_offset_ms": -15.0
+      },
+      {
+        "rate_hz": 2100.0,
+        "duration_ms": 210.0,
+        "start_offset_ms": 60.0
+      },
+      {
+        "rate_hz": 450.0,
+        "duration_ms": 80.0,
+        "start_offset_ms": -5.0
+      },
+      {
+        "rate_hz": 1750.0,
+        "duration_ms": 400.0,
+        "start_offset_ms": 25.0
+      }
+    ]
+  },
+  "611129c2d4af1221": {
+    "family": "low_slow_dos",
+    "mode": "stealth",
+    "model": "openai/gpt-oss-120b",
+    "proposals": [
+      {
+        "duty": 0.55,
+        "period_ms": 20.0,
+        "duration_ms": 200.0,
+        "start_offset_ms": -30.0
+      },
+      {
+        "duty": 0.45,
+        "period_ms": 35.0,
+        "duration_ms": 300.0,
+        "start_offset_ms": 10.0
+      },
+      {
+        "duty": 0.3,
+        "period_ms": 50.0,
+        "duration_ms": 150.0,
+        "start_offset_ms": -70.0
+      },
+      {
+        "duty": 0.2,
+        "period_ms": 80.0,
+        "duration_ms": 400.0,
+        "start_offset_ms": 0.0
+      },
+      {
+        "duty": 0.6,
+        "period_ms": 15.0,
+        "duration_ms": 100.0,
+        "start_offset_ms": -15.0
+      },
+      {
+        "duty": 0.1,
+        "period_ms": 60.0,
+        "duration_ms": 500.0,
+        "start_offset_ms": 25.0
+      },
+      {
+        "duty": 0.4,
+        "period_ms": 25.0,
+        "duration_ms": 250.0,
+        "start_offset_ms": -5.0
+      },
+      {
+        "duty": 0.25,
+        "period_ms": 90.0,
+        "duration_ms": 350.0,
+        "start_offset_ms": 40.0
+      }
+    ]
+  },
+  "931842ae27895a2b": {
+    "family": "sensor_drift_spoof",
+    "mode": "stealth",
+    "model": "openai/gpt-oss-120b",
+    "proposals": [
+      {
+        "rate_m_per_s": 5.0,
+        "duration_ms": 200.0,
+        "start_offset_ms": -150.0
+      },
+      {
+        "rate_m_per_s": 12.0,
+        "duration_ms": 500.0,
+        "start_offset_ms": -100.0
+      },
+      {
+        "rate_m_per_s": 20.0,
+        "duration_ms": 300.0,
+        "start_offset_ms": -250.0
+      },
+      {
+        "rate_m_per_s": 8.0,
+        "duration_ms": 800,
+        "start_offset_ms": -350.0
+      },
+      {
+        "rate_m_per_s": 15.0,
+        "duration_ms": 600.0,
+        "start_offset_ms": -50.0
+      },
+      {
+        "rate_m_per_s": 25.0,
+        "duration_ms": 400.0,
+        "start_offset_ms": -200.0
+      },
+      {
+        "rate_m_per_s": 3.0,
+        "duration_ms": 150.0,
+        "start_offset_ms": -300.0
+      },
+      {
+        "rate_m_per_s": 30,
+        "duration_ms": 700.0,
+        "start_offset_ms": -100.0
+      }
+    ]
+  },
+  "beac24087db9373f": {
+    "family": "masquerade",
+    "mode": "stealth",
+    "model": "openai/gpt-oss-120b",
+    "proposals": [
+      {
+        "bias_m": 30.0,
+        "phase_shift_ms": 1.0,
+        "duration_ms": 200.0,
+        "start_offset_ms": -100.0
+      },
+      {
+        "bias_m": 15.0,
+        "phase_shift_ms": 0.5,
+        "duration_ms": 600.0,
+        "start_offset_ms": -250.0
+      },
+      {
+        "bias_m": 40,
+        "phase_shift_ms": 3.0,
+        "duration_ms": 150.0,
+        "start_offset_ms": 0.0
+      },
+      {
+        "bias_m": 8.0,
+        "phase_shift_ms": 2.0,
+        "duration_ms": 500.0,
+        "start_offset_ms": -350.0
+      },
+      {
+        "bias_m": 25.0,
+        "phase_shift_ms": 4.5,
+        "duration_ms": 80.0,
+        "start_offset_ms": -50.0
+      },
+      {
+        "bias_m": 12.0,
+        "phase_shift_ms": 0,
+        "duration_ms": 750.0,
+        "start_offset_ms": -200.0
+      },
+      {
+        "bias_m": 35.0,
+        "phase_shift_ms": 1.5,
+        "duration_ms": 300.0,
+        "start_offset_ms": 20.0
+      },
+      {
+        "bias_m": 5.0,
+        "phase_shift_ms": 5,
+        "duration_ms": 400.0,
+        "start_offset_ms": -150.0
+      }
+    ]
+  },
+  "f808f4529075fa35": {
+    "family": "gateway_delay",
+    "mode": "stealth",
+    "model": "openai/gpt-oss-120b",
+    "proposals": [
+      {
+        "delay_ms": 120.0,
+        "duration_ms": 300.0,
+        "start_offset_ms": 0.0
+      },
+      {
+        "delay_ms": 80.0,
+        "duration_ms": 500.0,
+        "start_offset_ms": -20.0
+      },
+      {
+        "delay_ms": 150.0,
+        "duration_ms": 200.0,
+        "start_offset_ms": 10.0
+      },
+      {
+        "delay_ms": 60.0,
+        "duration_ms": 600.0,
+        "start_offset_ms": -50.0
+      },
+      {
+        "delay_ms": 30.0,
+        "duration_ms": 800,
+        "start_offset_ms": 20.0
+      },
+      {
+        "delay_ms": 100.0,
+        "duration_ms": 400.0,
+        "start_offset_ms": -10.0
+      },
+      {
+        "delay_ms": 45.0,
+        "duration_ms": 350.0,
+        "start_offset_ms": 5.0
+      },
+      {
+        "delay_ms": 180.0,
+        "duration_ms": 250.0,
+        "start_offset_ms": -30.0
+      }
+    ]
+  },
+  "8f6f274b71a89e5b": {
+    "family": "jitter_injection",
+    "mode": "stealth",
+    "model": "openai/gpt-oss-120b",
+    "proposals": [
+      {
+        "delay_ms": 80.0,
+        "duration_ms": 200.0,
+        "start_offset_ms": 0.0
+      },
+      {
+        "delay_ms": 60.0,
+        "duration_ms": 500.0,
+        "start_offset_ms": -20.0
+      },
+      {
+        "delay_ms": 90.0,
+        "duration_ms": 300.0,
+        "start_offset_ms": 10.0
+      },
+      {
+        "delay_ms": 30.0,
+        "duration_ms": 800,
+        "start_offset_ms": 50.0
+      },
+      {
+        "delay_ms": 70.0,
+        "duration_ms": 150.0,
+        "start_offset_ms": -50.0
+      },
+      {
+        "delay_ms": 55.0,
+        "duration_ms": 400.0,
+        "start_offset_ms": 20.0
+      },
+      {
+        "delay_ms": 45.0,
+        "duration_ms": 250.0,
+        "start_offset_ms": -10.0
+      },
+      {
+        "delay_ms": 100,
+        "duration_ms": 600.0,
+        "start_offset_ms": 5.0
+      }
+    ]
+  },
+  "7b109edcfc0e2673": {
+    "family": "priority_abuse",
+    "mode": "hazard",
+    "model": "openai/gpt-oss-120b",
+    "proposals": [
+      {
+        "rate_hz": 1200.0,
+        "duration_ms": 200.0,
+        "start_offset_ms": -80.0
+      },
+      {
+        "rate_hz": 800.0,
+        "duration_ms": 500.0,
+        "start_offset_ms": 0.0
+      },
+      {
+        "rate_hz": 2500.0,
+        "duration_ms": 100.0,
+        "start_offset_ms": 50.0
+      },
+      {
+        "rate_hz": 300.0,
+        "duration_ms": 600,
+        "start_offset_ms": -30.0
+      },
+      {
+        "rate_hz": 1500.0,
+        "duration_ms": 150.0,
+        "start_offset_ms": 20.0
+      },
+      {
+        "rate_hz": 1000.0,
+        "duration_ms": 250.0,
+        "start_offset_ms": -10.0
+      },
+      {
+        "rate_hz": 2000.0,
+        "duration_ms": 80.0,
+        "start_offset_ms": 70.0
+      },
+      {
+        "rate_hz": 400.0,
+        "duration_ms": 400.0,
+        "start_offset_ms": -5.0
+      }
+    ]
+  },
+  "f976cc2781011eb9": {
+    "family": "selective_suppression",
+    "mode": "stealth",
+    "model": "openai/gpt-oss-120b",
+    "proposals": [
+      {
+        "k": 2.0,
+        "duration_ms": 150.0,
+        "start_offset_ms": -30.0
+      },
+      {
+        "k": 3.0,
+        "duration_ms": 200.0,
+        "start_offset_ms": 0.0
+      },
+      {
+        "k": 4.0,
+        "duration_ms": 250.0,
+        "start_offset_ms": 20.0
+      },
+      {
+        "k": 5.0,
+        "duration_ms": 300.0,
+        "start_offset_ms": -10.0
+      },
+      {
+        "k": 6,
+        "duration_ms": 350.0,
+        "start_offset_ms": 40.0
+      },
+      {
+        "k": 2.0,
+        "duration_ms": 500.0,
+        "start_offset_ms": -80.0
+      },
+      {
+        "k": 3.0,
+        "duration_ms": 600.0,
+        "start_offset_ms": 60.0
+      },
+      {
+        "k": 1,
+        "duration_ms": 100.0,
+        "start_offset_ms": 0.0
+      }
+    ]
+  }
+}

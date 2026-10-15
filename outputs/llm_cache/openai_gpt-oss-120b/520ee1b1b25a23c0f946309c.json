@@ -1,0 +1,1 @@
+{"model": "openai/gpt-oss-120b", "reply": "{\n  \"deadline_ms\": 33,\n  \"unresolved\": false,\n  \"component\": \"other\",\n  \"trigger\": \"camera_detection_result\",\n  \"response\": \"sensor_fusion_receive\",\n  \"vss_signals\": [],\n  \"can_ids\": [\"0x300\"],\n  \"formula\": \"G(camera_detection_result -> F[0,33 ms] sensor_fusion_receive)\"\n}"}

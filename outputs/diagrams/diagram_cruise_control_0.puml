@@ -1,0 +1,46 @@
+@startuml
+title Scenario: CRUISE_CONTROL
+note right
+  Delay: 91ms / 60ms
+  Risk: 1.70
+  Road: dry
+  Attack: none
+end note
+
+start
+
+:Capture Camera Data;
+:Detect Pedestrian (Camera);
+
+if (Camera detects pedestrian?) then (yes)
+  :CamPed = true;
+else (no)
+  :CamPed = false;
+endif
+
+:Capture LiDAR Data;
+:Detect Pedestrian (LiDAR);
+
+if (LiDAR detects pedestrian?) then (yes)
+  :LidarPed = true;
+else (no)
+  :LidarPed = false;
+endif
+
+:Listen CamPed;
+:Listen LidarPed;
+
+if (CamPed == true OR LidarPed == true) then (yes)
+  :#FFCCCC**Brake**;
+  note right
+     VIOLATION
+    Delay: 91ms
+    Exceeds limit!
+  end note
+else (no)
+  :Accelerate;
+endif
+
+stop
+
+@enduml

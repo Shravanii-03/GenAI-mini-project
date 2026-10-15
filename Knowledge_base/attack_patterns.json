@@ -1,0 +1,162 @@
+{
+  "version": "1.0",
+  "description": "Known cyber-physical attack patterns for SDV threat analysis — aligned with ISO 21434 TARA",
+  "attack_patterns": [
+    {
+      "id": "ATK-001",
+      "name": "CAN Bus Spoofing",
+      "description": "Attacker injects forged CAN messages to override brake/steer commands",
+      "attack_chain": [
+        "Attacker gains OBD-II physical access OR infotainment bridge",
+        "Injects forged CAN frames with valid IDs (e.g. 0x1A0 BRAKE_CMD)",
+        "ECU accepts spoofed message — actuator receives wrong command",
+        "Vehicle brakes unexpectedly or fails to brake"
+      ],
+      "target_components": ["BrakeECU", "SteeringECU", "ADAS_ECU"],
+      "target_can_ids": ["0x1A0", "0x1A3", "0x200"],
+      "attack_vector": "Physical / OBD-II / Infotainment bridge",
+      "severity": "CRITICAL",
+      "likelihood": "HIGH",
+      "iso_reference": "ISO_21434",
+      "tara_risk_score": 0.92,
+      "mitigation": "CAN message authentication (AUTOSAR SecOC), CAN FD with MAC",
+      "timing_impact_ms": 50
+    },
+    {
+      "id": "ATK-002",
+      "name": "Sensor Data Injection",
+      "description": "Fake sensor readings injected into perception pipeline to trigger false brake/steer events",
+      "attack_chain": [
+        "Attacker spoofs LIDAR or camera data stream",
+        "Perception ECU receives false obstacle data",
+        "ADAS_ECU triggers emergency brake for non-existent obstacle",
+        "Unexpected vehicle stop causes rear collision"
+      ],
+      "target_components": ["LidarSensor", "CameraECU", "PerceptionECU"],
+      "target_can_ids": ["0x300", "0x310", "0x320"],
+      "attack_vector": "Remote / Wireless / Ethernet",
+      "severity": "CRITICAL",
+      "likelihood": "MEDIUM",
+      "iso_reference": "ISO_21434",
+      "tara_risk_score": 0.88,
+      "mitigation": "Sensor data validation, redundant sensing, anomaly detection",
+      "timing_impact_ms": 30
+    },
+    {
+      "id": "ATK-003",
+      "name": "ECU Timing Attack (Delay Injection)",
+      "description": "Attacker deliberately delays ECU processing to cause timing violations in safety-critical loops",
+      "attack_chain": [
+        "Attacker exploits software vulnerability in ECU firmware",
+        "Injects high-load processes or sleep calls into ECU task scheduler",
+        "Safety-critical task execution delayed beyond ASIL threshold",
+        "Timing violation causes functional safety failure"
+      ],
+      "target_components": ["BrakeECU", "ADAS_ECU", "ZoneECU"],
+      "target_can_ids": [],
+      "attack_vector": "Remote / OTA / Supply chain",
+      "severity": "CRITICAL",
+      "likelihood": "MEDIUM",
+      "iso_reference": "ISO_21434",
+      "tara_risk_score": 0.85,
+      "mitigation": "Secure ECU scheduling, RTOS isolation, watchdog timers",
+      "timing_impact_ms": 200
+    },
+    {
+      "id": "ATK-004",
+      "name": "OTA Firmware Tampering",
+      "description": "Malicious firmware delivered via compromised OTA update server",
+      "attack_chain": [
+        "Attacker compromises OTA update server or man-in-the-middle",
+        "Tampered firmware image delivered to vehicle",
+        "ECU installs malicious code without signature verification",
+        "Attacker has persistent code execution on safety-critical ECU"
+      ],
+      "target_components": ["OTA_Manager", "AllECUs"],
+      "target_can_ids": ["0x500"],
+      "attack_vector": "Remote / Internet / Cloud",
+      "severity": "CRITICAL",
+      "likelihood": "LOW",
+      "iso_reference": "ISO_21434",
+      "tara_risk_score": 0.95,
+      "mitigation": "Code signing, secure boot, HSM-verified firmware, rollback protection"
+    },
+    {
+      "id": "ATK-005",
+      "name": "Infotainment to CAN Bridge Attack",
+      "description": "Exploit infotainment system as entry point to safety-critical CAN bus",
+      "attack_chain": [
+        "Attacker exploits browser/media vulnerability in infotainment",
+        "Pivots from infotainment network to internal CAN gateway",
+        "Accesses safety-critical CAN bus (brakes, steering)",
+        "Remote control of vehicle dynamics achieved"
+      ],
+      "target_components": ["InfotainmentECU", "CentralGateway", "BrakeECU"],
+      "target_can_ids": ["0x400", "0x1A0"],
+      "attack_vector": "Remote / WiFi / Cellular",
+      "severity": "CRITICAL",
+      "likelihood": "MEDIUM",
+      "iso_reference": "ISO_21434",
+      "tara_risk_score": 0.90,
+      "mitigation": "Network segmentation, CAN firewall, IDS on gateway"
+    },
+    {
+      "id": "ATK-006",
+      "name": "Replay Attack on Safety Messages",
+      "description": "Attacker records and replays old safety-critical CAN messages at wrong time",
+      "attack_chain": [
+        "Attacker sniffs CAN bus during normal operation",
+        "Records valid brake/steer messages",
+        "Replays old messages at critical moment (e.g., at high speed)",
+        "Vehicle executes outdated command — unsafe state"
+      ],
+      "target_components": ["BrakeECU", "SteeringECU"],
+      "target_can_ids": ["0x1A0", "0x210"],
+      "attack_vector": "Physical / OBD-II",
+      "severity": "HIGH",
+      "likelihood": "MEDIUM",
+      "iso_reference": "ISO_21434",
+      "tara_risk_score": 0.75,
+      "mitigation": "Message counters, timestamps, freshness tokens in CAN frames"
+    },
+    {
+      "id": "ATK-007",
+      "name": "DoS on CAN Bus",
+      "description": "CAN bus flooded with error frames or high-priority messages, starving safety functions",
+      "attack_chain": [
+        "Attacker floods CAN bus with high-priority error frames",
+        "Legitimate safety messages delayed or dropped",
+        "Braking system cannot receive timely commands",
+        "Timing violation — vehicle fails to respond"
+      ],
+      "target_components": ["CAN_Bus", "BrakeECU", "ADAS_ECU"],
+      "target_can_ids": [],
+      "attack_vector": "Physical / OBD-II",
+      "severity": "HIGH",
+      "likelihood": "HIGH",
+      "iso_reference": "ISO_21434",
+      "tara_risk_score": 0.80,
+      "mitigation": "CAN bus load monitoring, error frame rate limiting, redundant Ethernet path",
+      "timing_impact_ms": 100
+    },
+    {
+      "id": "ATK-008",
+      "name": "GPS Spoofing for Navigation Hijack",
+      "description": "Fake GPS signals mislead navigation and ADAS positioning",
+      "attack_chain": [
+        "Attacker broadcasts stronger GPS signals near vehicle",
+        "Vehicle navigation locks to fake position",
+        "ADAS map-based features make wrong decisions",
+        "Vehicle directed into unsafe route"
+      ],
+      "target_components": ["GPS_Module", "NavigationECU", "ADAS_ECU"],
+      "target_can_ids": [],
+      "attack_vector": "Remote / RF",
+      "severity": "HIGH",
+      "likelihood": "LOW",
+      "iso_reference": "ISO_21434",
+      "tara_risk_score": 0.65,
+      "mitigation": "Multi-constellation GNSS, signal authentication, sensor fusion cross-check"
+    }
+  ]
+}

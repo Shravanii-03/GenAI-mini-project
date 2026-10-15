@@ -1,0 +1,55 @@
+{
+  "mode": "trace",
+  "trace_path": "datasets/runtime_traces/scenario_2_trace.json",
+  "validation": {
+    "violation": false,
+    "risk_score": 0.89,
+    "risk_level": "LOW",
+    "actual_ms": 89,
+    "expected_ms": 100,
+    "margin_ms": 11,
+    "bottleneck": {
+      "step": "lidar_signal_read_INVALID",
+      "time_ms": 48,
+      "delta_ms": 33,
+      "cumulative": 48
+    },
+    "chain_steps": [
+      {
+        "step": "camera_sense_start",
+        "time_ms": 0,
+        "delta_ms": 0,
+        "cumulative": 0
+      },
+      {
+        "step": "camera_detection_complete",
+        "time_ms": 15,
+        "delta_ms": 15,
+        "cumulative": 15
+      },
+      {
+        "step": "lidar_signal_read_INVALID",
+        "time_ms": 48,
+        "delta_ms": 33,
+        "cumulative": 48
+      },
+      {
+        "step": "brake_decision_wrong_sensor",
+        "time_ms": 72,
+        "delta_ms": 24,
+        "cumulative": 72
+      },
+      {
+        "step": "brake_applied",
+        "time_ms": 89,
+        "delta_ms": 17,
+        "cumulative": 89
+      }
+    ],
+    "verdict": "PASS",
+    "scenario_id": "S2",
+    "scenario_name": "Wrong Sensor Used for Braking Decision",
+    "chain_order_violations": []
+  },
+  "timestamp": "2026-04-07T08:50:57.684025"
+}

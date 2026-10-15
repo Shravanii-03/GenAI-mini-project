@@ -1,0 +1,1 @@
+{"model": "openai/gpt-oss-20b", "reply": "{\n  \"deadline_ms\": null,\n  \"unresolved\": true,\n  \"component\": \"steering_ecu\",\n  \"trigger\": \"steering_override_command\",\n  \"response\": \"steering_adjusted\",\n  \"vss_signals\": [],\n  \"can_ids\": [],\n  \"formula\": null\n}"}

@@ -1,0 +1,1 @@
+{"model": "openai/gpt-oss-20b", "reply": "{\n  \"deadline_ms\": 30,\n  \"unresolved\": false,\n  \"component\": \"braking_system\",\n  \"trigger\": \"wheel_slip_detected\",\n  \"response\": \"reduce_engine_torque\",\n  \"vss_signals\": [],\n  \"can_ids\": [\"0x700\"],\n  \"formula\": \"G(wheel_slip_detected -> F[0,30 ms] reduce_engine_torque)\"\n}"}

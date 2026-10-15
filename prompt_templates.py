@@ -1,243 +1,281 @@
 """
-Prompt Templates — Safety Reasoning Agent (Agent 1)
-Aligned with base paper: LLM-Empowered Functional Safety & Security for SDVs
-Novel Points: Temporal Intelligence, Real-Time Validation, GenAI Threat Reasoning
-
-All prompts are engineered for structured JSON or plain-text output.
-No values are hardcoded — all inputs injected at runtime.
+prompt_templates.py — Rich Prompt Templates for SDV Safety GenAI System
+========================================================================
+Every prompt:
+  - Has full context (ISO rules, VSS signals, attack patterns from RAG)
+  - Gives LLM clear instructions on WHEN to say CRITICAL vs HIGH vs MEDIUM
+  - Returns structured JSON
+  - Is grounded — LLM cannot hallucinate severity freely
 """
 
 
+# ─────────────────────────────────────────────────────────────────────────────
+# REQUIREMENT PARSING
+# ─────────────────────────────────────────────────────────────────────────────
+
 def get_requirement_parse_prompt(requirement: str) -> str:
-    """
-    Novel Point 2: Temporal Intelligence
-    GenAI understands natural language requirements and extracts
-    timing constraints, triggers, components — like the paper's
-    VSS/CAN signal extraction step, but for requirement-level semantics.
-    """
     return f"""
-You are a safety requirements engineer for Software-Defined Vehicles (SDVs).
-Your task is Temporal Intelligence: extract precise, measurable safety constraints
-from a natural language requirement.
+You are an ISO 26262 automotive safety expert parsing a natural language safety requirement.
 
-Requirement: "{requirement}"
+REQUIREMENT:
+"{requirement}"
 
-Extract the following with high precision:
-- The safety-critical EVENT the system must perform (e.g. brake, steer, alert)
-- The MAX DELAY in milliseconds (convert units if needed — e.g. 0.1s = 100ms)
-- The TRIGGER condition that initiates the event
-- The SDV COMPONENT responsible (e.g. braking_system, steering_ecu, alert_module)
-- The REQUIREMENT TYPE: timing | threshold | behavioral
-- The ISO STANDARD relevant: ISO_26262 (functional safety) | ISO_21434 (cybersecurity) | both
-- A formal EVENT CHAIN: ordered list of steps from trigger to actuation
-  (following the paper's sense → detect → decide → actuate model)
+Extract ONLY the structure (do NOT extract timing — that is handled separately).
 
-Output STRICT JSON only. No markdown. No explanation. No extra text.
+Rules:
+- event: the safety-critical action (e.g. "brake", "steer", "alert")
+- trigger: what causes it (e.g. "obstacle detected", "lane departure")
+- component: the ECU/system responsible (e.g. "brake_ecu", "adas", "steering_ecu")
+- iso_standard: most relevant standard (ISO 26262, ISO 21434, or both)
+- event_chain: ordered list of 4 steps from sensor to actuator
+
+Output ONLY valid JSON, no explanation:
 
 {{
-    "event": "<action>",
-    "max_delay_ms": <integer or null>,
-    "trigger": "<trigger condition>",
-    "component": "<SDV component>",
-    "requirement_type": "<timing|threshold|behavioral>",
-    "iso_standard": "<ISO_26262|ISO_21434|both>",
-    "event_chain": [
-        "<step 1: sense>",
-        "<step 2: detect>",
-        "<step 3: decide>",
-        "<step 4: actuate>"
-    ]
+  "event": "",
+  "trigger": "",
+  "component": "",
+  "iso_standard": "",
+  "event_chain": ["sense", "detect", "decide", "actuate"]
 }}
 """
 
 
+# ─────────────────────────────────────────────────────────────────────────────
+# TIMING EXTRACTION
+# ─────────────────────────────────────────────────────────────────────────────
+
+def get_timing_extraction_prompt(text: str, iso_context: str) -> str:
+    return f"""
+You are an ISO 26262 timing expert for automotive safety systems.
+
+SAFETY REQUIREMENT:
+{text}
+
+ISO 26262 REFERENCE CONTEXT:
+{iso_context}
+
+ISO 26262 ASIL timing limits (use these as ground truth):
+- ASIL-D (highest): max 100ms — emergency braking, airbag, steering
+- ASIL-C: max 150ms — AEB activation, lane keeping
+- ASIL-B: max 200ms — driver alerts, warnings
+- ASIL-A: max 500ms — comfort functions
+
+Task:
+1. Identify the ASIL level from the requirement context
+2. Extract or infer the total allowed latency
+3. Break it down across: sensor reading, ECU decision, actuator command
+
+Output ONLY valid JSON:
+
+{{
+  "event": "",
+  "total_latency_ms": 100,
+  "component": "",
+  "asil_level": "ASIL-D",
+  "iso_rule_id": "",
+  "breakdown_ms": {{
+    "sensor_ms": 10,
+    "decision_ms": 55,
+    "actuator_ms": 35
+  }},
+  "confidence": "high",
+  "reasoning": "ISO 26262 ASIL-D requires max 100ms for emergency braking"
+}}
+"""
+
+
+# ─────────────────────────────────────────────────────────────────────────────
+# THREAT REASONING — most important prompt, now properly grounded
+# ─────────────────────────────────────────────────────────────────────────────
+
+def get_threat_reasoning_prompt(parsed: dict, scenario: dict, evaluation: dict) -> str:
+
+    delay      = scenario.get("actual_delay_ms", 0)
+    max_delay  = parsed.get("max_delay_ms", 100)
+    risk       = evaluation.get("risk_score", 0)
+    severity   = evaluation.get("severity", "LOW")
+    road       = scenario.get("parameters", {}).get("road_condition", "dry")
+    cpu        = scenario.get("parameters", {}).get("ecu_cpu_load_pct", 50)
+    overshoot  = max(0, delay - max_delay)
+    event      = parsed.get("event", "braking")
+    component  = parsed.get("component", "brake_ecu")
+
+    # Severity grounding rules — tell LLM exactly when to use each
+    severity_rules = """
+SEVERITY RULES (follow exactly):
+- CRITICAL: risk_score >= 1.5 OR delay > 150ms OR road is icy with violation
+- HIGH:     risk_score >= 1.0 OR delay > 120ms OR attack detected
+- MEDIUM:   risk_score >= 0.7 OR delay > 100ms
+- LOW:      no violation, risk < 0.7
+"""
+
+    return f"""
+You are an ISO 26262 + ISO 21434 automotive cybersecurity threat analyst.
+
+INCIDENT CONTEXT:
+- Safety event     : {event}
+- Component        : {component}
+- Actual delay     : {delay}ms
+- Max allowed      : {max_delay}ms (ISO 26262 ASIL-D limit)
+- Overshoot        : {overshoot}ms
+- Risk score       : {risk} (scale 0-2.0, where >1.5 = CRITICAL)
+- Road condition   : {road}
+- ECU CPU load     : {cpu}%
+- Pre-assessment   : {severity}
+
+{severity_rules}
+
+Based on the context above and the ISO/CAN/VSS knowledge provided, generate a realistic
+automotive cyber-physical threat analysis.
+
+The attack_chain must describe a realistic sequence of steps an attacker would take
+targeting the CAN bus (0x1A0 BRAKE_CMD) or VSS signals.
+
+Output ONLY valid JSON:
+
+{{
+  "attack_type": "can_spoofing|delay_injection|replay_attack|dos|speed_spoofing",
+  "attack_chain": [
+    "Step 1: attacker gains access to ...",
+    "Step 2: injects ...",
+    "Step 3: causes ...",
+    "Step 4: results in ..."
+  ],
+  "severity": "CRITICAL|HIGH|MEDIUM|LOW",
+  "tara_score": 0.0,
+  "software_to_physical_impact": "delay in {event} causes ...",
+  "iso_rule_violated": "ISO26262-6-8.4.5",
+  "mitigation": "specific technical countermeasure"
+}}
+"""
+
+
+# ─────────────────────────────────────────────────────────────────────────────
+# EXPLANATION
+# ─────────────────────────────────────────────────────────────────────────────
+
+def get_explanation_prompt(parsed, scenarios, evaluations, threats, memory) -> str:
+
+    total     = len(scenarios)
+    viols     = sum(1 for e in evaluations if e.get("violation"))
+    max_risk  = max((e.get("risk_score", 0) for e in evaluations), default=0)
+    max_delay = max((s.get("actual_delay_ms", 0) for s in scenarios), default=0)
+    event     = parsed.get("event", "safety event")
+    limit     = parsed.get("max_delay_ms", 100)
+
+    return f"""
+You are an ISO 26262 safety engineer writing a concise incident summary.
+
+SYSTEM UNDER TEST: {event} system (limit: {limit}ms, ASIL-D)
+
+TEST RESULTS:
+- Total scenarios tested : {total}
+- Violations detected    : {viols} ({round(viols/max(total,1)*100,1)}%)
+- Max risk score         : {max_risk}
+- Max delay observed     : {max_delay}ms
+
+Write exactly 4 sentences:
+1. What the system was tested for and the ISO standard
+2. Key finding (worst violation or confirmation of safety)
+3. Root cause or threat vector identified
+4. Recommended immediate action
+
+Be technical, specific, and reference ISO 26262 where relevant.
+Do NOT use bullet points. Plain sentences only.
+"""
+
+
+# ─────────────────────────────────────────────────────────────────────────────
+# NEXT ACTION
+# ─────────────────────────────────────────────────────────────────────────────
+
+def get_next_action_prompt(parsed, evaluations, threats, memory) -> str:
+
+    viols    = [e for e in evaluations if e.get("violation")]
+    has_crit = any(t.get("severity") == "CRITICAL" for t in threats)
+    roads    = list(set(e.get("road_condition", "dry") for e in evaluations))
+    event    = parsed.get("event", "braking")
+
+    return f"""
+You are an autonomous safety testing agent for SDV systems.
+
+CURRENT STATUS:
+- Event under test   : {event}
+- Violations found   : {len(viols)}
+- Critical threats   : {"YES" if has_crit else "NO"}
+- Roads tested       : {roads}
+
+Decide the next test action. If violations were found, stress-test further.
+If already critical, recommend mitigation verification.
+
+Output ONLY valid JSON:
+
+{{
+  "next_action": "what to do next",
+  "scenario_type": "normal|edge|stress",
+  "target_delay_ms": 100,
+  "focus_condition": "wet|icy|dry|foggy",
+  "reason": "why this test is needed",
+  "should_continue": true
+}}
+"""
+
+
+# ─────────────────────────────────────────────────────────────────────────────
+# SCENARIO GENERATION
+# ─────────────────────────────────────────────────────────────────────────────
+
 def get_scenario_generation_prompt(parsed: dict, scenario_type: str, memory: list) -> str:
-    """
-    Novel Point 3: Real-Time Validation Instead of Static Check
-    Generates dynamic runtime simulation scenarios — normal, edge, stress.
-    Inspired by paper's event-chain construction for functional safety validation.
-    Memory of past delays ensures agent explores untested regions.
-    """
+
     past_delays = [m["actual_delay_ms"] for m in memory] if memory else []
-    avoid_hint = (
-        f"These delays have already been tested: {past_delays}. "
-        f"Generate a DIFFERENT delay to explore new test space."
+    avoid_hint  = (
+        f"These delays were already tested: {past_delays}. Generate a DIFFERENT value."
         if past_delays else ""
     )
 
-    type_instructions = {
-        "normal":  "Typical operating condition. System should respond well within the time limit.",
-        "edge":    "Boundary condition. Delay should be very close to (just under or at) the max limit.",
-        "stress":  "Worst-case, high-load condition. Delay will likely EXCEED the limit — simulate a violation.",
+    limits = {
+        "normal": "delay should be 60-90ms (within ISO limit)",
+        "edge":   "delay should be 95-110ms (near the limit)",
+        "stress": "delay should be 120-180ms (well over limit, simulating attack or high load)",
     }
-
-    event_chain_str = " → ".join(parsed.get("event_chain", ["sense", "detect", "decide", "actuate"]))
+    hint = limits.get(scenario_type, "")
 
     return f"""
-You are an SDV safety simulation engine generating realistic runtime scenarios.
+You are a simulation engine for SDV safety testing.
 
-Safety Requirement:
-- Event: {parsed.get('event')}
-- Max allowed delay: {parsed.get('max_delay_ms')} ms
-- Trigger: {parsed.get('trigger')}
-- Component: {parsed.get('component')}
-- ISO Standard: {parsed.get('iso_standard')}
-- Event chain: {event_chain_str}
+SYSTEM:
+- Event     : {parsed.get('event')}
+- Max delay : {parsed.get('max_delay_ms')}ms (ISO 26262 ASIL-D)
+- Component : {parsed.get('component')}
 
-Scenario type: {scenario_type.upper()}
-Instruction: {type_instructions.get(scenario_type, type_instructions['normal'])}
+SCENARIO TYPE: {scenario_type}
+{hint}
 {avoid_hint}
 
-Generate a realistic simulation of this scenario at runtime.
-The event_chain_timing must map each step of the event chain to a time in ms.
-The actual_delay_ms is the TOTAL time from trigger to actuation.
+Generate a realistic test scenario with proper physics:
+- normal: dry road, low CPU, compliant timing
+- edge: wet road, moderate CPU, near-limit timing
+- stress: icy road, high CPU, over-limit timing
 
-Output STRICT JSON only. No markdown. No explanation.
-
-{{
-    "scenario_id": <unique random integer>,
-    "type": "{scenario_type}",
-    "parameters": {{
-        "vehicle_speed_kmh": <integer>,
-        "distance_to_hazard_m": <integer>,
-        "road_condition": "<dry|wet|icy|foggy>",
-        "sensor_load": "<low|medium|high>",
-        "ecu_cpu_load_pct": <integer 0-100>
-    }},
-    "event_chain_timing": [
-        {{"step": "<chain step name>", "time_ms": <integer>}}
-    ],
-    "actual_delay_ms": <total integer ms from trigger to actuation>,
-    "simulated_violation": <true|false>
-}}
-"""
-
-
-def get_threat_reasoning_prompt(parsed: dict, scenario: dict, evaluation: dict) -> str:
-    """
-    Novel Point 4: GenAI-Driven Threat Reasoning
-    Generates cyber-physical attack chains and severity/risk assessment.
-    Aligned with paper's security analysis + TARA (Threat Analysis & Risk Assessment).
-    """
-    return f"""
-You are a cybersecurity and functional safety expert for SDV systems.
-Perform GenAI-Driven Threat Reasoning based on this test result.
-
-System Under Test:
-- Component: {parsed.get('component')}
-- Event: {parsed.get('event')}
-- ISO Standard: {parsed.get('iso_standard')}
-
-Test Result:
-- Expected delay: {evaluation.get('expected_delay_ms')} ms
-- Actual delay: {evaluation.get('actual_delay_ms')} ms
-- Violation: {'YES' if evaluation.get('violation') else 'NO'}
-- Risk score: {evaluation.get('risk_score')}
-- Road condition: {scenario.get('parameters', {}).get('road_condition')}
-- ECU CPU load: {scenario.get('parameters', {}).get('ecu_cpu_load_pct')}%
-
-Generate:
-1. A plausible CYBER-PHYSICAL ATTACK CHAIN that could cause or worsen this delay
-2. How a software threat could impact physical safety
-3. SEVERITY: CRITICAL | HIGH | MEDIUM | LOW
-4. RISK ASSESSMENT aligned with ISO 26262 / ISO 21434
-
-Output STRICT JSON only. No markdown. No explanation.
+Output ONLY valid JSON:
 
 {{
-    "attack_chain": [
-        "<step 1>",
-        "<step 2>",
-        "<step 3>"
-    ],
-    "software_to_physical_impact": "<how software threat leads to physical harm>",
-    "severity": "<CRITICAL|HIGH|MEDIUM|LOW>",
-    "risk_assessment": "<1-2 sentence TARA-aligned risk summary>",
-    "mitigation": "<recommended defensive action>"
-}}
-"""
-
-
-def get_explanation_prompt(parsed: dict, scenarios: list, evaluations: list, threats: list, memory: list) -> str:
-    """
-    Novel Point 5: Intelligent Dashboard Layer — Real-time GenAI explanations
-    Operator-friendly safety analysis across all iterations.
-    """
-    history_delays = [m["actual_delay_ms"] for m in memory]
-    violation_count = sum(1 for e in evaluations if e["violation"])
-
-    scenario_lines = "\n".join([
-        f"  [{s['type'].upper()}] delay={e['actual_delay_ms']}ms | "
-        f"risk={e['risk_score']} | "
-        f"violation={'YES' if e['violation'] else 'NO'} | "
-        f"road={s.get('parameters',{}).get('road_condition')} | "
-        f"severity={t.get('severity','N/A')}"
-        for s, e, t in zip(scenarios, evaluations, threats)
-    ])
-
-    return f"""
-You are an SDV safety analyst generating an operator-friendly explanation
-for a real-time safety validation session.
-
-Requirement: "{parsed.get('event')} within {parsed.get('max_delay_ms')}ms"
-Component: {parsed.get('component')}
-ISO Standard: {parsed.get('iso_standard')}
-
-Test Results This Session:
-{scenario_lines}
-
-Full delay history across all iterations: {history_delays}
-Total violations: {violation_count} out of {len(evaluations)} tests
-
-Write a concise, operator-friendly safety report:
-1. Overall PASS / FAIL verdict with justification
-2. Severity level: CRITICAL / HIGH / MEDIUM / LOW
-3. Key timing patterns observed (use actual numbers)
-4. Most dangerous scenario identified and why
-5. Recommendation for the safety engineering team
-
-Plain text only. Max 6 sentences. Use clear, non-technical language where possible.
-"""
-
-
-def get_next_action_prompt(parsed: dict, evaluations: list, threats: list, memory: list) -> str:
-    """
-    Agentic Decision Logic — autonomous next test selection.
-    Agent reasons about untested regions, boundary conditions, and threat patterns.
-    """
-    past_delays = [m["actual_delay_ms"] for m in memory]
-    severities = [t.get("severity", "LOW") for t in threats]
-    violation_count = sum(1 for e in evaluations if e["violation"])
-    avg_risk = round(sum(e["risk_score"] for e in evaluations) / len(evaluations), 2) if evaluations else 0
-
-    return f"""
-You are an autonomous safety test agent for SDV systems.
-Make an intelligent decision about what to test next.
-
-Current Test Session:
-- Requirement: {parsed.get('event')} within {parsed.get('max_delay_ms')} ms
-- Component: {parsed.get('component')}
-- Delays tested so far: {past_delays}
-- Violations found: {violation_count}
-- Severities observed: {severities}
-- Average risk score: {avg_risk}
-- Max delay seen: {max(past_delays) if past_delays else 'N/A'} ms
-- Min delay seen: {min(past_delays) if past_delays else 'N/A'} ms
-
-Think like an autonomous agent:
-- What timing region is UNEXPLORED?
-- Should you stress test further or confirm boundary behavior?
-- Are there road/load conditions not yet tested?
-- Is enough data collected to conclude?
-
-Output STRICT JSON only. No markdown. No explanation.
-
-{{
-    "next_action": "<clear one-line instruction for next test>",
-    "target_delay_ms": <suggested delay in ms as integer>,
-    "scenario_type": "<normal|edge|stress>",
-    "focus_condition": "<road condition or system load to focus on>",
-    "reason": "<why this is the most valuable next test>",
-    "should_continue": <true if more testing needed, false if sufficient data>
+  "scenario_id": 1,
+  "type": "{scenario_type}",
+  "parameters": {{
+    "vehicle_speed_kmh": 60,
+    "road_condition": "dry",
+    "ecu_cpu_load_pct": 40,
+    "weather": "clear"
+  }},
+  "event_chain_timing": [
+    {{"step": "sense",   "time_ms": 10}},
+    {{"step": "detect",  "time_ms": 25}},
+    {{"step": "decide",  "time_ms": 45}},
+    {{"step": "actuate", "time_ms": 80}}
+  ],
+  "actual_delay_ms": 80,
+  "simulated_violation": false
 }}
 """

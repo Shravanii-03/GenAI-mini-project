@@ -1,0 +1,136 @@
+{
+  "version": "1.0",
+  "description": "Automotive timing requirements dataset for GenAI training and RAG retrieval",
+  "requirements": [
+    {
+      "id": "REQ-001",
+      "text": "The braking system shall respond within 100ms of obstacle detection.",
+      "extracted": {
+        "event": "brake",
+        "max_latency_ms": 100,
+        "trigger": "obstacle_detected",
+        "component": "braking_system",
+        "iso_reference": "ISO_26262",
+        "asil_level": "ASIL_D",
+        "event_chain": ["obstacle_sense", "obstacle_detect", "brake_decide", "brake_actuate"]
+      }
+    },
+    {
+      "id": "REQ-002",
+      "text": "Emergency steering correction must complete within 200 milliseconds of lane departure detection.",
+      "extracted": {
+        "event": "steer",
+        "max_latency_ms": 200,
+        "trigger": "lane_departure_detected",
+        "component": "steering_ecu",
+        "iso_reference": "ISO_26262",
+        "asil_level": "ASIL_C",
+        "event_chain": ["camera_sense", "lane_detect", "steer_decide", "steer_actuate"]
+      }
+    },
+    {
+      "id": "REQ-003",
+      "text": "Driver alert must be issued within 50ms of speed limit violation.",
+      "extracted": {
+        "event": "alert",
+        "max_latency_ms": 50,
+        "trigger": "speed_limit_exceeded",
+        "component": "alert_module",
+        "iso_reference": "ISO_26262",
+        "asil_level": "ASIL_B",
+        "event_chain": ["speed_sense", "speed_detect", "alert_decide", "alert_output"]
+      }
+    },
+    {
+      "id": "REQ-004",
+      "text": "The ABS system shall activate within 20ms of wheel lock detection.",
+      "extracted": {
+        "event": "abs_activate",
+        "max_latency_ms": 20,
+        "trigger": "wheel_lock_detected",
+        "component": "abs_system",
+        "iso_reference": "ISO_26262",
+        "asil_level": "ASIL_D",
+        "event_chain": ["wheel_sense", "lock_detect", "abs_decide", "pressure_modulate"]
+      }
+    },
+    {
+      "id": "REQ-005",
+      "text": "The pedestrian detection system must trigger emergency braking within 150ms of pedestrian classification.",
+      "extracted": {
+        "event": "emergency_brake",
+        "max_latency_ms": 150,
+        "trigger": "pedestrian_classified",
+        "component": "braking_system",
+        "iso_reference": "ISO_26262",
+        "asil_level": "ASIL_D",
+        "event_chain": ["camera_sense", "pedestrian_detect", "classify", "brake_decide", "brake_actuate"]
+      }
+    },
+    {
+      "id": "REQ-006",
+      "text": "The traction control system must reduce engine torque within 30ms of wheel slip detection.",
+      "extracted": {
+        "event": "torque_reduce",
+        "max_latency_ms": 30,
+        "trigger": "wheel_slip_detected",
+        "component": "traction_control",
+        "iso_reference": "ISO_26262",
+        "asil_level": "ASIL_C",
+        "event_chain": ["wheel_sense", "slip_detect", "torque_decide", "torque_actuate"]
+      }
+    },
+    {
+      "id": "REQ-007",
+      "text": "Electronic Stability Control shall intervene within 50ms of instability detection.",
+      "extracted": {
+        "event": "esc_intervene",
+        "max_latency_ms": 50,
+        "trigger": "instability_detected",
+        "component": "esc_system",
+        "iso_reference": "ISO_26262",
+        "asil_level": "ASIL_D",
+        "event_chain": ["imu_sense", "instability_detect", "esc_decide", "brake_steer_actuate"]
+      }
+    },
+    {
+      "id": "REQ-008",
+      "text": "Adaptive Cruise Control must adjust speed within 300ms of detecting a slower vehicle ahead.",
+      "extracted": {
+        "event": "speed_adjust",
+        "max_latency_ms": 300,
+        "trigger": "slower_vehicle_detected",
+        "component": "acc_system",
+        "iso_reference": "ISO_26262",
+        "asil_level": "ASIL_B",
+        "event_chain": ["radar_sense", "vehicle_detect", "gap_calculate", "throttle_adjust"]
+      }
+    },
+    {
+      "id": "REQ-009",
+      "text": "The airbag system must deploy within 15ms of collision force exceeding threshold.",
+      "extracted": {
+        "event": "airbag_deploy",
+        "max_latency_ms": 15,
+        "trigger": "collision_force_threshold",
+        "component": "airbag_ecu",
+        "iso_reference": "ISO_26262",
+        "asil_level": "ASIL_D",
+        "event_chain": ["accelerometer_sense", "collision_detect", "deploy_decide", "airbag_ignite"]
+      }
+    },
+    {
+      "id": "REQ-010",
+      "text": "The zone ECU must respond to gateway commands within 10ms.",
+      "extracted": {
+        "event": "zone_respond",
+        "max_latency_ms": 10,
+        "trigger": "gateway_command_received",
+        "component": "zone_ecu",
+        "iso_reference": "ISO_26262",
+        "asil_level": "ASIL_C",
+        "event_chain": ["command_receive", "parse_command", "validate", "execute_actuate"]
+      }
+    }
+  ]
+}

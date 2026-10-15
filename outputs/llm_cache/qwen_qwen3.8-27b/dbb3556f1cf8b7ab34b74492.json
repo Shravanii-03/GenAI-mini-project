@@ -1,0 +1,1 @@
+{"model": "qwen/qwen3.8-27b", "reply": "{\n  \"deadline_ms\": null,\n  \"unresolved\": false,\n  \"component\": \"acc_system\",\n  \"trigger\": \"cruise_control_disable_requested\",\n  \"response\": \"cruise_control_deactivated\",\n  \"vss_signals\": [\n    \"Vehicle.ADAS.CruiseControl.IsActive\"\n  ],\n  \"can_ids\": [],\n  \"formula\": null\n}"}

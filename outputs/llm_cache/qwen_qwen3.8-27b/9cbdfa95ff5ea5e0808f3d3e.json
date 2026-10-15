@@ -1,0 +1,1 @@
+{"model": "qwen/qwen3.8-27b", "reply": "{\n  \"deadline_ms\": 30,\n  \"unresolved\": false,\n  \"component\": \"other\",\n  \"trigger\": \"wheel_slip_detected\",\n  \"response\": \"engine_torque_reduced\",\n  \"vss_signals\": [],\n  \"can_ids\": [\n    \"0x700\"\n  ],\n  \"formula\": \"G(wheel_slip_detected -> F[0,30 ms] engine_torque_reduced)\"\n}"}

@@ -1,0 +1,44 @@
+{
+  "scenario_id": "S2",
+  "name": "Wrong Sensor Used for Braking Decision",
+  "description": "Scenario 2 from TUM paper: Vehicle brakes based on LIDAR signal, but only camera exists in system",
+  "iso_rule_violated": "EC-002: brake AFTER correct sensor detection — sensor mismatch",
+  "timestamp_ms": [0, 15, 48, 72, 89],
+  "events": [
+    "camera_sense_start",
+    "camera_detection_complete",
+    "lidar_signal_read_INVALID",
+    "brake_decision_wrong_sensor",
+    "brake_applied"
+  ],
+  "event_chain_timing": [
+    {"step": "camera_sense_start",           "time_ms": 0,  "vss": "Vehicle.ADAS.PedestrianDetection.CameraConfidence", "can_id": "0x320"},
+    {"step": "camera_detection_complete",    "time_ms": 15, "vss": "Vehicle.ADAS.PedestrianDetection.IsDetected",        "can_id": "0x300"},
+    {"step": "lidar_signal_read_INVALID",    "time_ms": 48, "vss": "Vehicle.ADAS.PedestrianDetection.LidarConfidence",  "can_id": "0x310", "note": "LIDAR not present — signal is stale/zero"},
+    {"step": "brake_decision_wrong_sensor",  "time_ms": 72, "vss": null,                                                  "can_id": null,    "note": "Decision based on LIDAR=true but LIDAR doesn't exist"},
+    {"step": "brake_applied",                "time_ms": 89, "vss": "Vehicle.ADAS.EBA.IsActive",                          "can_id": "0x1A0"}
+  ],
+  "actual_delays": {
+    "camera_sense_ms": 15,
+    "lidar_sense_ms": 33,
+    "decision_ms": 24,
+    "actuator_ms": 17,
+    "total_ms": 89
+  },
+  "expected_delays": {
+    "camera_sense_ms": 10,
+    "decision_ms": 50,
+    "actuator_ms": 40,
+    "total_ms": 100
+  },
+  "violation": false,
+  "violation_reason": "Timing OK but WRONG SENSOR used — will fail when pedestrian appears without LIDAR trigger",
+  "safety_verdict": "FAIL",
+  "severity": "HIGH",
+  "risk_score": 0.89,
+  "road_condition": "wet",
+  "vehicle_speed_kmh": 45,
+  "distance_to_pedestrian_m": 18,
+  "ecu_cpu_load_pct": 38,
+  "functional_safety_rule": "brake after lidar-pedestrian-detected AND lidar-sense before lidar-pedestrian-detected — but LIDAR absent"
+}

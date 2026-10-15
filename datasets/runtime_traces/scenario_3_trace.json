@@ -1,0 +1,44 @@
+{
+  "scenario_id": "S3",
+  "name": "Vehicle Brakes Before Pedestrian Detected",
+  "description": "Scenario 3 from TUM paper: Braking occurs before decision-making — event chain order violated",
+  "iso_rule_violated": "EC-002: brake AFTER pedestrian_detected",
+  "timestamp_ms": [0, 8, 9, 55, 90],
+  "events": [
+    "camera_sense_start",
+    "brake_applied_PREMATURE",
+    "camera_detection_complete",
+    "pedestrian_detected",
+    "redundant_brake_signal"
+  ],
+  "event_chain_timing": [
+    {"step": "camera_sense_start",        "time_ms": 0,  "vss": "Vehicle.ADAS.PedestrianDetection.CameraConfidence", "can_id": "0x320"},
+    {"step": "brake_applied_PREMATURE",   "time_ms": 8,  "vss": "Vehicle.ADAS.EBA.IsActive",                          "can_id": "0x1A0", "note": "BRAKE before detection — CRITICAL violation"},
+    {"step": "camera_detection_complete", "time_ms": 55, "vss": "Vehicle.ADAS.PedestrianDetection.IsDetected",        "can_id": "0x300"},
+    {"step": "pedestrian_detected",       "time_ms": 55, "vss": "Vehicle.ADAS.PedestrianDetection.IsDetected",        "can_id": "0x300"},
+    {"step": "redundant_brake_signal",    "time_ms": 90, "vss": null,                                                   "can_id": "0x1A0"}
+  ],
+  "actual_delays": {
+    "brake_to_sense_ms": 8,
+    "camera_sense_ms": 55,
+    "pedestrian_detect_ms": 0,
+    "total_ms": 90
+  },
+  "expected_delays": {
+    "camera_sense_ms": 10,
+    "pedestrian_detect_ms": 30,
+    "decision_ms": 20,
+    "actuator_ms": 40,
+    "total_ms": 100
+  },
+  "violation": true,
+  "violation_reason": "BRAKE commanded before pedestrian detection — event chain order violated (brake BEFORE detect)",
+  "safety_verdict": "FAIL",
+  "severity": "HIGH",
+  "risk_score": 0.90,
+  "road_condition": "icy",
+  "vehicle_speed_kmh": 30,
+  "distance_to_pedestrian_m": 8,
+  "ecu_cpu_load_pct": 72,
+  "functional_safety_rule": "brake after camera-pedestrian-detected — violated (brake occurred 47ms BEFORE detection)"
+}

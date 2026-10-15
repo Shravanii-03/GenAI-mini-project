@@ -1,0 +1,200 @@
+{
+  "version": "1.0",
+  "description": "CAN message catalog for SDV safety analysis — realistic automotive CAN-FD IDs",
+  "messages": [
+    {
+      "id": "0x1A0",
+      "name": "BRAKE_CMD",
+      "description": "Emergency brake command from ECU to brake actuator",
+      "dlc": 8,
+      "cycle_time_ms": 10,
+      "signals": [
+        {"name": "brake_pressure", "start_bit": 0, "length": 16, "unit": "bar", "min": 0, "max": 200},
+        {"name": "brake_active", "start_bit": 16, "length": 1, "unit": null},
+        {"name": "emergency_flag", "start_bit": 17, "length": 1, "unit": null}
+      ],
+      "safety_critical": true,
+      "iso_reference": "ISO_26262",
+      "timing_constraint_ms": 10,
+      "sender": "BrakeECU",
+      "receivers": ["BrakeActuator", "SafetyMonitor"]
+    },
+    {
+      "id": "0x1A3",
+      "name": "BRAKE_PRESSURE",
+      "description": "Brake pressure feedback from actuator",
+      "dlc": 8,
+      "cycle_time_ms": 10,
+      "signals": [
+        {"name": "brake_pressure_actual", "start_bit": 0, "length": 16, "unit": "bar", "min": 0, "max": 200},
+        {"name": "pressure_valid", "start_bit": 16, "length": 1, "unit": null}
+      ],
+      "safety_critical": true,
+      "iso_reference": "ISO_26262",
+      "timing_constraint_ms": 10,
+      "sender": "BrakeActuator",
+      "receivers": ["BrakeECU", "VehicleController"]
+    },
+    {
+      "id": "0x200",
+      "name": "VEHICLE_SPEED",
+      "description": "Vehicle speed broadcast from wheel speed sensors",
+      "dlc": 8,
+      "cycle_time_ms": 10,
+      "signals": [
+        {"name": "speed_kmh", "start_bit": 0, "length": 16, "unit": "km/h", "min": 0, "max": 300, "scale": 0.01},
+        {"name": "speed_valid", "start_bit": 16, "length": 1, "unit": null},
+        {"name": "direction", "start_bit": 17, "length": 2, "unit": null}
+      ],
+      "safety_critical": true,
+      "iso_reference": "ISO_26262",
+      "timing_constraint_ms": 20,
+      "sender": "WheelSpeedSensor",
+      "receivers": ["VehicleController", "BrakeECU", "ADAS_ECU"]
+    },
+    {
+      "id": "0x210",
+      "name": "STEERING_CMD",
+      "description": "Steering angle command",
+      "dlc": 8,
+      "cycle_time_ms": 20,
+      "signals": [
+        {"name": "steering_angle", "start_bit": 0, "length": 16, "unit": "degrees", "min": -900, "max": 900, "scale": 0.1},
+        {"name": "torque_request", "start_bit": 16, "length": 16, "unit": "Nm", "min": -50, "max": 50}
+      ],
+      "safety_critical": true,
+      "iso_reference": "ISO_26262",
+      "timing_constraint_ms": 20,
+      "sender": "SteeringECU",
+      "receivers": ["SteeringActuator"]
+    },
+    {
+      "id": "0x300",
+      "name": "SENSOR_FUSION",
+      "description": "Fused perception data from camera + LiDAR",
+      "dlc": 64,
+      "is_canfd": true,
+      "cycle_time_ms": 20,
+      "signals": [
+        {"name": "obstacle_detected", "start_bit": 0, "length": 1, "unit": null},
+        {"name": "pedestrian_detected", "start_bit": 1, "length": 1, "unit": null},
+        {"name": "obstacle_distance_m", "start_bit": 8, "length": 16, "unit": "m", "min": 0, "max": 200, "scale": 0.01},
+        {"name": "confidence_score", "start_bit": 24, "length": 8, "unit": "percent", "min": 0, "max": 100}
+      ],
+      "safety_critical": true,
+      "iso_reference": "ISO_26262",
+      "timing_constraint_ms": 50,
+      "sender": "PerceptionECU",
+      "receivers": ["ADAS_ECU", "VehicleController"]
+    },
+    {
+      "id": "0x310",
+      "name": "LIDAR_DATA",
+      "description": "LiDAR point cloud summary data",
+      "dlc": 64,
+      "is_canfd": true,
+      "cycle_time_ms": 33,
+      "signals": [
+        {"name": "point_count", "start_bit": 0, "length": 16, "unit": null},
+        {"name": "nearest_object_m", "start_bit": 16, "length": 16, "unit": "m", "scale": 0.01},
+        {"name": "classification", "start_bit": 32, "length": 8, "unit": null}
+      ],
+      "safety_critical": true,
+      "iso_reference": "ISO_26262",
+      "timing_constraint_ms": 50,
+      "sender": "LidarSensor",
+      "receivers": ["PerceptionECU"]
+    },
+    {
+      "id": "0x320",
+      "name": "CAMERA_DETECT",
+      "description": "Camera-based object detection result",
+      "dlc": 32,
+      "is_canfd": true,
+      "cycle_time_ms": 33,
+      "signals": [
+        {"name": "object_class", "start_bit": 0, "length": 8, "unit": null},
+        {"name": "bbox_x", "start_bit": 8, "length": 16, "unit": "pixels"},
+        {"name": "bbox_y", "start_bit": 24, "length": 16, "unit": "pixels"},
+        {"name": "detection_confidence", "start_bit": 40, "length": 8, "unit": "percent"}
+      ],
+      "safety_critical": true,
+      "iso_reference": "ISO_26262",
+      "timing_constraint_ms": 50,
+      "sender": "CameraECU",
+      "receivers": ["PerceptionECU"]
+    },
+    {
+      "id": "0x400",
+      "name": "INFOTAINMENT_CTRL",
+      "description": "Infotainment system control messages",
+      "dlc": 8,
+      "cycle_time_ms": 100,
+      "signals": [
+        {"name": "display_cmd", "start_bit": 0, "length": 8, "unit": null},
+        {"name": "audio_volume", "start_bit": 8, "length": 8, "unit": "percent"},
+        {"name": "nav_active", "start_bit": 16, "length": 1, "unit": null}
+      ],
+      "safety_critical": false,
+      "iso_reference": null,
+      "timing_constraint_ms": null,
+      "sender": "InfotainmentECU",
+      "receivers": ["DisplayUnit", "AudioSystem"],
+      "attack_surface": true,
+      "attack_note": "Infotainment ECU is internet-connected — CAN bridge attack vector"
+    },
+    {
+      "id": "0x500",
+      "name": "OTA_UPDATE",
+      "description": "Over-the-air software update control",
+      "dlc": 64,
+      "is_canfd": true,
+      "cycle_time_ms": null,
+      "signals": [
+        {"name": "update_cmd", "start_bit": 0, "length": 8, "unit": null},
+        {"name": "package_hash", "start_bit": 8, "length": 32, "unit": null},
+        {"name": "auth_token", "start_bit": 40, "length": 32, "unit": null}
+      ],
+      "safety_critical": true,
+      "iso_reference": "ISO_21434",
+      "timing_constraint_ms": null,
+      "sender": "OTA_Manager",
+      "receivers": ["AllECUs"],
+      "attack_surface": true,
+      "attack_note": "OTA without signature verification = full ECU compromise vector"
+    },
+    {
+      "id": "0x600",
+      "name": "ZONE_ECU_HEARTBEAT",
+      "description": "Zone ECU liveness heartbeat",
+      "dlc": 8,
+      "cycle_time_ms": 100,
+      "signals": [
+        {"name": "zone_id", "start_bit": 0, "length": 8, "unit": null},
+        {"name": "health_status", "start_bit": 8, "length": 8, "unit": null},
+        {"name": "uptime_ms", "start_bit": 16, "length": 32, "unit": "ms"}
+      ],
+      "safety_critical": false,
+      "iso_reference": "ISO_26262",
+      "timing_constraint_ms": 200,
+      "sender": "ZoneECU",
+      "receivers": ["CentralGateway", "SafetyMonitor"]
+    },
+    {
+      "id": "0x700",
+      "name": "TRACTION_CTRL",
+      "description": "Traction control commands",
+      "dlc": 8,
+      "cycle_time_ms": 10,
+      "signals": [
+        {"name": "traction_active", "start_bit": 0, "length": 1, "unit": null},
+        {"name": "torque_reduction_pct", "start_bit": 8, "length": 8, "unit": "percent"}
+      ],
+      "safety_critical": true,
+      "iso_reference": "ISO_26262",
+      "timing_constraint_ms": 20,
+      "sender": "ADAS_ECU",
+      "receivers": ["PowertrainECU"]
+    }
+  ]
+}

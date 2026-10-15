@@ -1,0 +1,1 @@
+{"model": "qwen/qwen3.8-27b", "reply": "{\n  \"deadline_ms\": null,\n  \"unresolved\": false,\n  \"component\": \"acc_system\",\n  \"trigger\": \"driver_disable_request\",\n  \"response\": \"acc_disabled\",\n  \"vss_signals\": [\n    \"ADAS.CruiseControl.Status\"\n  ],\n  \"can_ids\": [],\n  \"formula\": null\n}"}

@@ -1,0 +1,1 @@
+{"model": "qwen/qwen3.8-27b", "reply": "{\n  \"deadline_ms\": null,\n  \"unresolved\": false,\n  \"component\": \"braking_system\",\n  \"trigger\": \"brake_pressure_measured\",\n  \"response\": \"brake_pressure_within_limit\",\n  \"vss_signals\": [\n    \"Chassis.Brakes.BrakePressure\"\n  ],\n  \"can_ids\": [],\n  \"formula\": null\n}"}

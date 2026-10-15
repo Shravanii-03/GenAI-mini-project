@@ -1,0 +1,1 @@
+{"model": "openai/gpt-oss-20b", "reply": "{\n  \"deadline_ms\": 300,\n  \"unresolved\": false,\n  \"component\": \"acc_system\",\n  \"trigger\": \"acc_activation\",\n  \"response\": \"acc_adjustment\",\n  \"vss_signals\": [\"vehicle_speed\", \"road_grade\"],\n  \"can_ids\": [\"0x1A0\"],\n  \"formula\": \"G(acc_activation -> F[0,300 ms] acc_adjustment)\"\n}"}

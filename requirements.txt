@@ -1,0 +1,30 @@
+# GenAI-Based Real-Time Temporal Safety & Threat Detection for SDVs
+# Install with: pip install -r requirements.txt
+
+# ── Core LLM & API ────────────────────────────────────────────────────
+groq>=0.9.0
+python-dotenv>=1.0.0
+
+# ── Dashboard ─────────────────────────────────────────────────────────
+streamlit>=1.35.0
+plotly>=5.20.0
+altair>=5.0.0
+
+# ── Data & Config ─────────────────────────────────────────────────────
+pyyaml>=6.0.1
+pydantic>=2.0
+pandas>=2.0.0
+numpy>=1.24
+
+# ── Optional: RAG with real embeddings (uncomment for production) ──────
+# sentence-transformers>=2.7.0
+# faiss-cpu>=1.8.0
+# torch>=2.0.0
+
+# ── Optional: PlantUML diagram rendering ──────────────────────────────
+# plantuml>=0.3.0
+
+# ── Optional: Tree-sitter for production-grade code parsing ───────────
+# tree-sitter>=0.21.0
+# tree-sitter-python>=0.21.0
+# tree-sitter-cpp>=0.21.0

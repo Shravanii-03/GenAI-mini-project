@@ -1,0 +1,1 @@
+{"model": "openai/gpt-oss-120b", "reply": "{\n  \"deadline_ms\": 2000,\n  \"unresolved\": false,\n  \"component\": \"safety_monitor\",\n  \"trigger\": \"fault_detected\",\n  \"response\": \"fault_reaction_complete\",\n  \"vss_signals\": [],\n  \"can_ids\": [],\n  \"formula\": \"G(fault_detected -> F[0,2000 ms] fault_reaction_complete)\"\n}"}

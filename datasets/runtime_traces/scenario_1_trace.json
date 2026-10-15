@@ -1,0 +1,49 @@
+{
+  "scenario_id": "S1",
+  "name": "Vehicle Accelerates Instead of Braking",
+  "description": "Scenario 1 from TUM paper: Vehicle accelerates when pedestrian detected — functional safety flaw",
+  "iso_rule_violated": "EC-003: accelerate NOT AFTER pedestrian_detected",
+  "timestamp_ms": [0, 12, 45, 62, 95, 110],
+  "events": [
+    "camera_sense_start",
+    "pedestrian_detected_camera",
+    "lidar_sense_complete",
+    "sensor_fusion_complete",
+    "accelerate_command_issued",
+    "acceleration_applied"
+  ],
+  "event_chain_timing": [
+    {"step": "camera_sense_start",          "time_ms": 0,   "vss": "Vehicle.ADAS.PedestrianDetection.CameraConfidence", "can_id": "0x320"},
+    {"step": "pedestrian_detected_camera",  "time_ms": 12,  "vss": "Vehicle.ADAS.PedestrianDetection.IsDetected",       "can_id": "0x300"},
+    {"step": "lidar_sense_complete",        "time_ms": 45,  "vss": "Vehicle.ADAS.PedestrianDetection.LidarConfidence",  "can_id": "0x310"},
+    {"step": "sensor_fusion_complete",      "time_ms": 62,  "vss": null,                                                 "can_id": "0x300"},
+    {"step": "accelerate_command_issued",   "time_ms": 95,  "vss": null,                                                 "can_id": "0x700"},
+    {"step": "acceleration_applied",        "time_ms": 110, "vss": "Vehicle.Speed",                                     "can_id": "0x200"}
+  ],
+  "actual_delays": {
+    "camera_sense_ms": 12,
+    "lidar_sense_ms": 33,
+    "fusion_ms": 17,
+    "decision_ms": 33,
+    "actuator_ms": 15,
+    "total_ms": 110
+  },
+  "expected_delays": {
+    "camera_sense_ms": 10,
+    "lidar_sense_ms": 30,
+    "fusion_ms": 20,
+    "decision_ms": 20,
+    "actuator_ms": 20,
+    "total_ms": 100
+  },
+  "violation": true,
+  "violation_reason": "Vehicle ACCELERATED instead of braking — EC-003 violated",
+  "safety_verdict": "FAIL",
+  "severity": "CRITICAL",
+  "risk_score": 1.10,
+  "road_condition": "dry",
+  "vehicle_speed_kmh": 60,
+  "distance_to_pedestrian_m": 12,
+  "ecu_cpu_load_pct": 45,
+  "functional_safety_rule": "accelerate before pedestrian-camera-detected AND accelerate before pedestrian-lidar-detected"
+}

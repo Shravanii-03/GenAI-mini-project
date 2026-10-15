@@ -1,0 +1,1 @@
+{"model": "qwen/qwen3.8-27b", "reply": "{\n  \"deadline_ms\": 300,\n  \"unresolved\": false,\n  \"component\": \"acc_system\",\n  \"trigger\": \"obstacle_detected\",\n  \"response\": \"brake_request_sent\",\n  \"vss_signals\": [],\n  \"can_ids\": [],\n  \"formula\": \"G(obstacle_detected -> F[0,300 ms] brake_request_sent)\"\n}"}

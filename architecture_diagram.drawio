@@ -1,0 +1,340 @@
+<mxfile host="app.diagrams.net">
+  <diagram id="genai-sdv-architecture" name="GenAI SDV Safety Architecture">
+    <mxGraphModel dx="1422" dy="794" grid="1" gridSize="10" guides="1" tooltips="1" connect="1" arrows="1" fold="1" page="1" pageScale="1" pageWidth="2000" pageHeight="1400" math="0" shadow="0">
+      <root>
+        <mxCell id="0" />
+        <mxCell id="1" parent="0" />
+        
+        <!-- TITLE -->
+        <mxCell id="title" value="GenAI-Based Real-Time Temporal Safety &amp; Threat Detection for SDVs&#xa;Complete System Architecture" style="text;html=1;strokeColor=none;fillColor=none;align=center;verticalAlign=middle;whiteSpace=wrap;rounded=0;fontSize=24;fontStyle=1;fontColor=#1976d2;" vertex="1" parent="1">
+          <mxGeometry x="400" y="20" width="1200" height="60" as="geometry" />
+        </mxCell>
+        
+        <!-- LEGEND -->
+        <mxCell id="legend-box" value="" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#ffffff;strokeColor=#666666;dashed=1;" vertex="1" parent="1">
+          <mxGeometry x="40" y="100" width="280" height="120" as="geometry" />
+        </mxCell>
+        <mxCell id="legend-title" value="LEGEND" style="text;html=1;strokeColor=none;fillColor=none;align=left;verticalAlign=middle;whiteSpace=wrap;rounded=0;fontStyle=1;fontSize=14;" vertex="1" parent="1">
+          <mxGeometry x="50" y="110" width="100" height="20" as="geometry" />
+        </mxCell>
+        <mxCell id="legend-novel" value="Your Novel Modules" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#fff3e0;strokeColor=#f57c00;strokeWidth=3;fontStyle=1;" vertex="1" parent="1">
+          <mxGeometry x="60" y="140" width="120" height="30" as="geometry" />
+        </mxCell>
+        <mxCell id="legend-friends" value="Friends' Modules" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#e3f2fd;strokeColor=#1976d2;strokeWidth=2;" vertex="1" parent="1">
+          <mxGeometry x="190" y="140" width="120" height="30" as="geometry" />
+        </mxCell>
+        <mxCell id="legend-data" value="Data/Knowledge" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#f3e5f5;strokeColor=#7b1fa2;strokeWidth=2;" vertex="1" parent="1">
+          <mxGeometry x="60" y="180" width="120" height="30" as="geometry" />
+        </mxCell>
+        <mxCell id="legend-output" value="Output/Dashboard" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#e8f5e9;strokeColor=#2e7d32;strokeWidth=2;" vertex="1" parent="1">
+          <mxGeometry x="190" y="180" width="120" height="30" as="geometry" />
+        </mxCell>
+        
+        <!-- ========================================== -->
+        <!-- LAYER 1: INPUT & DATA SOURCES -->
+        <!-- ========================================== -->
+        
+        <mxCell id="layer1-title" value="LAYER 1: DATA SOURCES &amp; INPUT" style="rounded=0;whiteSpace=wrap;html=1;fillColor=#f5f5f5;strokeColor=#666666;fontStyle=1;fontSize=14;align=center;" vertex="1" parent="1">
+          <mxGeometry x="360" y="100" width="1600" height="40" as="geometry" />
+        </mxCell>
+        
+        <!-- User Input -->
+        <mxCell id="user-input" value="👤 USER INPUT&#xa;─────────&#xa;Safety Requirement&#xa;(Natural Language)" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#e0f7fa;strokeColor=#006064;strokeWidth=2;align=center;verticalAlign=middle;" vertex="1" parent="1">
+          <mxGeometry x="400" y="160" width="180" height="100" as="geometry" />
+        </mxCell>
+        
+        <!-- Knowledge Base (MODULE 6) -->
+        <mxCell id="knowledge-base" value="📚 MODULE 6: RAG + Knowledge Base&#xa;═══════════════════&#xa;• VSS Signals (vehicle_signal_spec)&#xa;• CAN Messages Database&#xa;• ISO 26262 Timing Rules&#xa;• Attack Patterns&#xa;• Historical Failures" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#fff3e0;strokeColor=#f57c00;strokeWidth=3;align=left;verticalAlign=top;fontStyle=1;" vertex="1" parent="1">
+          <mxGeometry x="620" y="160" width="280" height="140" as="geometry" />
+        </mxCell>
+        
+        <!-- Code Samples -->
+        <mxCell id="code-samples" value="💻 CODE SAMPLES&#xa;─────────&#xa;• Python SDV Code&#xa;• C++ Brake Systems&#xa;• Rust CAN Handlers" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#f3e5f5;strokeColor=#7b1fa2;strokeWidth=2;align=left;verticalAlign=top;" vertex="1" parent="1">
+          <mxGeometry x="940" y="160" width="200" height="100" as="geometry" />
+        </mxCell>
+        
+        <!-- Runtime Traces -->
+        <mxCell id="runtime-traces" value="⏱️ PRE-RECORDED TRACES&#xa;─────────&#xa;• Scenario 1 (Normal)&#xa;• Scenario 2 (Edge)&#xa;• Scenario 3 (Stress)" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#f3e5f5;strokeColor=#7b1fa2;strokeWidth=2;align=left;verticalAlign=top;" vertex="1" parent="1">
+          <mxGeometry x="1180" y="160" width="220" height="100" as="geometry" />
+        </mxCell>
+        
+        <!-- Config -->
+        <mxCell id="config" value="⚙️ CONFIG&#xa;─────────&#xa;• ISO Rules&#xa;• Thresholds&#xa;• LLM Settings" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#f3e5f5;strokeColor=#7b1fa2;strokeWidth=2;align=center;" vertex="1" parent="1">
+          <mxGeometry x="1440" y="160" width="160" height="100" as="geometry" />
+        </mxCell>
+        
+        <!-- LLM Client -->
+        <mxCell id="llm-client" value="🤖 LLM CLIENT&#xa;─────────&#xa;Groq API&#xa;(Llama 3.3 70B)" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#e3f2fd;strokeColor=#1976d2;strokeWidth=2;align=center;" vertex="1" parent="1">
+          <mxGeometry x="1640" y="160" width="160" height="100" as="geometry" />
+        </mxCell>
+        
+        <!-- ========================================== -->
+        <!-- LAYER 2: PARSING & EXTRACTION -->
+        <!-- ========================================== -->
+        
+        <mxCell id="layer2-title" value="LAYER 2: PARSING &amp; EXTRACTION" style="rounded=0;whiteSpace=wrap;html=1;fillColor=#f5f5f5;strokeColor=#666666;fontStyle=1;fontSize=14;align=center;" vertex="1" parent="1">
+          <mxGeometry x="360" y="320" width="1600" height="40" as="geometry" />
+        </mxCell>
+        
+        <!-- Requirement Parser (Friends) -->
+        <mxCell id="parser" value="📝 PARSER (Friends)&#xa;─────────&#xa;Requirement Parser&#xa;• Extracts event&#xa;• Extracts trigger&#xa;• Extracts component" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#e3f2fd;strokeColor=#1976d2;strokeWidth=2;align=left;verticalAlign=top;" vertex="1" parent="1">
+          <mxGeometry x="400" y="380" width="200" height="120" as="geometry" />
+        </mxCell>
+        
+        <!-- MODULE 3: Timing Extractor (YOUR NOVELTY) -->
+        <mxCell id="timing-extractor" value="⏰ MODULE 3: TIMING EXTRACTOR&#xa;══════════════════&#xa;🌟 YOUR MAIN NOVELTY&#xa;─────────&#xa;• Regex + LLM Hybrid&#xa;• Extracts: sensor/decision/actuator delays&#xa;• ISO 26262 validation&#xa;• Confidence scoring" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#fff3e0;strokeColor=#f57c00;strokeWidth=4;align=left;verticalAlign=top;fontStyle=1;" vertex="1" parent="1">
+          <mxGeometry x="640" y="380" width="280" height="140" as="geometry" />
+        </mxCell>
+        
+        <!-- MODULE 1: Multi-Language Parser -->
+        <mxCell id="multi-lang-parser" value="🔧 MODULE 1: MULTI-LANG PARSER&#xa;══════════════════&#xa;• Python Code Analysis&#xa;• C++ CAN Extraction&#xa;• Rust Signal Parsing&#xa;• Unified JSON Output" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#fff3e0;strokeColor=#f57c00;strokeWidth=3;align=left;verticalAlign=top;fontStyle=1;" vertex="1" parent="1">
+          <mxGeometry x="960" y="380" width="260" height="120" as="geometry" />
+        </mxCell>
+        
+        <!-- RAG Engine -->
+        <mxCell id="rag-engine" value="🔍 RAG ENGINE&#xa;─────────&#xa;• Vector Search&#xa;• Context Retrieval&#xa;• Signal Validation" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#fff3e0;strokeColor=#f57c00;strokeWidth=3;align=center;fontStyle=1;" vertex="1" parent="1">
+          <mxGeometry x="1260" y="380" width="180" height="100" as="geometry" />
+        </mxCell>
+        
+        <!-- ========================================== -->
+        <!-- LAYER 3: AGENTIC AI CORE -->
+        <!-- ========================================== -->
+        
+        <mxCell id="layer3-title" value="LAYER 3: AGENTIC AI REASONING ENGINE" style="rounded=0;whiteSpace=wrap;html=1;fillColor=#e3f2fd;strokeColor=#1976d2;fontStyle=1;fontSize=14;align=center;" vertex="1" parent="1">
+          <mxGeometry x="360" y="560" width="1600" height="40" as="geometry" />
+        </mxCell>
+        
+        <!-- Agent1 (Friends) -->
+        <mxCell id="agent1" value="🤖 AGENT 1: SAFETY REASONING AGENT (Friends)&#xa;═══════════════════════════════&#xa;Agentic Loop (3 Iterations):&#xa;1️⃣ Understand → 2️⃣ Generate → 3️⃣ Evaluate → 4️⃣ Reason → 5️⃣ Decide → 6️⃣ Repeat&#xa;─────────&#xa;• Temporal Intelligence&#xa;• Scenario Generation&#xa;• Real-time Validation&#xa;• Threat Reasoning&#xa;• Autonomous Decision Making" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#e3f2fd;strokeColor=#1976d2;strokeWidth=3;align=left;verticalAlign=top;fontStyle=1;fontSize=12;" vertex="1" parent="1">
+          <mxGeometry x="400" y="620" width="400" height="180" as="geometry" />
+        </mxCell>
+        
+        <!-- Scenario Generator (Friends) -->
+        <mxCell id="scenario-gen" value="🎲 SCENARIO GENERATOR&#xa;─────────&#xa;• Normal Scenarios&#xa;• Edge Cases&#xa;• Stress Tests&#xa;• Diverse Parameters" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#e3f2fd;strokeColor=#1976d2;strokeWidth=2;align=left;verticalAlign=top;" vertex="1" parent="1">
+          <mxGeometry x="840" y="620" width="200" height="120" as="geometry" />
+        </mxCell>
+        
+        <!-- Reasoning Engine (Friends) -->
+        <mxCell id="reasoning-engine" value="🧠 REASONING ENGINE&#xa;─────────&#xa;• Evaluate Scenarios&#xa;• Compare Delays&#xa;• Calculate Risk&#xa;• Find Bottlenecks" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#e3f2fd;strokeColor=#1976d2;strokeWidth=2;align=left;verticalAlign=top;" vertex="1" parent="1">
+          <mxGeometry x="1080" y="620" width="200" height="120" as="geometry" />
+        </mxCell>
+        
+        <!-- Memory (Friends) -->
+        <mxCell id="memory" value="💾 MEMORY&#xa;─────────&#xa;• Past Delays&#xa;• Violations&#xa;• Severities&#xa;• Agent History" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#e3f2fd;strokeColor=#1976d2;strokeWidth=2;align=center;" vertex="1" parent="1">
+          <mxGeometry x="1320" y="620" width="160" height="100" as="geometry" />
+        </mxCell>
+        
+        <!-- ========================================== -->
+        <!-- LAYER 4: VALIDATION & THREAT DETECTION -->
+        <!-- ========================================== -->
+        
+        <mxCell id="layer4-title" value="LAYER 4: VALIDATION &amp; THREAT DETECTION (YOUR NOVELTIES)" style="rounded=0;whiteSpace=wrap;html=1;fillColor=#fff3e0;strokeColor=#f57c00;fontStyle=1;fontSize=14;align=center;" vertex="1" parent="1">
+          <mxGeometry x="360" y="840" width="1600" height="40" as="geometry" />
+        </mxCell>
+        
+        <!-- MODULE 4: Temporal Validator -->
+        <mxCell id="temporal-validator" value="⏱️ MODULE 4: TEMPORAL VALIDATOR&#xa;══════════════════&#xa;🌟 REAL-TIME VALIDATION&#xa;─────────&#xa;• Expected vs Actual Timing&#xa;• Violation Detection&#xa;• Bottleneck Analysis&#xa;• Risk Score Calculation&#xa;• Dynamic Monitoring" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#fff3e0;strokeColor=#f57c00;strokeWidth=3;align=left;verticalAlign=top;fontStyle=1;" vertex="1" parent="1">
+          <mxGeometry x="400" y="900" width="280" height="160" as="geometry" />
+        </mxCell>
+        
+        <!-- MODULE 5: Threat Generator -->
+        <mxCell id="threat-generator" value="🛡️ MODULE 5: THREAT GENERATOR&#xa;══════════════════&#xa;🌟 SECURITY ANALYSIS&#xa;─────────&#xa;• Cyber-Physical Attack Chains&#xa;• Topology Analysis&#xa;• Severity Scoring (CRITICAL/HIGH/MEDIUM/LOW)&#xa;• TARA-aligned Risk Assessment&#xa;• Mitigation Strategies" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#fff3e0;strokeColor=#f57c00;strokeWidth=3;align=left;verticalAlign=top;fontStyle=1;" vertex="1" parent="1">
+          <mxGeometry x="720" y="900" width="320" height="160" as="geometry" />
+        </mxCell>
+        
+        <!-- RL Simulator (Friends) -->
+        <mxCell id="rl-simulator" value="🔄 RL ADAPTIVE SIMULATOR&#xa;─────────&#xa;• Adaptive Policy&#xa;• Exploration vs Exploitation&#xa;• 3 iterations per scenario&#xa;• Dynamic delay adjustment" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#e3f2fd;strokeColor=#1976d2;strokeWidth=2;align=left;verticalAlign=top;" vertex="1" parent="1">
+          <mxGeometry x="1080" y="900" width="240" height="120" as="geometry" />
+        </mxCell>
+        
+        <!-- Diagram Generator -->
+        <mxCell id="diagram-gen" value="📊 DIAGRAM GENERATOR&#xa;─────────&#xa;• PlantUML Export&#xa;• Mermaid Charts&#xa;• Event Chain Viz&#xa;• Like Paper Diagrams!" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#fff3e0;strokeColor=#f57c00;strokeWidth=3;align=left;verticalAlign=top;fontStyle=1;" vertex="1" parent="1">
+          <mxGeometry x="1360" y="900" width="220" height="120" as="geometry" />
+        </mxCell>
+        
+        <!-- ========================================== -->
+        <!-- LAYER 5: INTEGRATION & OUTPUT -->
+        <!-- ========================================== -->
+        
+        <mxCell id="layer5-title" value="LAYER 5: INTEGRATION &amp; OUTPUT" style="rounded=0;whiteSpace=wrap;html=1;fillColor=#f5f5f5;strokeColor=#666666;fontStyle=1;fontSize=14;align=center;" vertex="1" parent="1">
+          <mxGeometry x="360" y="1100" width="1600" height="40" as="geometry" />
+        </mxCell>
+        
+        <!-- Main Pipeline (Friends + Your Integration) -->
+        <mxCell id="main-pipeline" value="⚡ MAIN PIPELINE (Integration Point)&#xa;═══════════════════&#xa;1. Parse Requirement&#xa;2. Run Agent1 (3 iterations)&#xa;3. Apply RL Simulation&#xa;4. Generate Summary&#xa;5. Save Output JSON" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#e8f5e9;strokeColor=#2e7d32;strokeWidth=3;align=left;verticalAlign=top;fontStyle=1;" vertex="1" parent="1">
+          <mxGeometry x="400" y="1160" width="400" height="140" as="geometry" />
+        </mxCell>
+        
+        <!-- Output JSON -->
+        <mxCell id="output-json" value="📄 agent_output.json&#xa;─────────&#xa;• All Scenarios&#xa;• Evaluations&#xa;• Threats&#xa;• RL Results&#xa;• Explanations" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#f3e5f5;strokeColor=#7b1fa2;strokeWidth=2;align=center;" vertex="1" parent="1">
+          <mxGeometry x="860" y="1160" width="180" height="120" as="geometry" />
+        </mxCell>
+        
+        <!-- MODULE 7: Dashboard -->
+        <mxCell id="dashboard" value="📱 MODULE 7: REAL-TIME DASHBOARD&#xa;══════════════════&#xa;🌟 STREAMLIT UI&#xa;─────────&#xa;Tab 1: 📡 Live Monitoring&#xa;  • Vehicle Speed, Brake Delay&#xa;  • Risk Score Gauge (0-1.5)&#xa;  • Safety Alerts&#xa;&#xa;Tab 2: 📈 Historical Analysis&#xa;  • Delay Trends&#xa;  • Risk Distribution&#xa;  • Violations by Condition&#xa;&#xa;Tab 3: 🛡️ Threat Detection&#xa;  • Attack Chains&#xa;  • Severity Distribution&#xa;  • Mitigation Strategies&#xa;&#xa;Tab 4: 🔗 Event Chain Viewer&#xa;  • Activity Diagrams (Like Paper!)&#xa;  • Pass/Fail Visualization" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#fff3e0;strokeColor=#f57c00;strokeWidth=4;align=left;verticalAlign=top;fontStyle=1;fontSize=11;" vertex="1" parent="1">
+          <mxGeometry x="1100" y="1160" width="360" height="280" as="geometry" />
+        </mxCell>
+        
+        <!-- User View -->
+        <mxCell id="user-view" value="👁️ USER VIEW&#xa;─────────&#xa;Browser @ localhost:8501&#xa;&#xa;Real-time updates&#xa;Interactive charts&#xa;Downloadable reports" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#e8f5e9;strokeColor=#2e7d32;strokeWidth=2;align=center;" vertex="1" parent="1">
+          <mxGeometry x="1520" y="1160" width="200" height="140" as="geometry" />
+        </mxCell>
+        
+        <!-- ========================================== -->
+        <!-- DATA FLOW ARROWS -->
+        <!-- ========================================== -->
+        
+        <!-- Layer 1 to Layer 2 -->
+        <mxCell id="arrow1" style="edgeStyle=orthogonalEdgeStyle;rounded=0;orthogonalLoop=1;jettySize=auto;html=1;strokeColor=#666666;strokeWidth=2;endArrow=classic;" edge="1" parent="1" source="user-input" target="parser">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+        
+        <mxCell id="arrow2" style="edgeStyle=orthogonalEdgeStyle;rounded=0;orthogonalLoop=1;jettySize=auto;html=1;strokeColor=#f57c00;strokeWidth=3;endArrow=classic;dashed=1;" edge="1" parent="1" source="knowledge-base" target="timing-extractor">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+        
+        <mxCell id="arrow3" style="edgeStyle=orthogonalEdgeStyle;rounded=0;orthogonalLoop=1;jettySize=auto;html=1;strokeColor=#f57c00;strokeWidth=3;endArrow=classic;" edge="1" parent="1" source="code-samples" target="multi-lang-parser">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+        
+        <mxCell id="arrow4" style="edgeStyle=orthogonalEdgeStyle;rounded=0;orthogonalLoop=1;jettySize=auto;html=1;strokeColor=#7b1fa2;strokeWidth=2;endArrow=classic;dashed=1;" edge="1" parent="1" source="knowledge-base" target="rag-engine">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+        
+        <mxCell id="arrow5" style="edgeStyle=orthogonalEdgeStyle;rounded=0;orthogonalLoop=1;jettySize=auto;html=1;strokeColor=#1976d2;strokeWidth=2;endArrow=classic;dashed=1;" edge="1" parent="1" source="llm-client" target="parser">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+        
+        <mxCell id="arrow6" style="edgeStyle=orthogonalEdgeStyle;rounded=0;orthogonalLoop=1;jettySize=auto;html=1;strokeColor=#1976d2;strokeWidth=2;endArrow=classic;dashed=1;" edge="1" parent="1" source="llm-client" target="timing-extractor">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+        
+        <!-- Layer 2 to Layer 3 -->
+        <mxCell id="arrow7" style="edgeStyle=orthogonalEdgeStyle;rounded=0;orthogonalLoop=1;jettySize=auto;html=1;strokeColor=#666666;strokeWidth=2;endArrow=classic;" edge="1" parent="1" source="parser" target="agent1">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+        
+        <mxCell id="arrow8" style="edgeStyle=orthogonalEdgeStyle;rounded=0;orthogonalLoop=1;jettySize=auto;html=1;strokeColor=#f57c00;strokeWidth=3;endArrow=classic;" edge="1" parent="1" source="timing-extractor" target="agent1">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+        
+        <mxCell id="arrow9" style="edgeStyle=orthogonalEdgeStyle;rounded=0;orthogonalLoop=1;jettySize=auto;html=1;strokeColor=#f57c00;strokeWidth=3;endArrow=classic;" edge="1" parent="1" source="multi-lang-parser" target="agent1">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+        
+        <mxCell id="arrow10" style="edgeStyle=orthogonalEdgeStyle;rounded=0;orthogonalLoop=1;jettySize=auto;html=1;strokeColor=#f57c00;strokeWidth=2;endArrow=classic;dashed=1;" edge="1" parent="1" source="rag-engine" target="agent1">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+        
+        <!-- Layer 3 Internal -->
+        <mxCell id="arrow11" style="edgeStyle=orthogonalEdgeStyle;rounded=0;orthogonalLoop=1;jettySize=auto;html=1;strokeColor=#1976d2;strokeWidth=2;endArrow=classic;" edge="1" parent="1" source="agent1" target="scenario-gen">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+        
+        <mxCell id="arrow12" style="edgeStyle=orthogonalEdgeStyle;rounded=0;orthogonalLoop=1;jettySize=auto;html=1;strokeColor=#1976d2;strokeWidth=2;endArrow=classic;" edge="1" parent="1" source="scenario-gen" target="reasoning-engine">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+        
+        <mxCell id="arrow13" style="edgeStyle=orthogonalEdgeStyle;rounded=0;orthogonalLoop=1;jettySize=auto;html=1;strokeColor=#1976d2;strokeWidth=2;endArrow=classic;" edge="1" parent="1" source="reasoning-engine" target="memory">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+        
+        <mxCell id="arrow14" style="edgeStyle=orthogonalEdgeStyle;rounded=0;orthogonalLoop=1;jettySize=auto;html=1;strokeColor=#1976d2;strokeWidth=2;endArrow=classic;dashed=1;startArrow=classic;startFill=1;" edge="1" parent="1" source="memory" target="agent1">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+        
+        <!-- Layer 3 to Layer 4 -->
+        <mxCell id="arrow15" style="edgeStyle=orthogonalEdgeStyle;rounded=0;orthogonalLoop=1;jettySize=auto;html=1;strokeColor=#f57c00;strokeWidth=3;endArrow=classic;" edge="1" parent="1" source="agent1" target="temporal-validator">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+        
+        <mxCell id="arrow16" style="edgeStyle=orthogonalEdgeStyle;rounded=0;orthogonalLoop=1;jettySize=auto;html=1;strokeColor=#f57c00;strokeWidth=3;endArrow=classic;" edge="1" parent="1" source="reasoning-engine" target="threat-generator">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+        
+        <mxCell id="arrow17" style="edgeStyle=orthogonalEdgeStyle;rounded=0;orthogonalLoop=1;jettySize=auto;html=1;strokeColor=#1976d2;strokeWidth=2;endArrow=classic;" edge="1" parent="1" source="scenario-gen" target="rl-simulator">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+        
+        <mxCell id="arrow18" style="edgeStyle=orthogonalEdgeStyle;rounded=0;orthogonalLoop=1;jettySize=auto;html=1;strokeColor=#f57c00;strokeWidth=2;endArrow=classic;" edge="1" parent="1" source="temporal-validator" target="diagram-gen">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+        
+        <!-- Layer 4 to Layer 5 -->
+        <mxCell id="arrow19" style="edgeStyle=orthogonalEdgeStyle;rounded=0;orthogonalLoop=1;jettySize=auto;html=1;strokeColor=#2e7d32;strokeWidth=3;endArrow=classic;" edge="1" parent="1" source="temporal-validator" target="main-pipeline">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+        
+        <mxCell id="arrow20" style="edgeStyle=orthogonalEdgeStyle;rounded=0;orthogonalLoop=1;jettySize=auto;html=1;strokeColor=#2e7d32;strokeWidth=3;endArrow=classic;" edge="1" parent="1" source="threat-generator" target="main-pipeline">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+        
+        <mxCell id="arrow21" style="edgeStyle=orthogonalEdgeStyle;rounded=0;orthogonalLoop=1;jettySize=auto;html=1;strokeColor=#2e7d32;strokeWidth=2;endArrow=classic;" edge="1" parent="1" source="rl-simulator" target="main-pipeline">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+        
+        <mxCell id="arrow22" style="edgeStyle=orthogonalEdgeStyle;rounded=0;orthogonalLoop=1;jettySize=auto;html=1;strokeColor=#2e7d32;strokeWidth=2;endArrow=classic;" edge="1" parent="1" source="diagram-gen" target="main-pipeline">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+        
+        <!-- Output Flow -->
+        <mxCell id="arrow23" style="edgeStyle=orthogonalEdgeStyle;rounded=0;orthogonalLoop=1;jettySize=auto;html=1;strokeColor=#2e7d32;strokeWidth=3;endArrow=classic;" edge="1" parent="1" source="main-pipeline" target="output-json">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+        
+        <mxCell id="arrow24" style="edgeStyle=orthogonalEdgeStyle;rounded=0;orthogonalLoop=1;jettySize=auto;html=1;strokeColor=#f57c00;strokeWidth=4;endArrow=classic;" edge="1" parent="1" source="output-json" target="dashboard">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+        
+        <mxCell id="arrow25" style="edgeStyle=orthogonalEdgeStyle;rounded=0;orthogonalLoop=1;jettySize=auto;html=1;strokeColor=#2e7d32;strokeWidth=3;endArrow=classic;" edge="1" parent="1" source="dashboard" target="user-view">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+        
+        <!-- ========================================== -->
+        <!-- KEY CONTRIBUTIONS BOX -->
+        <!-- ========================================== -->
+        
+        <mxCell id="contributions-box" value="" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#fff9c4;strokeColor=#f9a825;strokeWidth=3;dashed=1;" vertex="1" parent="1">
+          <mxGeometry x="360" y="1480" width="1600" height="180" as="geometry" />
+        </mxCell>
+        
+        <mxCell id="contributions-title" value="🌟 KEY NOVEL CONTRIBUTIONS (Your Work)" style="text;html=1;strokeColor=none;fillColor=none;align=center;verticalAlign=middle;whiteSpace=wrap;rounded=0;fontStyle=1;fontSize=16;fontColor=#f57c00;" vertex="1" parent="1">
+          <mxGeometry x="700" y="1495" width="800" height="30" as="geometry" />
+        </mxCell>
+        
+        <mxCell id="contrib1" value="1️⃣ MODULE 1: Multi-Language Code Analysis (Python/C++/Rust) - Extends paper's Python-only approach" style="text;html=1;strokeColor=none;fillColor=none;align=left;verticalAlign=middle;whiteSpace=wrap;rounded=0;fontSize=12;" vertex="1" parent="1">
+          <mxGeometry x="400" y="1535" width="700" height="20" as="geometry" />
+        </mxCell>
+        
+        <mxCell id="contrib2" value="2️⃣ MODULE 3: GenAI Timing Constraint Extractor - Novel temporal intelligence from requirements/ISO docs" style="text;html=1;strokeColor=none;fillColor=none;align=left;verticalAlign=middle;whiteSpace=wrap;rounded=0;fontSize=12;fontColor=#d84315;fontStyle=1" vertex="1" parent="1">
+          <mxGeometry x="400" y="1560" width="750" height="20" as="geometry" />
+        </mxCell>
+        
+        <mxCell id="contrib3" value="3️⃣ MODULE 4: Real-Time Temporal Validator - Dynamic runtime validation (paper: static only)" style="text;html=1;strokeColor=none;fillColor=none;align=left;verticalAlign=middle;whiteSpace=wrap;rounded=0;fontSize=12;" vertex="1" parent="1">
+          <mxGeometry x="400" y="1585" width="700" height="20" as="geometry" />
+        </mxCell>
+        
+        <mxCell id="contrib4" value="4️⃣ MODULE 5: GenAI Threat Generator - Cyber-physical attack chain generation from topology" style="text;html=1;strokeColor=none;fillColor=none;align=left;verticalAlign=middle;whiteSpace=wrap;rounded=0;fontSize=12;" vertex="1" parent="1">
+          <mxGeometry x="400" y="1610" width="700" height="20" as="geometry" />
+        </mxCell>
+        
+        <mxCell id="contrib5" value="5️⃣ MODULE 6: RAG-Enhanced Knowledge Base - Automotive-specific (VSS/CAN/ISO26262) for reliable LLM" style="text;html=1;strokeColor=none;fillColor=none;align=left;verticalAlign=middle;whiteSpace=wrap;rounded=0;fontSize=12;" vertex="1" parent="1">
+          <mxGeometry x="1200" y="1535" width="700" height="20" as="geometry" />
+        </mxCell>
+        
+        <mxCell id="contrib6" value="6️⃣ MODULE 7: Real-Time Dashboard - Live monitoring with event chain diagrams (like paper Fig.3)" style="text;html=1;strokeColor=none;fillColor=none;align=left;verticalAlign=middle;whiteSpace=wrap;rounded=0;fontSize=12;" vertex="1" parent="1">
+          <mxGeometry x="1200" y="1560" width="700" height="20" as="geometry" />
+        </mxCell>
+        
+        <mxCell id="contrib7" value="7️⃣ Integration: Agentic AI + Temporal Reasoning + Security - Unified framework (paper: separate)" style="text;html=1;strokeColor=none;fillColor=none;align=left;verticalAlign=middle;whiteSpace=wrap;rounded=0;fontSize=12;" vertex="1" parent="1">
+          <mxGeometry x="1200" y="1585" width="700" height="20" as="geometry" />
+        </mxCell>
+        
+        <mxCell id="contrib8" value="8️⃣ Pre-recorded Runtime Traces - Realistic SDV timing data for validation (easier than real-time sim)" style="text;html=1;strokeColor=none;fillColor=none;align=left;verticalAlign=middle;whiteSpace=wrap;rounded=0;fontSize=12;" vertex="1" parent="1">
+          <mxGeometry x="1200" y="1610" width="700" height="20" as="geometry" />
+        </mxCell>
+        
+      </root>
+    </mxGraphModel>
+  </diagram>
+</mxfile>

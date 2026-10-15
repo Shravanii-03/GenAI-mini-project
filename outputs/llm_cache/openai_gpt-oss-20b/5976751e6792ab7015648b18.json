@@ -1,0 +1,1 @@
+{"model": "openai/gpt-oss-20b", "reply": "{\n  \"deadline_ms\": 50,\n  \"unresolved\": false,\n  \"component\": \"alert_module\",\n  \"trigger\": \"driver_inattentive\",\n  \"response\": \"display_warning\",\n  \"vss_signals\": [\n    \"Vehicle.Driver.AttentiveProbability\"\n  ],\n  \"can_ids\": [],\n  \"formula\": \"G(driver_inattentive -> F[0,50 ms] display_warning)\"\n}"}

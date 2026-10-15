@@ -1,0 +1,266 @@
+name: SDV Safety System CI/CD
+
+on:
+  push:
+    branches:
+      - main
+      - develop
+      - feature/*
+      - clean-branch
+      - rebuild
+  pull_request:
+    branches: [ main ]
+
+jobs:
+  # ── Job 1: Lint & Syntax Check ─────────────────────────────────────
+  lint:
+    name: Lint & Syntax Check
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: "3.11"
+
+      - name: Install dependencies
+        run: |
+          pip install flake8 pyflakes
+
+      - name: Check syntax (pyflakes)
+        run: |
+          pyflakes sdv config.py rag_engine.py llm_client.py simulator_rl.py \
+                   vehicle_simulator.py attack_injector.py \
+                   prompt_templates.py reasoning_engine.py memory.py
+
+      - name: Flake8 style check (errors only)
+        run: |
+          flake8 sdv config.py rag_engine.py llm_client.py simulator_rl.py \
+                 vehicle_simulator.py attack_injector.py \
+                 prompt_templates.py reasoning_engine.py memory.py \
+                 --max-line-length=120 --select=E9,F63,F7,F82
+
+  # ── Job 2: Unit Tests ──────────────────────────────────────────────
+  test:
+    name: Unit Tests
+    runs-on: ubuntu-latest
+    needs: lint
+
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: "3.11"
+
+      - name: Install dependencies
+        run: |
+          pip install -r requirements.txt
+          pip install pytest pytest-cov
+
+      - name: Inject API key from GitHub Secrets
+        run: echo "GROQ_API_KEY=${{ secrets.GROQ_API_KEY }}" > .env
+
+      - name: Create outputs directory
+        run: mkdir -p outputs
+
+      - name: Run unit tests
+        run: |
+          pytest tests/ -v --tb=short --ignore=tests/test_llm_integration.py
+        continue-on-error: false
+
+      - name: End-to-end pipeline smoke test (no LLM, no API key needed)
+        run: |
+          python -m sdv --blue enumerate --n 12 --out /tmp/pipeline_run
+          test -f /tmp/pipeline_run/evidence.md
+
+      - name: Upload coverage report
+        uses: actions/upload-artifact@v4
+        with:
+          name: coverage-report
+          path: htmlcov/
+
+  # ── Job 3: Simulator Smoke Test ───────────────────────────────────
+  simulator-test:
+    name: Simulator Smoke Test
+    runs-on: ubuntu-latest
+    needs: lint
+
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: "3.11"
+
+      - name: Install dependencies
+        run: pip install -r requirements.txt
+
+      - name: Run simulator for 2 seconds
+        run: |
+          python -c "
+          import time, queue
+          from vehicle_simulator import VehicleSimulator
+          q = queue.Queue()
+          sim = VehicleSimulator(output_queue=q, loop_scenarios=True)
+          sim.start()
+          time.sleep(2)
+          sim.stop()
+          frames = []
+          while not q.empty():
+              frames.append(q.get_nowait())
+          print(f'Generated {len(frames)} frames')
+          assert len(frames) > 10, 'Simulator generated too few frames'
+          print('Simulator smoke test PASSED')
+          "
+
+  # ── Job 4: RL Unit Test ───────────────────────────────────────────
+  rl-test:
+    name: RL Q-Learning Test
+    runs-on: ubuntu-latest
+    needs: lint
+
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: "3.11"
+
+      - name: Install dependencies
+        run: pip install -r requirements.txt
+
+      - name: Test RL agent learns
+        run: |
+          python -c "
+          from simulator_rl import QLearningAgent, ACTIONS
+          agent = QLearningAgent(epsilon=0.0)  # pure exploit mode
+
+          # Run 100 steps
+          for i in range(100):
+              delay = 120.0 if i % 3 == 0 else 80.0
+              road = 'dry'
+              cpu = 50.0
+              next_delay, action_idx = agent.suggest_next_delay(delay, road, cpu, 100)
+              agent.update(delay, road, cpu, action_idx,
+                          violation=(delay>100), risk_score=delay/100,
+                          attacked=False, next_delay=next_delay, max_delay=100)
+
+          stats = agent.stats()
+          print(f'Steps: {stats[\"steps\"]}')
+          print(f'Q-states: {stats[\"q_states\"]}')
+          print(f'Total reward: {stats[\"total_reward\"]}')
+          assert stats['steps'] == 100, 'RL did not run 100 steps'
+          assert stats['q_states'] > 0, 'Q-table is empty'
+          print('RL test PASSED')
+          "
+
+  # ── Job 5: RAG Engine Test ────────────────────────────────────────
+  rag-test:
+    name: RAG Engine Test
+    runs-on: ubuntu-latest
+    needs: lint
+
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: "3.11"
+
+      - name: Install dependencies
+        run: pip install -r requirements.txt
+
+      - name: Inject API key from GitHub Secrets
+        run: echo "GROQ_API_KEY=${{ secrets.GROQ_API_KEY }}" > .env
+
+      - name: Test RAG retrieval (no LLM call)
+        run: |
+          python -c "
+          from rag_engine import retrieve, get_context_for_llm
+
+          iso = retrieve('brake timing', 'iso', top_k=2)
+          print(f'ISO results: {len(iso)}')
+
+          atk = retrieve('can spoofing', 'attack', top_k=2)
+          print(f'Attack results: {len(atk)}')
+
+          ctx = get_context_for_llm('emergency brake')
+          assert len(ctx) > 10, 'RAG context is empty'
+          print(f'Context length: {len(ctx)} chars')
+          print('RAG test PASSED')
+          "
+
+  # ── Job 6: Dashboard Import Test ─────────────────────────────────
+  dashboard-test:
+    name: Dashboard Import Test
+    runs-on: ubuntu-latest
+    needs: lint
+
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: "3.11"
+
+      - name: Install dependencies
+        run: pip install -r requirements.txt
+
+      - name: Inject API key from GitHub Secrets
+        run: echo "GROQ_API_KEY=${{ secrets.GROQ_API_KEY }}" > .env
+
+      - name: Test dashboard imports
+        run: |
+          python -c "
+          import sys
+          sys.path.insert(0, '.')
+          from dashboard.components.event_chain_viz import render_event_chain
+          from dashboard.components.risk_monitor import render_risk_gauge
+          print('Dashboard imports PASSED')
+          "
+
+  # ── Job 7: Docker image ───────────────────────────────────────────
+  docker:
+    name: Docker Image Builds and Passes Tests
+    runs-on: ubuntu-latest
+    needs: lint
+
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Build the image
+        run: docker build -t sdv-safety .
+
+      - name: Run the test suite inside the container
+        run: docker run --rm sdv-safety
+
+      - name: Run the pipeline inside the container (no API key)
+        run: docker run --rm sdv-safety python -m sdv --blue enumerate --n 12 --assess-n 8 --out /tmp/pipeline_run
+
+  # ── Job 8: Final status (fails if any job above failed) ─────────────
+  notify:
+    name: Pipeline Complete
+    runs-on: ubuntu-latest
+    needs: [lint, test, simulator-test, rl-test, rag-test, dashboard-test, docker]
+    if: always()
+
+    steps:
+      - name: Report status
+        run: |
+          echo "================================"
+          echo "  SDV Safety CI/CD"
+          echo "  Branch: ${{ github.ref_name }}"
+          echo "  Commit: ${{ github.sha }}"
+          echo "  Results: ${{ join(needs.*.result, ', ') }}"
+          echo "================================"
+          if [ "${{ contains(needs.*.result, 'failure') }}" = "true" ] || [ "${{ contains(needs.*.result, 'cancelled') }}" = "true" ]; then
+            echo "At least one job failed or was cancelled"
+            exit 1
+          fi
