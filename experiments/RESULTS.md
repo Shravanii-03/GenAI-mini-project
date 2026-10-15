@@ -4,17 +4,17 @@ All results come from the **emulated** CAN network in `sdv/` with **assumed** EC
 times, bus load and a 20 ms mitigation response (see `config.yaml`). They are pilot results,
 not measurements on a vehicle. Regenerate with the commands shown; seeds are fixed.
 
-## ERRATUM (2026-10-15): residual risk after authentication was under-estimated in E12, E14 and the first pipeline runs
+## CORRECTION RECORD (2026-10-15): residual risk after authentication was under-estimated; tables below are the corrected ones
 
-E9, E10, E11, E12 and E14 sampled attacks over only 5-6 base scenarios (each scenario reused for many sampled attacks), so one unusually
-tight scenario moved an estimate by 1/6. With one **fresh scenario per sampled attack** the dual-sensor attacker's hazard volume after
-authentication plus the watchdog is **3.3-5.3%** (300 distinct scenarios, three seeds; 6.5% at 200 in E17), not the 1.0-2.0% reported in
-E12, E14 and the pipeline summary (and in `docs/PROJECT_EXPLAINED.pdf`). The reason is physical: the watchdog needs about 35 ms plus the
-chain time, and cannot save scenarios whose point of no return is shorter. Other qualitative conclusions are unchanged (single-channel
-attacks removed by the failover, untrusted-segment floods removed by the guard, the safety-bus flood and the key holder remain open), but
-**every hazard-volume table in E9-E14 below was computed with the reused-scenario sampling and is superseded** by the re-run with the
-corrected sampling (`experiments/e9..e14` now draw a fresh scenario per sample; the defence assessment in the pipeline already did).
-The analytic-bound results (zero violations) do not depend on this.
+Until 15 Oct 2026, E9, E10, E11, E12 and E14 sampled attacks over only 5-6 base scenarios (each scenario reused for many sampled
+attacks), so one unusually tight scenario moved an estimate by 1/6. That made the dual-sensor attacker's hazard volume after
+authentication plus the watchdog look like 1.0-2.0%. With **one fresh scenario per sampled attack** it is **4.3% [3.0%, 6.3%]**
+(E12, 600 distinct scenarios; 3.3-5.3% in three seeds of 300; 3-4% across the braking strengths in E14). The reason is physical: the
+watchdog needs about 35 ms to notice silence plus the chain time, so it cannot save scenarios whose point of no return is shorter.
+E9-E14 were then re-run in the cloud (GitHub Actions, tag `repro-20261015b`, commit `7285a54`) with the corrected sampling, and every
+hazard-volume table in those sections below is the corrected one. Other qualitative conclusions were unchanged (single-channel
+attacks removed by the failover, untrusted-segment floods removed by the guard, the safety-bus flood and the key holder remain open),
+and the analytic-bound results (zero violations) do not depend on the sampling.
 
 ## E1 — detector comparison (`experiments/e1_pilot.py --n 300 --seed 1`)
 
@@ -214,22 +214,23 @@ attack parameters and seeds in every arm; the radar is on the bus in every arm s
 
 | attack family | none | radar_or | disagree_brake |
 |---|---|---|---|
-| masquerade | 42.9% [39.3, 46.6] | **0.0%** [0.0, 0.5] | 0.0% |
-| gateway delay | 20.3% [17.5, 23.4] | **0.0%** | 0.0% |
-| selective suppression | 3.5% [2.4, 5.1] | **0.0%** | 0.0% |
-| jitter injection | 1.9% [1.2, 3.2] | **0.0%** | 0.0% |
-| sensor drift | 0.1% | 0.0% | 0.0% |
-| dos flood | 24.6% [21.6, 27.9] | 24.6% | 24.6% |
-| dual masquerade (both channels forged) | 45.3% [41.7, 48.9] | **45.0%** | 45.0% |
+| masquerade | 44.9% [41.3, 48.5] | **0.0%** [0.0, 0.5] | 0.0% |
+| gateway delay | 25.3% [22.2, 28.6] | **0.0%** | 0.0% |
+| selective suppression | 3.9% [2.7, 5.6] | **0.0%** | 0.0% |
+| jitter injection | 2.6% [1.7, 4.1] | **0.0%** | 0.0% |
+| sensor drift | 0.0% | 0.0% | 0.0% |
+| dos flood | 27.8% [24.6, 31.2] | 27.4% | 27.4% |
+| dual masquerade (both channels forged) | 47.8% [44.2, 51.4] | **47.5%** | 47.5% |
 | priority abuse, low-and-slow DoS | 0.0% | 0.0% | 0.0% |
 
-(hazard volume = share of the attack parameter space that causes a collision, with Wilson 95% intervals.)
+(hazard volume = share of the attack parameter space that causes a collision, with Wilson 95% intervals; 720 sampled attacks per
+family, each in its own freshly drawn tight scenario.)
 
 * **What it supports:** the failover removes every hazard that needs only the primary channel (masquerade, gateway
   delay, suppression, jitter): 0 collisions in 720 sampled attacks per family. An adaptive attacker ((1+1)-ES, 150
   evaluations, 6 scenarios) finds a hazard against the unprotected chain in 6/6 scenarios for masquerade and in 0/6
   once the failover is on. It does **not** help against floods (the attacker sits on the shared bus, so both channels
-  are delayed) or the dual-sensor attacker (45.3% -> 45.0%), where ES still succeeds in 6/6 scenarios.
+  are delayed) or the dual-sensor attacker (47.8% -> 47.5%), where ES still succeeds in 6/6 scenarios.
 * **Benign cost:** none in latency (mean 77.0 -> 74.5 ms, since two channels can only trigger earlier), 0/100 benign
   collisions, 0/100 precautionary triggers.
 * **Negative result:** `disagree_brake` is identical to `radar_or`. In these scenarios the channels only disagree once the
@@ -257,12 +258,14 @@ bound <= latest safe latency means **proven safe for every seed**.
   ends just before the obstacle appears but leaves a queue of ~550 frames that is still draining). Two earlier flood
   versions were also wrong (queue backlog ignored; flood started before the obstacle). All three are fixed and have
   regression tests in `tests/test_sdv_bounds.py`.
-* **Tightness:** the median bound is about 1.5-2.1x the observed latency (p95 2-6x for the spoofing families). It is
+* **Tightness:** the median bound is about 1.5-2.1x the observed latency (p95 2-10x, largest for the spoofing families). It is
   deliberately conservative: it stacks worst-case compute times and uses the critical instant on the bus.
-* **Proven-safe share of the attack space** (with the failover on): selective suppression, drift, masquerade, gateway
-  delay and jitter are proven safe in 83% of sampled attacks and the remaining 17% are "unknown" (no simulated hazard: the
-  scenario draw whose benign worst case already exceeds its point of no return cannot be certified). Floods: 41% proven
-  safe, 26% hazardous, 34% unknown. Dual masquerade: 38% proven safe, 42% hazardous, 21% unknown.
+* **Proven-safe share of the attack space** (720 sampled attacks per family, one fresh scenario each, failover on): selective
+  suppression, drift, masquerade, gateway delay and jitter are proven safe in 68.5% of sampled attacks, with 0% simulated hazard; the
+  other 31.5% are "unknown", meaning the bound is too coarse to decide, not that anything went wrong: about 31% of the drawn tight
+  scenarios have a point of no return below the benign worst-case bound, so nothing can be certified for them even though none of
+  these attacks hurt them. Floods: 30.3% proven safe, 26.7% hazardous, 43.1% unknown. Dual masquerade: 31.8% proven safe, 43.1% hazardous,
+  25.1% unknown. Without the failover, masquerade is 43.2% hazardous, 29.0% proven safe.
 * **Headline** (60 km/h, obstacle 24 m, CPU load 0.3, point of no return 353 ms, benign bound 140 ms): a flood starting when
   the obstacle appears is proven safe up to 400 ms at <= 3000 frames/s, up to 184 ms at 4000 frames/s and up to 122 ms at
   6000 frames/s.
@@ -278,11 +281,11 @@ timings; hazards that also occur without an attack are not counted):
 
 | timing | benign collisions | masquerade | gateway delay | dos flood | dual masquerade |
 |---|---|---|---|---|---|
-| 0.5x | 0/40 | 37% -> 0% | 12% -> 0% | 19% -> 19% | 38% -> 36% |
-| 1x (default) | 0/40 | 40% -> 0% | 22% -> 0% | 24% -> 24% | 40% -> 40% |
-| 1.5x | 6/40 | 38% -> 2% | 26% -> 2% | 30% -> 30% | 38% -> 38% |
-| 2x | 11/40 | 39% -> 0% | 26% -> 0% | 29% -> 28% | 38% -> 38% |
-| jitter 0.30 | 0/40 | 42% -> 0% | 23% -> 0% | 24% -> 24% | 41% -> 40% |
+| 0.5x | 0/40 | 39% -> 0% | 18% -> 0% | 19% -> 19% | 41% -> 40% |
+| 1x (default) | 0/40 | 42% -> 0% | 28% -> 0% | 26% -> 26% | 42% -> 40% |
+| 1.5x | 6/40 | 37% -> 1% | 28% -> 0% | 31% -> 32% | 39% -> 39% |
+| 2x | 11/40 | 32% -> 2% | 23% -> 1% | 22% -> 22% | 30% -> 30% |
+| jitter 0.30 | 0/40 | 43% -> 0% | 30% -> 0% | 25% -> 25% | 42% -> 42% |
 
 * The qualitative findings do not depend on the assumed timings: single-channel attacks are removed by the failover (at most 2%
   left), floods and the dual-sensor attacker stay at about the same hazard volume.
@@ -308,18 +311,18 @@ Hazard volume (share of the attack parameter space that causes a collision; Wils
 
 | attack variant | radar_or | +guard | +auth | +guard+auth |
 |---|---|---|---|---|
-| dos flood (untrusted segment) | 25.2% | **0.0%** | 23.2% | **0.0%** |
-| dual masquerade (both channels forged) | 42.0% | 42.0% | **1.0%** | **1.0%** |
-| dos flood (node on the safety bus) | 25.3% | 25.3% | 23.0% | 23.0% |
-| dual masquerade, attacker holds the key | 42.8% | 42.8% | 42.8% | 42.8% |
+| dos flood (untrusted segment) | 26.2% | **0.0%** | 23.8% | **0.0%** |
+| dual masquerade (both channels forged) | 43.3% | 43.3% | **4.3%** [3.0, 6.3] | **4.3%** [3.0, 6.3] |
+| dos flood (node on the safety bus) | 27.3% | 27.3% | 25.0% | 25.0% |
+| dual masquerade, attacker holds the key | 43.0% | 43.0% | 43.0% | 43.0% |
 | masquerade, gateway delay, suppression, jitter, drift, priority abuse, low-and-slow DoS | 0.0% | 0.0% | 0.0% | 0.0% |
 
 * Adaptive attacker ((1+1)-ES, 100 evaluations, 6 scenarios), scenarios where a hazard was found with all defences on:
   untrusted-segment floods 0/6, dual forgery 1/6, **safety-bus flood 5/6, key-holding dual forgery 6/6**.
 * **What remains, stated plainly:** with all three defences the only hazards left are (1) a flood from a node already on the
   safety bus, and (2) forging attackers that hold the key. Authentication moves the trust to key management; the guard
-  moves it to the network architecture. Neither is a general solution, and the 1% dual-forgery residue is a scenario whose
-  point of no return is shorter than the watchdog path can meet.
+  moves it to the network architecture. Neither is a general solution, and the dual-forgery residue (about 4%) is made of scenarios whose
+  point of no return is shorter than the watchdog path can meet (about 35 ms to notice silence, plus the chain).
 * **Benign cost:** the guard costs nothing (identical latencies). Authentication adds about 1.0 ms (74.5 -> 75.4 ms mean).
   0/100 benign collisions and 0/100 spurious watchdog triggers in every configuration.
 * **Availability cost (measured):** authentication closes the E9 hole (a forged near-obstacle on one channel provokes
@@ -399,15 +402,15 @@ all defences` (radar failover, gateway guard, authentication):
 
 | braking | masquerade | gateway delay | DoS flood | dual masquerade | flood from a safety-bus node | dual attacker with the key |
 |---|---|---|---|---|---|---|
-| 0.54 g (CARLA-like, 5.3 m/s^2) | 59 / 0 / 0 | 28 / 0 / 0 | 26 / 26 / 0 | 55 / 54 / 1 | 26 / 26 / 23 | 54 / 53 / 53 |
-| 0.65 g | 52 / 0 / 0 | 23 / 0 / 0 | 20 / 20 / 0 | 46 / 45 / 2 | 29 / 28 / 26 | 47 / 46 / 46 |
-| 0.80 g (default) | 43 / 0 / 0 | 23 / 0 / 0 | 26 / 26 / 0 | 41 / 40 / 1 | 21 / 20 / 19 | 41 / 40 / 40 |
-| 0.90 g | 39 / 0 / 0 | 22 / 0 / 0 | 24 / 24 / 0 | 39 / 39 / 2 | 21 / 21 / 18 | 40 / 40 / 40 |
+| 0.54 g (CARLA-like, 5.3 m/s^2) | 59 / 0 / 0 | 30 / 0 / 0 | 27 / 28 / 0 | 56 / 55 / 3 | 27 / 27 / 23 | 52 / 52 / 52 |
+| 0.65 g | 52 / 0 / 0 | 30 / 0 / 0 | 19 / 19 / 0 | 46 / 46 / 4 | 30 / 29 / 27 | 51 / 50 / 50 |
+| 0.80 g (default) | 44 / 0 / 0 | 25 / 0 / 0 | 28 / 27 / 0 | 42 / 42 / 4 | 22 / 22 / 20 | 42 / 42 / 42 |
+| 0.90 g | 42 / 0 / 0 | 26 / 0 / 0 | 26 / 26 / 0 | 39 / 38 / 4 | 23 / 23 / 21 | 40 / 40 / 40 |
 
 * The ranking of defences and the list of residual holes do not change with braking strength: failover removes single-channel
   attacks, the guard removes untrusted-segment floods, authentication plus the watchdog removes dual forgery (1-2% left), and the
-  safety-bus flood and the key holder remain (18-26% and 40-53%).
-* Weaker braking raises the absolute hazard volumes (for example masquerade without defences 39% at 0.9 g, 59% at 0.54 g). The
+  safety-bus flood and the key holder remain (20-27% and 40-52%).
+* Weaker braking raises the absolute hazard volumes (for example masquerade without defences 42% at 0.9 g, 59% at 0.54 g). The
   absolute percentages therefore depend on the assumed braking and should not be quoted as real-world rates.
 * Benign collisions: 0/40 in every setting. The analytic bound stayed sound: 0 violations in 7,200 runs per setting.
 
@@ -464,6 +467,9 @@ static scan). The MAC itself is delegated (the caller passes the verdict). **Not
 * **Footprint, host build only:** module code 528 bytes (`size`: text 528, data 0, bss 0), state structure 52 bytes, configuration 24 bytes;
   host timing about 5 ns per frame-plus-tick call on a PC. These are indicative figures for an x86-64 host, **not** measurements on a
   microcontroller: a Cortex-M build will differ in size, and the host timing says nothing about an ECU.
+* **Second compiler, Linux (GitHub Actions, GCC 13.3, x86-64, `-Os`):** the same 138 cases pass again (138/138, 18/18, 120/120); the module
+  is 490 bytes of code against 528 bytes with the Windows GCC 16.2 build, so code size depends on the compiler and the figures are only
+  indicative.
 * Caveats for the paper: footprints will be host builds (indicative only); host timing says nothing about an ECU; real MAC cost and key
   handling are out of scope.
 
@@ -514,8 +520,9 @@ the key re-signs; replayed or reordered frames are rejected.
     (perception, decision and actuator together about 136 of 149 ms), so this is a statement about those assumptions.
   * *Defence assessment:* reproduces the E12 picture automatically. At 40 samples per variant under the CARLA-like plant: failover
     removes the single-channel attacks, the guard removes the untrusted-segment flood, authentication plus the watchdog leaves the
-    dual-sensor attacker at about 2%; the safety-bus flood (about 32%) and the key holder (about 65%) stay open. It reports 95% upper
-    bounds because zero hazards in 40 samples still allows 9%.
+    dual-sensor attacker at about 2% in a 40-sample run, but the 40-sample figure is noisy: with 600 distinct scenarios (E12) it is 4.3%
+    [3.0%, 6.3%]. The safety-bus flood (about 25-32%) and the key holder (about 43-65%) stay open. It reports 95% upper bounds because
+    zero hazards in 40 samples still allows 9%.
   * *Two defects found while building it:* (1) the auditor caught that a rule verified alone can push the **deployed** monitor over
     the false-alarm cap (0.017 alone, 0.033 deployed); the pipeline now has a deployment check that drops such rules. (2) The first
     assessment cycled through only 6 scenarios, so one very tight scenario counted as about 1/6 of the sample and showed a 15% residual

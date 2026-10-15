@@ -113,6 +113,9 @@ def main():
           f"{args.workers} workers")
     with mp.Pool(args.workers, initializer=init_worker) as pool:
         rows = [r for chunk in pool.imap_unordered(run_task, tasks) for r in chunk]
+    # imap_unordered returns results in completion order, which depends on the number of workers; the bootstrap intervals
+    # resample by position, so fix the order to make every printed number independent of --workers
+    rows.sort(key=lambda r: (r["mode"], r["family"], r["trial"], ALL_METHODS.index(r["method"])))
 
     for mode in args.modes.split(","):
         mode_rows = [r for r in rows if r["mode"] == mode]
