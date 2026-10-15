@@ -396,6 +396,42 @@ all defences` (radar failover, gateway guard, authentication):
   absolute percentages therefore depend on the assumed braking and should not be quoted as real-world rates.
 * Benign collisions: 0/40 in every setting. The analytic bound stayed sound: 0 violations in 7,200 runs per setting.
 
+## E15 - authentication + silence watchdog replayed on real attack traffic (`experiments/e15_road_defence_replay.py`)
+
+What is replayed: the E12 defence logic that can be exercised on real CAN data. A receiver with message authentication rejects
+forged frames; a watchdog then notices when a periodic ID goes silent. In ROAD's 13 masquerade captures every frame of the attacked
+ID inside the attack window is an injected, labelled frame at the normal rate (no genuine frame of that ID is left), so a receiver
+that rejects forged frames sees that ID fall silent. Periods are learned from 3,812 s of normal driving (103 periodic IDs, 10-1500 ms,
+robust criterion: 95th-percentile gap at most 1.5x the median); false triggers are counted on 2,778 s of held-out normal driving, of
+which 2,270 s is real road. **Authentication is idealised (exactly the labelled frames are rejected): the detection follows from that
+assumption, not from the data. What the data adds is the timing: how fast, and what the fail-safe costs on real traffic.**
+
+| threshold k x period (floor 30 ms) | false events / hour (validation) | pre-attack events | detected | median delay | max delay | within 100 ms | without authentication |
+|---|---|---|---|---|---|---|---|
+| 2 | 62.2 | 1 | 13/13 | 30 ms | 189 ms | 0.92 | 1/13 |
+| 3 | 41.5 | 0 | 13/13 | 30 ms | 289 ms | 0.92 | 0/13 |
+| 5 | 38.9 | 0 | 13/13 | 50 ms | 489 ms | 0.92 | 0/13 |
+| 10 | 31.1 | 0 | 13/13 | 100 ms | 989 ms | 0.46 | 0/13 |
+
+* **Detection (k = 3):** all 13 masquerade captures, within 27-30 ms for the 100 Hz IDs (speedometer, correlated signal, reverse
+  lights, 12 of 13) and 289 ms for the 10 Hz engine-coolant message. This includes the six in-range reverse-light forgeries that every
+  value-based rule in E8 missed (0/6), because the defence does not look at values. Without authentication the watchdog sees nothing
+  (0/13): replacement keeps the frame rate unchanged.
+* **The price (k = 3):** 41.5 false triggers per hour across all watched IDs, but they are concentrated: 28 of 36 events are in one
+  deliberately odd capture (`ambient_dyno_drive_benign_anomaly`, 221/h); the real-road capture gave 4 events in 1,800 s, the
+  diagnostics capture and the reverse capture none. If the watchdog watched only the three sensing-like IDs of the attacked signals
+  (as the design does), 17 events in 0.77 h overall (22/h) and 4 events in 0.63 h on the real road, about 6 per hour. In the design
+  every such trigger is a precautionary brake, so this is a real availability cost that the emulator (which has no such gaps) hid.
+* Raising k lowers the false-trigger rate slowly (31/h at k = 10) and costs detection speed (median 100 ms): the threshold trades
+  availability against reaction time, and none of the settings tested is free.
+* A learning-criterion pitfall found on the way: the E8 rate IDS filter (coefficient of variation below 0.3) discards the speedometer
+  ID (208) and the correlated-signal ID (1760) because a few rare long gaps (2.4 s, 9.5 s) inflate the standard deviation, although
+  their median gap is exactly 10 ms. The first version of this replay inherited the filter and detected 1 of 13; with a robust
+  criterion it detects 13 of 13. E8's rate-IDS result is unchanged, but its "periodic ID" set was narrower than necessary.
+* Limits: one vehicle; labelled frames define "forged" exactly; fabrication-type attacks (extra frames, genuine ones continue) are
+  rejected by authentication and do not silence the stream, so they are not a watchdog case; the watchdog thresholds are not tuned
+  for a false-trigger budget; ROAD has no braking, so this validates detection timing and false-trigger cost only.
+
 ## Evidence chain and pipeline (`python -m sdv`, `sdv/evidence`)
 
 * One command takes a requirement in plain English through spec extraction, red team, blue team, a second red

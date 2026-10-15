@@ -58,7 +58,7 @@ streamlit run dashboard/app.py     # dashboard
 | `sdv/spec` | Natural-language requirement -> validated timing spec (bounded-response STL, deterministic validator, repair loop) |
 | `sdv/rag` | Normalised KB corpora, BM25, legacy TF-IDF wrapper, optional dense/hybrid, Recall@k/MRR |
 | `sdv/blue` | Monitor rule language, deterministic verifier, exhaustive and random baselines, LLM blue agent |
-| `sdv/realdata` | ROAD dataset loader and semantics-free detectors (real attacks; data stays outside the repo) |
+| `sdv/realdata` | ROAD dataset loader, semantics-free detectors, and the authentication + silence watchdog replay (real attacks; data stays outside the repo) |
 | `sdv/carla_check` | Pure helpers for the CARLA plant check (`experiments/e13_carla_plant.py`, not yet run; see `docs/CARLA.md`) |
 | `sdv/evidence` | Evidence bundle, auditor that re-runs every claim (incl. failover and bound checks), GSN-style rendering |
 | `sdv/pipeline.py` | End-to-end orchestrator (`python -m sdv`) |
