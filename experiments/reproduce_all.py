@@ -1,6 +1,10 @@
 """
 Regenerate every experiment table from the repository, offline.
 
+E8 and E15 need the ROAD dataset (stored outside the repository, see sdv/realdata/road.py) and are run separately:
+    python experiments/e8_road_validation.py
+    python experiments/e15_road_defence_replay.py
+
 LLM-dependent experiments (E4, E6) run with --offline: they replay the cached model replies in
 outputs/llm_cache/ and never call the API, so no key is needed. The full run takes several minutes.
 
@@ -46,6 +50,8 @@ STEPS = [
      ["experiments/e12b_bound_adversarial.py", "--scenarios", "4", "--budget", "200"], False),
     ("E14 sensitivity to the braking physics",
      ["experiments/e14_plant_sensitivity.py", "--scenarios", "5", "--samples", "80"], False),
+    ("E16 embedded C port (reference checks; compiles and replays if a C compiler is on the PATH)",
+     ["experiments/e16_embedded_feasibility.py"], True),
     ("End-to-end pipeline", ["-m", "sdv", "--blue", "enumerate", "--n", "40", "--out", "outputs/pipeline_run"], True),
     ("End-to-end pipeline, CARLA-calibrated plant",
      ["-m", "sdv", "--blue", "enumerate", "--n", "40", "--plant-profile", "experiments/profiles/carla_model3.json",
