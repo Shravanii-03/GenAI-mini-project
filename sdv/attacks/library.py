@@ -35,7 +35,14 @@ class Attack:
         start = max(0, chain.t_appear_us + int(self.start_offset_ms * 1000))
         return start, start + int(self.duration_ms * 1000)
 
+    def _resign(self, frame):
+        """An attacker that holds the signing key re-signs the frame it altered (hmac mode only)."""
+        chain = getattr(self, "_chain", None)
+        if getattr(self, "holds_key", False) and chain is not None:
+            chain.sign(frame)
+
     def install(self, chain):
+        self._chain = chain
         start, end = self.window_us(chain)
         chain.attack_windows.append((self.name, start, end))
         self._install(chain, start, end)
@@ -170,6 +177,7 @@ class SensorDriftSpoof(_FilterAttack):
                     and frame.data.get("distance_m") is not None):
                 frame.data["distance_m"] += self.rate_m_per_s * (now - start) / 1e6
                 frame.data["forged"], frame.data["holds_key"] = True, self.holds_key
+                self._resign(frame)
                 frame.attack = True
             return frame, 0
         return flt
@@ -192,6 +200,7 @@ class Masquerade(_FilterAttack):
                     and frame.data.get("distance_m") is not None):
                 frame.data["distance_m"] += self.bias_m
                 frame.data["forged"], frame.data["holds_key"] = True, self.holds_key
+                self._resign(frame)
                 frame.attack = True
                 return frame, int(self.phase_shift_ms * 1000)
             return frame, 0
@@ -217,6 +226,7 @@ class DualMasquerade(_FilterAttack):
                     and frame.data.get("distance_m") is not None):
                 frame.data["distance_m"] += self.bias_m
                 frame.data["forged"], frame.data["holds_key"] = True, self.holds_key
+                self._resign(frame)
                 frame.attack = True
             return frame, 0
         return flt
@@ -239,6 +249,7 @@ class PhantomObstacle(_FilterAttack):
                     and frame.data.get("distance_m") is not None):
                 frame.data["distance_m"] = self.report_m
                 frame.data["forged"], frame.data["holds_key"] = True, self.holds_key
+                self._resign(frame)
                 frame.attack = True
             return frame, 0
         return flt

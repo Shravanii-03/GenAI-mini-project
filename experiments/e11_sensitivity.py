@@ -56,9 +56,9 @@ def main():
         for family in families:
             h0 = h1 = n = 0
             for t in range(args.scenarios):
-                scenario = random_tight_scenario(random.Random(t))
-                problem = AttackSearchProblem(family, scenario)
                 for i in range(args.samples):
+                    scenario = random_tight_scenario(random.Random(t * 1000 + i))     # a fresh scenario for every sampled attack
+                    problem = AttackSearchProblem(family, scenario)
                     u = rng.random(problem.dim)
                     params = problem.decode(u)
                     r0, _ = execute(scenario, t * 1000 + i, cn, attacks=[make_attack(family, **params)])

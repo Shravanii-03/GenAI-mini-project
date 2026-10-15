@@ -63,10 +63,10 @@ def main():
         for family in ALL_ATTACKS:
             ratios, hazard, safe, unknown, bad, viol, n = [], 0, 0, 0, 0, 0, 0
             for t in range(args.scenarios):
-                scenario = random_tight_scenario(random.Random(t))
-                ponr = latest_safe_latency_ms(scenario)
-                problem = AttackSearchProblem(family, scenario)
                 for i in range(args.samples):
+                    scenario = random_tight_scenario(random.Random(t * 1000 + i))     # a fresh scenario for every sampled attack
+                    ponr = latest_safe_latency_ms(scenario)
+                    problem = AttackSearchProblem(family, scenario)
                     u = rng.random(problem.dim)
                     attack = make_attack(family, **problem.decode(u))
                     result, _ = execute(scenario, t * 1000 + i, chain, attacks=[attack])

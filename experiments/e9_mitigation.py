@@ -57,9 +57,9 @@ def main():
         impact = {p: [] for p in POLICIES}
         n = 0
         for t in range(args.scenarios):
-            scenario = random_tight_scenario(random.Random(t))
-            problem = AttackSearchProblem(family, scenario, "hazard")
             for i in range(args.samples):
+                scenario = random_tight_scenario(random.Random(t * 1000 + i))     # a fresh scenario for every sampled attack
+                problem = AttackSearchProblem(family, scenario, "hazard")
                 u = rng.random(problem.dim)
                 n += 1
                 for p in POLICIES:

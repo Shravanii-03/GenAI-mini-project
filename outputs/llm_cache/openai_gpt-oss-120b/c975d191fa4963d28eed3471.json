@@ -1,0 +1,1 @@
+{"model": "openai/gpt-oss-120b", "reply": "{\n  \"deadline_ms\": 200,\n  \"unresolved\": false,\n  \"component\": \"steering_ecu\",\n  \"trigger\": \"perception_done\",\n  \"response\": \"steering_applied\",\n  \"vss_signals\": [],\n  \"can_ids\": [\"0x210\"],\n  \"formula\": \"G(perception_done -> F[0,200 ms] steering_applied)\"\n}"}

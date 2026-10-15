@@ -4,6 +4,18 @@ All results come from the **emulated** CAN network in `sdv/` with **assumed** EC
 times, bus load and a 20 ms mitigation response (see `config.yaml`). They are pilot results,
 not measurements on a vehicle. Regenerate with the commands shown; seeds are fixed.
 
+## ERRATUM (2026-10-15): residual risk after authentication was under-estimated in E12, E14 and the first pipeline runs
+
+E9, E10, E11, E12 and E14 sampled attacks over only 5-6 base scenarios (each scenario reused for many sampled attacks), so one unusually
+tight scenario moved an estimate by 1/6. With one **fresh scenario per sampled attack** the dual-sensor attacker's hazard volume after
+authentication plus the watchdog is **3.3-5.3%** (300 distinct scenarios, three seeds; 6.5% at 200 in E17), not the 1.0-2.0% reported in
+E12, E14 and the pipeline summary (and in `docs/PROJECT_EXPLAINED.pdf`). The reason is physical: the watchdog needs about 35 ms plus the
+chain time, and cannot save scenarios whose point of no return is shorter. Other qualitative conclusions are unchanged (single-channel
+attacks removed by the failover, untrusted-segment floods removed by the guard, the safety-bus flood and the key holder remain open), but
+**every hazard-volume table in E9-E14 below was computed with the reused-scenario sampling and is superseded** by the re-run with the
+corrected sampling (`experiments/e9..e14` now draw a fresh scenario per sample; the defence assessment in the pipeline already did).
+The analytic-bound results (zero violations) do not depend on this.
+
 ## E1 — detector comparison (`experiments/e1_pilot.py --n 300 --seed 1`)
 
 | Monitor | Recall | FPR | F1 | In time (of attack-induced hazards) |
@@ -50,7 +62,7 @@ not measurements on a vehicle. Regenerate with the commands shown; seeds are fix
 ## E4 - natural language -> timing specification (`experiments/e4_spec_extraction.py`)
 
 120 author-written requirements, 8 categories (`datasets/benchmark/`). Models: gpt-oss-120b (all 120
-for LLM-only and eager; RAG on the first 83), gpt-oss-20b and qwen3.8-27b (every second requirement, n=60).
+requirements in every condition), gpt-oss-20b and qwen3.8-27b (every second requirement, n=60).
 Retriever for RAG: BM25 (top 8 VSS, top 5 CAN). 95% Wilson intervals in brackets.
 
 | Model, n | Condition | Deadline correct | Exact (deadline+vague flag+component) | VSS F1 | CAN F1 | Invalid VSS / predicted |
@@ -58,7 +70,10 @@ Retriever for RAG: BM25 (top 8 VSS, top 5 CAN). 95% Wilson intervals in brackets
 | regex baseline, 120 | - | 0.86 [0.78,0.91] | - | - | - | - |
 | gpt-oss-120b, 120 | LLM only | 0.99 [0.95,1.00] | 0.87 | 0.03 | 0.07 | 1/2 |
 | gpt-oss-120b, 120 | eager (list signals from memory) | 0.98 [0.94,1.00] | 0.84 | 0.02 | 0.03 | 172/185 |
-| gpt-oss-120b, 83 | RAG | 0.99 [0.93,1.00] | 0.83 (LLM only on same 83: 0.86) | 0.85 | 0.64 | 0/45 |
+| gpt-oss-120b, 120 | RAG | 0.99 [0.95,1.00] | 0.84 | 0.88 | 0.63 | 0/64 |
+| gpt-oss-120b, 120 | validator only (LLM + check and repair) | 0.99 [0.95,1.00] | 0.87 | 0.03 | 0.07 | 0/1 |
+| gpt-oss-120b, 120 | eager + validator | 0.99 [0.95,1.00] | 0.86 | 0.06 | 0.09 | 0/8 (was 172/185) |
+| gpt-oss-120b, 120 | RAG + validator | 0.99 [0.95,1.00] | 0.84 | 0.88 | 0.63 | 0/64 |
 | gpt-oss-20b, 60 | LLM only / eager / RAG | 1.00 / 0.97 / 1.00 | 0.83 / 0.78 / 0.73 | 0.00 / 0.00 / 0.87 | 0.00 / 0.00 / 0.19 | 8/8, 38/38, 0/35 |
 | qwen3.8-27b, 60 | LLM only / eager / RAG | 1.00 / 0.98 / 1.00 | 0.90 / 0.80 / 0.80 | 0.06 / 0.02 / 0.85 | 0.00 / 0.00 / 0.46 | 2/3, 69/80, 0/39 |
 
@@ -74,20 +89,20 @@ Retriever for RAG: BM25 (top 8 VSS, top 5 CAN). 95% Wilson intervals in brackets
 * **RAG fixes identifiers:** VSS F1 0.00-0.03 -> 0.85-0.87 with zero invalid paths. CAN IDs stay hard
   (F1 0.19-0.64) because the candidates are retrieved from 11 illustrative messages.
 * **RAG can hurt classification:** exact-match fell 0.83 -> 0.73 (20b) and 0.90 -> 0.80 (qwen); for
-  120b the change (0.86 -> 0.83) is within the interval. Cause not yet analysed.
-* **The validator and repair loop gave no measurable benefit** for these models: first-reply
-  validity was already 98-100%. It would matter for weaker models; not tested.
+  120b the change (0.87 -> 0.84, all 120 requirements) is within the interval. Cause not yet analysed.
+* **The validator removes fabricated identifiers but does not restore what they should have been.** With signals listed from
+  memory (eager), only 12% of first replies are valid; the repair loop (0.97 repairs per requirement on average) makes
+  100% valid and cuts invalid VSS paths from 172/185 to 0/8, but VSS F1 stays at 0.06 because the repair mostly deletes
+  the invented paths. Only RAG gives valid *and* correct identifiers (VSS F1 0.88). For the LLM-only and RAG conditions the
+  validator changes nothing measurable (first-reply validity was already 98-100%).
 * STL: `spec_to_run_demo.py` evaluates the extracted formula on simulated runs; robustness equals
   deadline minus latency and agrees with the plant margin.
 
-**Not completed (free-tier limits).** Groq allows 200,000 tokens per model per day (and 8,000 per
-minute). gpt-oss-120b exhausted its daily budget after about 320 calls, so its RAG condition covers
-83 of 120 requirements and the validator-only and eager+validator conditions were not run for it.
-The remaining calls resume from the disk cache automatically
-(`experiments/run_e4_resilient.sh outputs/logs/e4_openai_gpt-oss-120b.log --model openai/gpt-oss-120b
---retriever bm25 --workers 3 --out outputs/e4_openai_gpt-oss-120b_bm25.csv`) once the budget refills.
-`--offline` reports only what is cached and `--matched` restricts every condition to common items.
-Dense-retriever RAG was not run through the LLM experiment for the same reason.
+**Completion note.** Groq's free tier allows 200,000 tokens per model per day (and 8,000 per minute). The gpt-oss-120b run was
+first cut short by that limit (RAG on 83 of 120 requirements) and was completed on 15 Oct 2026 by resuming from the disk cache
+(`experiments/run_e4_resilient.sh outputs/logs/e4_openai_gpt-oss-120b.log --model openai/gpt-oss-120b --retriever bm25 --workers 3
+--out outputs/e4_openai_gpt-oss-120b_bm25.csv`); every condition now covers all 120 requirements. `--offline` reports only what is
+cached. Dense-retriever RAG was not run through the LLM experiment.
 
 ## E5 - retrieval (`experiments/e5_retrieval.py [--real-vss] [--dense]`)
 
@@ -452,6 +467,28 @@ static scan). The MAC itself is delegated (the caller passes the verdict). **Not
 * Caveats for the paper: footprints will be host builds (indicative only); host timing says nothing about an ECU; real MAC cost and key
   handling are out of scope.
 
+## E17 - real truncated HMAC instead of idealised authentication (`sdv/security/mac.py`, `experiments/e17_real_mac.py --samples 200`)
+
+`auth_mode="hmac"` (default stays `"ideal"`): every sensor and radar frame carries its freshness counter and a truncated HMAC-SHA256 tag
+over (CAN id, counter, distance in mm, speed in mm/s, obstacle flag), SecOC style; the receiver recomputes the tag and requires the
+counter to increase. A gateway that alters the payload leaves the old tag, so a forged frame passes only by chance; an attacker holding
+the key re-signs; replayed or reordered frames are rejected.
+
+* **A. Forged frames that pass, measured** (10,631 forged frames): 4-bit MAC 6.26% accepted (theory 6.25%), 8-bit 0.395% (theory 0.391%),
+  16-bit 0 (theory 0.0015%), 24-bit 0 (theory 6e-6%). The idealised mode's "perfect" rejection is therefore the 24-bit behaviour up to a
+  forgery probability of about 6e-8 per frame.
+* **B. Hazard volume with authentication + watchdog** (200 sampled attacks per variant, one fresh scenario each): dual masquerade 6.5%
+  ideal / 8.5% (4-bit) / 6.5% (8, 16, 24-bit); dual masquerade with the key 39.5% in every mode; masquerade and sensor drift 0% in every
+  mode. Truncating the MAC to 8 bits costs nothing measurable here because accepting an occasional forged frame (one in 256) neither
+  triggers braking nor keeps the watchdog quiet (the gaps stay longer than 30 ms); 4 bits starts to show.
+* **C. Decisions:** the 24-bit real MAC gives the same trigger source and outcome as the idealised mode in **800/800** attacked runs.
+* **D. A side effect the idealised mode hid:** the freshness counter rejects genuine frames that an attack reorders. Under jitter
+  injection (random per-frame holds) at least one genuine frame was rejected in 200/200 runs. Real systems must choose how strictly to
+  enforce counter order.
+* Limits: HMAC-SHA256 truncated (SecOC permits it; AES-CMAC is more usual on ECUs), keys are derived for simulation and key
+  provisioning is not modelled, the verification time (0.5 ms) is still assumed, and the analytic bound's authentication assumption
+  now reads "unless a forged frame collides with the truncated MAC (2^-bits per frame)".
+
 ## Evidence chain and pipeline (`python -m sdv`, `sdv/evidence`)
 
 * One command takes a requirement in plain English through spec extraction, red team, blue team, a second red
@@ -499,8 +536,7 @@ static scan). The MAC itself is delegated (the caller passes the verdict). **Not
 * The Docker image has not been built (Docker is not installed on the development machine); the dependency
   list was checked by installing `requirements.txt` into a fresh virtual environment and running the tests.
 * Raw LLM replies live in `outputs/llm_cache/` (committed, about 1 MB); they are the evidence behind the E4/E6
-  tables and make every number reproducible offline with `--offline`. The gpt-oss-120b E4 run is incomplete (RAG 83/120
-  requirements, no validator-only arm); the table reports the matched subset.
+  tables and make every number reproducible offline with `--offline`. The gpt-oss-120b E4 run, first incomplete, was completed on 2026-10-15 (all conditions, 120/120).
 * **Freeze (2026-10-07):** `python experiments/reproduce_all.py` ran end to end (16 steps, all ok). E1 and E9-E12 reproduce
   the recorded tables line for line; E2-E6 and the pipeline ran without error. E13 (CARLA) is not part of it: it has never
   been run.

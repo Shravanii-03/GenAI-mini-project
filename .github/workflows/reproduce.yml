@@ -45,14 +45,14 @@ jobs:
           cp -r outputs/pipeline_run /tmp/results/pipeline_run || true
           cp -r outputs/pipeline_run_carla /tmp/results/pipeline_run_carla || true
           echo "${{ github.sha }}" > /tmp/results/COMMIT.txt
+          cd /tmp/results
+          git init -q
           git config user.name "github-actions"
           git config user.email "actions@users.noreply.github.com"
-          git checkout --orphan repro-results
-          git rm -rf --quiet . || true
-          cp -r /tmp/results/. .
+          git checkout -q -b repro-results
           git add -A
           git commit -q -m "full reproduction of ${{ github.sha }}"
-          git push -f origin repro-results
+          git push -f "https://x-access-token:${{ secrets.GITHUB_TOKEN }}@github.com/${{ github.repository }}.git" repro-results
 
   road:
     name: Real-data experiments (ROAD)
@@ -90,11 +90,11 @@ jobs:
           mkdir -p /tmp/results
           cp e8_road.log e15_road.log /tmp/results/ || true
           echo "${{ github.sha }}" > /tmp/results/COMMIT.txt
+          cd /tmp/results
+          git init -q
           git config user.name "github-actions"
           git config user.email "actions@users.noreply.github.com"
-          git checkout --orphan repro-results-road
-          git rm -rf --quiet . || true
-          cp -r /tmp/results/. .
+          git checkout -q -b repro-results-road
           git add -A
           git commit -q -m "ROAD experiments for ${{ github.sha }}"
-          git push -f origin repro-results-road
+          git push -f "https://x-access-token:${{ secrets.GITHUB_TOKEN }}@github.com/${{ github.repository }}.git" repro-results-road

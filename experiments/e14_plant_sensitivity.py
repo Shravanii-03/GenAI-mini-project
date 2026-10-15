@@ -64,9 +64,9 @@ def main():
                 hits = {c: 0 for c in CONFIGS}
                 n = 0
                 for t in range(args.scenarios):
-                    scenario = random_tight_scenario(random.Random(t))
-                    problem = AttackSearchProblem(family, scenario)
                     for i in range(args.samples):
+                        scenario = random_tight_scenario(random.Random(t * 1000 + i))     # a fresh scenario for every sampled attack
+                        problem = AttackSearchProblem(family, scenario)
                         params = {**problem.decode(rng.random(problem.dim)), **extra}
                         n += 1
                         for c, chain in chains.items():

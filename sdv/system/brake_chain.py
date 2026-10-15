@@ -24,7 +24,11 @@ Two further, independent defences (both off by default):
 
     gateway_guard   a gateway between an untrusted segment and the safety bus drops frames the segment may not
                     send and rate-limits the rest (sdv/bus/guard.py); it stops floods injected from that segment
-    auth            idealised message authentication (SecOC-style truncated MAC with freshness, same frame size):
+    auth            message authentication (SecOC-style truncated MAC with freshness, same frame size). auth_mode "ideal"
+                    (default) rejects exactly the frames an attacker forged; auth_mode "hmac" computes and verifies a real
+                    truncated HMAC-SHA256 with a freshness counter (sdv/security/mac.py), so a forged frame passes with
+                    probability 2**-mac_bits, replayed or reordered frames are rejected, and an attacker that holds the key
+                    re-signs. The rest of this paragraph applies to both:
                     a frame whose payload was changed after the sender signed it is rejected, unless the attacker
                     holds the key. Verification adds auth_verify_ms to perception. With auth, a fail-safe watchdog
                     brakes when neither channel has delivered a valid frame for watchdog_ms.
@@ -40,6 +44,7 @@ import config
 from sdv.bus.can_bus import CanBus
 from sdv.bus.guard import GatewayGuard
 from sdv.schemas import CanFrame, Scenario
+from sdv.security.mac import FrameMac, encode_payload
 from sdv.sim.engine import Simulator
 from sdv.traffic.background import BackgroundTraffic
 
@@ -74,6 +79,8 @@ class ChainParams:
     auth_verify_ms: float = 0.5     # ASSUMED MAC verification time per frame (hardware security module)
     watchdog_ms: float = 30.0       # fail-safe: no valid frame on any channel for this long -> brake (auth only)
     watchdog_check_ms: float = 5.0
+    auth_mode: str = "ideal"        # ideal | hmac
+    mac_bits: int = 24              # length of the truncated MAC (hmac mode)
 
     @classmethod
     def from_config(cls):
@@ -108,6 +115,11 @@ class BrakeChain:
         self._cmd_received = False
         self.trigger_source = None      # which channel started the braking chain
         self.rejected_frames = 0        # frames dropped by message authentication
+        if self.params.auth_mode not in ("ideal", "hmac"):
+            raise ValueError("auth_mode must be 'ideal' or 'hmac'")
+        self.mac = (FrameMac(FrameMac.derive_key(seed), self.params.mac_bits)
+                    if self.params.auth and self.params.auth_mode == "hmac" else None)
+        self._last_seq = {}             # channel -> highest counter accepted (freshness)
         self._last_valid_us = None
         self._watchdog_on = False
         self.guard = None
@@ -145,6 +157,7 @@ class BrakeChain:
             },
         )
         self._seq += 1
+        self.sign(frame)
         self.bus.send(frame)
         self.sim.schedule(int(self.params.sample_period_ms * 1000), self._sensor_tick)
 
@@ -154,7 +167,7 @@ class BrakeChain:
         elapsed_s = max(0, now - self.t_appear_us) / 1e6
         v0 = self.scenario.v0_kmh / 3.6
         true_d = max(0.0, self.scenario.d0_m - v0 * elapsed_s)
-        self.bus.send(CanFrame(
+        radar_frame = CanFrame(
             can_id=RADAR_ID, src="radar",
             data={
                 "seq": self._radar_seq,
@@ -162,9 +175,32 @@ class BrakeChain:
                 "distance_m": true_d + self._radar_rng.gauss(0, self.params.radar_noise_m) if seen else None,
                 "speed_ms": v0,
             },
-        ))
+        )
+        self.sign(radar_frame)
+        self.bus.send(radar_frame)
         self._radar_seq += 1
         self.sim.schedule(int(self.params.sample_period_ms * 1000), self._radar_tick)
+
+    # ── message authentication ──────────────────────────────────────────────
+    def sign(self, frame: CanFrame):
+        """Attach the MAC (hmac mode only); the sender, or an attacker that holds the key, calls this."""
+        if self.mac is None:
+            return
+        d = frame.data
+        frame.data["mac"] = self.mac.tag(frame.can_id, d["seq"], encode_payload(d.get("distance_m"), d.get("speed_ms"),
+                                                                                 d.get("obstacle")))
+
+    def _frame_valid(self, frame: CanFrame, channel: str) -> bool:
+        if self.mac is None:                                            # idealised: exactly the forged frames fail
+            return not (frame.data.get("forged") and not frame.data.get("holds_key"))
+        d = frame.data
+        if not self.mac.verify(frame.can_id, d["seq"],
+                               encode_payload(d.get("distance_m"), d.get("speed_ms"), d.get("obstacle")), d.get("mac")):
+            return False
+        if d["seq"] <= self._last_seq.get(channel, -1):                 # replayed or reordered
+            return False
+        self._last_seq[channel] = d["seq"]
+        return True
 
     def _send_detect(self):
         self.timeline["detect_enq"] = self.sim.now
@@ -215,7 +251,7 @@ class BrakeChain:
         if frame.can_id in (SENSOR_ID, RADAR_ID) and (frame.can_id == SENSOR_ID or mode != "none"):
             channel = "sensor" if frame.can_id == SENSOR_ID else "radar"
             if self.params.auth:
-                if frame.data.get("forged") and not frame.data.get("holds_key"):
+                if not self._frame_valid(frame, channel):
                     self.rejected_frames += 1          # MAC verification fails; the frame is discarded
                     return
                 self._last_valid_us = now
