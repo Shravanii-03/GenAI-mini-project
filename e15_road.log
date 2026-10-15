@@ -1,0 +1,34 @@
+learning periods from 3812 s of normal driving; validation 2778 s (2270 s on a real road); 1s
+periodic IDs watched: 103; periods from 10 ms to 1500 ms
+
+    k  false events/h (valid.)  pre-attack events  detected   median      max  <=50ms  <=100ms   without authentication
+    2                     62.2                  1     13/13      30ms    189ms    0.92     0.92   1/13 detected
+    3                     41.5                  0     13/13      30ms    289ms    0.92     0.92   0/13 detected
+    5                     38.9                  0     13/13      50ms    489ms    0.46     0.92   0/13 detected
+   10                     31.1                  0     13/13     100ms    989ms    0.00     0.46   0/13 detected
+
+Detection delay by attack family, k = 3 (ms after injection start; every masquerade capture)
+  correlated_signal       27, 30, 30
+  max_engine_coolant      289
+  max_speedometer         30, 30, 28
+  reverse_light_off       28, 30, 27
+  reverse_light_on        28, 28, 30
+
+False triggers per validation capture at k = 3 (watching all learned IDs)
+  ambient_dyno_drive_benign_anomaly                 456 s    28 events    220.8/h
+  ambient_dyno_reverse                               51 s     0 events      0.0/h
+  ambient_highway_street_driving_diagnostics        470 s     0 events      0.0/h
+  ambient_highway_street_driving_long              1800 s     4 events      8.0/h
+
+If the watchdog watched ONLY the sensing IDs of the attacked signals (as the design does), false triggers in validation:
+  IDs [208, 1255, 1760]: 17 events in 0.77 h (22.0/h); on the real road alone: 4 in 0.63 h
+
+IDs behind the false triggers at k = 3 (id, period ms, silent gaps, capture):
+  0x498        20 ms    14  ambient_dyno_drive_benign_anomaly
+  0x230        20 ms    12  ambient_dyno_drive_benign_anomaly
+  0x434        20 ms    12  ambient_dyno_drive_benign_anomaly
+  0x354        10 ms    11  ambient_dyno_drive_benign_anomaly
+  0x366        20 ms    11  ambient_dyno_drive_benign_anomaly
+  0x522        20 ms    11  ambient_dyno_drive_benign_anomaly
+
+total time 10s

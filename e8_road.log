@@ -1,0 +1,40 @@
+loading normal captures ...
+  train 3812s in 7 captures; validation 2778s in 4 captures (2270s on a real road); 17s
+learning candidate rules from the training captures ...
+  candidates: range 664, jump 664, pair 34, rate IDS on 52 periodic IDs; 27s
+selecting signal rules with ZERO false alarms on the held-out normal captures (0.77 h) ...
+  accepted: range 568/664, jump 596/664, pair 10/34; rate IDS tuned to short<0.05x, gap>50.0x period: 316 false-alarm event(s) on validation (409.5/h)
+  fused (all accepted signal rules) false-alarm events on validation: 0 (0.00/h)
+  skipped accelerator_attack_drive_1: injection started before the capture, no onset time
+  skipped accelerator_attack_drive_2: injection started before the capture, no onset time
+  skipped accelerator_attack_reverse_1: injection started before the capture, no onset time
+  skipped accelerator_attack_reverse_2: injection started before the capture, no onset time
+replayed 13 attack captures; 38s
+
+Detection delay after injection start, per attack family (masquerade captures: frames are replaced, so the frame rate is unchanged)
+attack family                 n                rate               range                jump                pair        fused_signal
+correlated_signal             3    2/3 med   8913ms    3/3 med      0ms    0/3 med        -    0/3 med        -    3/3 med      0ms
+max_engine_coolant            1    0/1 med        -    0/1 med        -    0/1 med        -    1/1 med      0ms    1/1 med      0ms
+max_speedometer               3    2/3 med  34837ms    3/3 med      7ms    3/3 med   6680ms    3/3 med      4ms    3/3 med      4ms
+reverse_light_off             3    1/3 med  15584ms    0/3 med        -    0/3 med        -    0/3 med        -    0/3 med        -
+reverse_light_on              3    3/3 med  15518ms    0/3 med        -    0/3 med        -    0/3 med        -    0/3 med        -
+
+Share of attack captures detected within a deadline (all families pooled)
+detector          <= 100 ms  <= 250 ms  <= 500 ms <= 1000 ms     ever
+rate                   0.00       0.00       0.15       0.15     0.62
+range                  0.46       0.46       0.46       0.46     0.46
+jump                   0.08       0.08       0.08       0.08     0.23
+pair                   0.31       0.31       0.31       0.31     0.31
+fused_signal           0.54       0.54       0.54       0.54     0.54
+
+False alarms inside the attack captures before the injection starts (normal portion, events)
+  rate 12, range 5, jump 2, pair 2, fused_signal 5   over 217s of normal driving
+
+Fabrication variants (extra frames injected), raw logs, rate IDS only
+  correlated_signal        detected 2/3, median delay 8913 ms
+  max_engine_coolant       detected 1/1, median delay 292 ms
+  max_speedometer          detected 2/3, median delay 34837 ms
+  reverse_light_off        detected 1/3, median delay 15584 ms
+  reverse_light_on         detected 3/3, median delay 15518 ms
+
+total time 40s
