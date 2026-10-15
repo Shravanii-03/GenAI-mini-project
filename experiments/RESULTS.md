@@ -417,7 +417,7 @@ assumption, not from the data. What the data adds is the timing: how fast, and w
   lights, 12 of 13) and 289 ms for the 10 Hz engine-coolant message. This includes the six in-range reverse-light forgeries that every
   value-based rule in E8 missed (0/6), because the defence does not look at values. Without authentication the watchdog sees nothing
   (0/13): replacement keeps the frame rate unchanged.
-* **The price (k = 3):** 41.5 false triggers per hour across all watched IDs, but they are concentrated: 28 of 36 events are in one
+* **The price (k = 3):** 41.5 false triggers per hour across all watched IDs, but they are concentrated: 28 of 32 events are in one
   deliberately odd capture (`ambient_dyno_drive_benign_anomaly`, 221/h); the real-road capture gave 4 events in 1,800 s, the
   diagnostics capture and the reverse capture none. If the watchdog watched only the three sensing-like IDs of the attacked signals
   (as the design does), 17 events in 0.77 h overall (22/h) and 4 events in 0.63 h on the real road, about 6 per hour. In the design
