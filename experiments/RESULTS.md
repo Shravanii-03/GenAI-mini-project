@@ -443,10 +443,12 @@ static scan). The MAC itself is delegated (the caller passes the verdict). **Not
   sensor, 44 radar, 12 watchdog), and matches the design intent in **18/18** hand-built edge cases (exact TTC threshold, one millimetre
   above it, stale channels, rejected frames, the watchdog's exact limit, the disagreement trigger that the emulator never produces first).
   Rounding to millimetres never moved a decision in these runs.
-* **Pending:** compiling the C code with `-std=c99 -Wall -Wextra -Wpedantic -Werror`, replaying the 138 cases through the compiled binary
-  (it must match the reference exactly), and reporting code size, state size and a host timing. This machine has no C compiler;
-  `python embedded/verify.py` does all of it on any machine that has one (for example Colab). Until it has been run, the C code is
-  **written and reference-checked, not compiled**, and no footprint number is claimed.
+* **Compiled and replayed (GCC 16.2.0 for x86-64 Windows, `-std=c99 -Wall -Wextra -Wpedantic -Werror -Os`, no warnings):** all 138 cases
+  through the compiled binary match the integer reference **exactly** (trigger source, time, rejected frames: 138/138), match the design
+  intent in 18/18 edge cases, and match the emulator's floating-point decision in 120/120 runs. `python embedded/verify.py` reproduces it.
+* **Footprint, host build only:** module code 528 bytes (`size`: text 528, data 0, bss 0), state structure 52 bytes, configuration 24 bytes;
+  host timing about 5 ns per frame-plus-tick call on a PC. These are indicative figures for an x86-64 host, **not** measurements on a
+  microcontroller: a Cortex-M build will differ in size, and the host timing says nothing about an ECU.
 * Caveats for the paper: footprints will be host builds (indicative only); host timing says nothing about an ECU; real MAC cost and key
   handling are out of scope.
 

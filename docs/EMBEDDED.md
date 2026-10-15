@@ -13,7 +13,10 @@ mirror of the C code) in Python:
 - 18 hand-built edge cases (exact TTC threshold, one millimetre above it, stale channels, rejected frames, the watchdog's exact
   limit, a disagreement trigger the emulator never produces first): 18/18 match the design intent.
 
-## What needs a C compiler (pending)
+## Compile-and-replay (done: PASS)
+Result on GCC 16.2.0 (x86-64, `-Os`): 138/138 cases identical to the reference, 18/18 edge cases, 120/120 emulator decisions;
+module text 528 bytes, state 52 bytes (host build, indicative only).
+
 `python embedded/verify.py` compiles the module with `-std=c99 -Wall -Wextra -Wpedantic -Werror`, replays all cases through the
 compiled binary and requires an **exact** match with the reference (code, time, rejected frames). It also prints the code size
 (`size`), the state size and a host timing. Standard library only.

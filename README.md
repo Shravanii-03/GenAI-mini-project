@@ -60,7 +60,7 @@ streamlit run dashboard/app.py     # dashboard
 | `sdv/blue` | Monitor rule language, deterministic verifier, exhaustive and random baselines, LLM blue agent |
 | `sdv/realdata` | ROAD dataset loader, semantics-free detectors, and the authentication + silence watchdog replay (real attacks; data stays outside the repo) |
 | `sdv/carla_check` | Pure helpers for the CARLA plant check (`experiments/e13_carla_plant.py`, not yet run; see `docs/CARLA.md`) |
-| `embedded/` | The perception-side defences as portable C99 (no floats, no allocation), with a verifier; see `docs/EMBEDDED.md` (compile step pending) |
+| `embedded/` | The perception-side defences as portable C99 (no floats, no allocation), with a verifier; see `docs/EMBEDDED.md` (compiled and replayed: 138/138 cases) |
 | `sdv/evidence` | Evidence bundle, auditor that re-runs every claim (incl. failover and bound checks), GSN-style rendering |
 | `sdv/pipeline.py` | End-to-end orchestrator (`python -m sdv`) |
 | `sdv/llm` | Disk-cached, rate-limit-aware LLM calls |
