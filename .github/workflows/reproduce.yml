@@ -1,0 +1,100 @@
+name: Full reproduction (manual or tag)
+
+# Re-runs every experiment end to end in the cloud so the results do not depend on one laptop.
+#   - trigger by hand: GitHub -> Actions -> "Full reproduction" -> Run workflow
+#   - or push a tag:   git tag repro-YYYYMMDD && git push origin repro-YYYYMMDD
+# The logs are pushed to the orphan branches `repro-results` (experiments) and `repro-results-road` (real-data experiments),
+# so they can be fetched with plain git and compared with experiments/compare_logs.py.
+
+on:
+  workflow_dispatch:
+  push:
+    tags:
+      - "repro-*"
+
+permissions:
+  contents: write
+
+jobs:
+  reproduce:
+    name: Reproduce every experiment
+    runs-on: ubuntu-latest
+    timeout-minutes: 330
+
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: "3.11"
+
+      - name: Install dependencies
+        run: pip install -r requirements.txt
+
+      - name: Run the full reproduction
+        run: |
+          set -o pipefail
+          python -u experiments/reproduce_all.py 2>&1 | tee reproduce_all.log
+
+      - name: Publish the log
+        if: always()
+        run: |
+          mkdir -p /tmp/results
+          cp reproduce_all.log /tmp/results/ || true
+          cp -r outputs/pipeline_run /tmp/results/pipeline_run || true
+          cp -r outputs/pipeline_run_carla /tmp/results/pipeline_run_carla || true
+          echo "${{ github.sha }}" > /tmp/results/COMMIT.txt
+          git config user.name "github-actions"
+          git config user.email "actions@users.noreply.github.com"
+          git checkout --orphan repro-results
+          git rm -rf --quiet . || true
+          cp -r /tmp/results/. .
+          git add -A
+          git commit -q -m "full reproduction of ${{ github.sha }}"
+          git push -f origin repro-results
+
+  road:
+    name: Real-data experiments (ROAD)
+    runs-on: ubuntu-latest
+    timeout-minutes: 120
+
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: "3.11"
+
+      - name: Install dependencies
+        run: pip install -r requirements.txt
+
+      - name: Download ROAD (Zenodo record 10462796, CC-BY 4.0) and verify it
+        run: |
+          curl -sL --retry 3 -o road.zip "https://zenodo.org/api/records/10462796/files/road.zip/content"
+          ls -l road.zip
+          echo "cab184cfc2fe12c0834bc46188c0f330  road.zip" | md5sum -c -
+          unzip -q road.zip -d road_data
+          echo "ROAD_DIR=$(dirname "$(find road_data -type d -name signal_extractions | head -1)")" >> "$GITHUB_ENV"
+
+      - name: E8 - detectors on real attacks
+        run: python -u experiments/e8_road_validation.py 2>&1 | tee e8_road.log
+
+      - name: E15 - authentication and silence watchdog on real attacks
+        run: python -u experiments/e15_road_defence_replay.py 2>&1 | tee e15_road.log
+
+      - name: Publish the logs
+        if: always()
+        run: |
+          mkdir -p /tmp/results
+          cp e8_road.log e15_road.log /tmp/results/ || true
+          echo "${{ github.sha }}" > /tmp/results/COMMIT.txt
+          git config user.name "github-actions"
+          git config user.email "actions@users.noreply.github.com"
+          git checkout --orphan repro-results-road
+          git rm -rf --quiet . || true
+          cp -r /tmp/results/. .
+          git add -A
+          git commit -q -m "ROAD experiments for ${{ github.sha }}"
+          git push -f origin repro-results-road

@@ -226,18 +226,41 @@ jobs:
           print('Dashboard imports PASSED')
           "
 
-  # ── Job 7: Deploy notification ────────────────────────────────────
+  # ── Job 7: Docker image ───────────────────────────────────────────
+  docker:
+    name: Docker Image Builds and Passes Tests
+    runs-on: ubuntu-latest
+    needs: lint
+
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Build the image
+        run: docker build -t sdv-safety .
+
+      - name: Run the test suite inside the container
+        run: docker run --rm sdv-safety
+
+      - name: Run the pipeline inside the container (no API key)
+        run: docker run --rm sdv-safety python -m sdv --blue enumerate --n 12 --assess-n 8 --out /tmp/pipeline_run
+
+  # ── Job 8: Final status (fails if any job above failed) ─────────────
   notify:
     name: Pipeline Complete
     runs-on: ubuntu-latest
-    needs: [test, simulator-test, rl-test, rag-test, dashboard-test]
+    needs: [lint, test, simulator-test, rl-test, rag-test, dashboard-test, docker]
     if: always()
 
     steps:
       - name: Report status
         run: |
           echo "================================"
-          echo "  SDV Safety CI/CD Complete"
+          echo "  SDV Safety CI/CD"
           echo "  Branch: ${{ github.ref_name }}"
           echo "  Commit: ${{ github.sha }}"
+          echo "  Results: ${{ join(needs.*.result, ', ') }}"
           echo "================================"
+          if [ "${{ contains(needs.*.result, 'failure') }}" = "true" ] || [ "${{ contains(needs.*.result, 'cancelled') }}" = "true" ]; then
+            echo "At least one job failed or was cancelled"
+            exit 1
+          fi
