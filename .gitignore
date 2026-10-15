@@ -15,3 +15,6 @@ outputs/live_violation_*.json
 # Large local binaries
 *.jar
 *.mp4
+
+# built by embedded/verify.py
+embedded/build/

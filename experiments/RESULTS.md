@@ -432,6 +432,24 @@ assumption, not from the data. What the data adds is the timing: how fast, and w
   rejected by authentication and do not silence the stream, so they are not a watchdog case; the watchdog thresholds are not tuned
   for a false-trigger budget; ROAD has no braking, so this validates detection timing and false-trigger cost only.
 
+## E16 - embedded feasibility of the perception-side defences (`embedded/`, `experiments/e16_embedded_feasibility.py`)
+
+`embedded/sdv_defences.c` implements the perception logic (TTC trigger, radar failover, disagreement trigger, authentication hook,
+fail-safe watchdog) as portable C99 with fixed-width integers only: no floating point, no allocation, no loops, no libc (checked by a
+static scan). The MAC itself is delegated (the caller passes the verdict). **Not run on a microcontroller.** Details: `docs/EMBEDDED.md`.
+
+* **Done, without a compiler:** a line-by-line Python mirror of the C logic (the integer reference) reproduces the emulator's own
+  floating-point decision (trigger source and time) in **120/120** emulator runs (6 defence configurations x 10 attack types; sources: 64
+  sensor, 44 radar, 12 watchdog), and matches the design intent in **18/18** hand-built edge cases (exact TTC threshold, one millimetre
+  above it, stale channels, rejected frames, the watchdog's exact limit, the disagreement trigger that the emulator never produces first).
+  Rounding to millimetres never moved a decision in these runs.
+* **Pending:** compiling the C code with `-std=c99 -Wall -Wextra -Wpedantic -Werror`, replaying the 138 cases through the compiled binary
+  (it must match the reference exactly), and reporting code size, state size and a host timing. This machine has no C compiler;
+  `python embedded/verify.py` does all of it on any machine that has one (for example Colab). Until it has been run, the C code is
+  **written and reference-checked, not compiled**, and no footprint number is claimed.
+* Caveats for the paper: footprints will be host builds (indicative only); host timing says nothing about an ECU; real MAC cost and key
+  handling are out of scope.
+
 ## Evidence chain and pipeline (`python -m sdv`, `sdv/evidence`)
 
 * One command takes a requirement in plain English through spec extraction, red team, blue team, a second red
