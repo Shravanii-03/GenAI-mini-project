@@ -1,0 +1,91 @@
+# config.yaml — GenAI-Based Real-Time Temporal Safety & Threat Engine for SDVs
+# ══════════════════════════════════════════════════════════════════════════════
+
+# ── LLM Configuration ─────────────────────────────────────────────────────────
+llm:
+  provider: "groq"
+  model: "openai/gpt-oss-120b"
+  max_tokens: 2048
+  temperature_default: 0.7
+  temperature_precision: 0.1    # for parsing tasks
+  temperature_creative: 0.95    # for scenario generation
+
+# ── Agent Configuration ────────────────────────────────────────────────────────
+agent:
+  max_iterations: 3
+  early_stop_threshold: 2       # minimum iterations before early stop allowed
+  scenario_types:
+    - normal
+    - edge
+    - stress
+
+# ── Timing Thresholds (ISO 26262) ─────────────────────────────────────────────
+timing:
+  default_max_latency_ms: 100
+  risk_levels:
+    critical: 1.5               # actual > 150% of max
+    high: 1.1                   # actual > 110%
+    medium: 0.9                 # actual > 90%
+    low: 0.7                    # actual < 70%
+
+# ── RAG Configuration ──────────────────────────────────────────────────────────
+rag:
+  top_k: 3
+  knowledge_base_path: "Knowledge_base/"
+  files:
+    vss: "vss_signals.json"
+    can: "can_messages.json"
+    iso: "iso26262_rules.json"
+    attacks: "attack_patterns.json"
+
+# ── Dataset Paths ──────────────────────────────────────────────────────────────
+datasets:
+  timing_requirements: "datasets/requirements/timing_requirements.json"
+  code_samples:
+    python: "datasets/code_samples/brake_python.py"
+    cpp:    "datasets/code_samples/cpp_brake.cpp"
+    rust:   "datasets/code_samples/rust_brake.rs"
+  runtime_traces:
+    scenario_1: "datasets/runtime_traces/scenario_1_trace.json"
+    scenario_2: "datasets/runtime_traces/scenario_2_trace.json"
+    scenario_3: "datasets/runtime_traces/scenario_3_trace.json"
+
+# ── Dashboard Configuration ────────────────────────────────────────────────────
+dashboard:
+  host: "localhost"
+  port: 8501
+  auto_refresh_seconds: 5
+  output_dir: "outputs/"
+  diagram_dir: "outputs/diagrams/"
+
+# ── Output Configuration ───────────────────────────────────────────────────────
+output:
+  save_json: true
+  save_diagrams: true
+  output_dir: "outputs/"
+  log_level: "INFO"
+
+# ── Phase 1: emulated brake chain (ASSUMED values, to be calibrated) ───────────
+bus:
+  bitrate_bps: 500000            # classical CAN 2.0A
+
+chain:
+  sample_period_ms: 10           # sensor ECU sampling period
+  perception_ms: 25              # mean compute time, scaled by CPU load
+  decision_ms: 15                # mean compute time, scaled by CPU load
+  actuator_ms: 25                # hydraulic response, not scaled by load
+  jitter_sigma: 0.15             # lognormal compute-time jitter
+  load_gain: 1.5                 # compute factor = 1 + load_gain * load^2
+  appear_time_ms: 500            # when the obstacle becomes a threat (leaves run-up time for attacks)
+  timeout_ms: 2000               # simulated time allowed after the obstacle appears
+  ttc_trigger_s: 2.0             # perception raises a hazard below this reported TTC
+  sensor_noise_m: 0.1            # std-dev of distance measurement noise (assumed)
+  tail_ms: 100                   # keep simulating after brake onset (for monitors)
+
+plant:
+  brake_ramp_ms: 50              # time for brake force to build up
+  gravity: 9.81
+  friction:
+    dry: 0.8
+    wet: 0.5
+    icy: 0.25

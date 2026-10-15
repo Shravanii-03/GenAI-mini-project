@@ -1,0 +1,943 @@
+{
+  "mode": "requirement",
+  "requirement": "Brake within 100ms if obstacle detected",
+  "timing_extraction": {
+    "event": "Brake",
+    "total_latency_ms": 100,
+    "component": "Braking System",
+    "asil_level": "ASIL_D",
+    "iso_rule_id": "EC-001",
+    "breakdown_ms": {
+      "sensor_ms": 20,
+      "perception_ms": 30,
+      "decision_ms": 10,
+      "command_ms": 10,
+      "actuator_ms": 30
+    },
+    "confidence": "HIGH",
+    "reasoning": "Obstacle detection requires immediate braking within 100ms",
+    "source": "llm",
+    "iso_canonical_ms": 0,
+    "iso_warning": "Extracted 100ms exceeds ISO canonical 0ms \u2014 requirement may be unsafe"
+  },
+  "agent_output": {
+    "requirement": "Brake within 100ms if obstacle detected",
+    "max_delay_ms": 100,
+    "event_chain": [
+      "Obstacle Detection",
+      "Signal Processing",
+      "Brake Activation",
+      "Vehicle Deceleration"
+    ],
+    "scenarios": [
+      {
+        "scenario_id": 1,
+        "type": "normal",
+        "parameters": {
+          "vehicle_speed_kmh": 50,
+          "road_condition": "dry",
+          "ecu_cpu_load_pct": 40
+        },
+        "event_chain_timing": [
+          {
+            "step": "sense",
+            "time_ms": 10
+          },
+          {
+            "step": "detect",
+            "time_ms": 20
+          },
+          {
+            "step": "decide",
+            "time_ms": 30
+          },
+          {
+            "step": "actuate",
+            "time_ms": 40
+          }
+        ],
+        "actual_delay_ms": 100,
+        "simulated_violation": false
+      },
+      {
+        "scenario_id": 2,
+        "type": "edge",
+        "parameters": {
+          "vehicle_speed_kmh": 80,
+          "road_condition": "wet",
+          "ecu_cpu_load_pct": 80
+        },
+        "event_chain_timing": [
+          {
+            "step": "sense",
+            "time_ms": 15
+          },
+          {
+            "step": "detect",
+            "time_ms": 30
+          },
+          {
+            "step": "decide",
+            "time_ms": 40
+          },
+          {
+            "step": "actuate",
+            "time_ms": 65
+          }
+        ],
+        "actual_delay_ms": 95,
+        "simulated_violation": false
+      },
+      {
+        "scenario_id": 2,
+        "type": "normal",
+        "parameters": {
+          "vehicle_speed_kmh": 50,
+          "road_condition": "dry",
+          "ecu_cpu_load_pct": 40
+        },
+        "event_chain_timing": [
+          {
+            "step": "sense",
+            "time_ms": 10
+          },
+          {
+            "step": "detect",
+            "time_ms": 20
+          },
+          {
+            "step": "decide",
+            "time_ms": 30
+          },
+          {
+            "step": "actuate",
+            "time_ms": 40
+          }
+        ],
+        "actual_delay_ms": 80,
+        "simulated_violation": false
+      },
+      {
+        "scenario_id": 1,
+        "type": "edge",
+        "parameters": {
+          "vehicle_speed_kmh": 50,
+          "road_condition": "dry",
+          "ecu_cpu_load_pct": 40
+        },
+        "event_chain_timing": [
+          {
+            "step": "sense",
+            "time_ms": 10
+          },
+          {
+            "step": "detect",
+            "time_ms": 20
+          },
+          {
+            "step": "decide",
+            "time_ms": 30
+          },
+          {
+            "step": "actuate",
+            "time_ms": 40
+          }
+        ],
+        "actual_delay_ms": 90,
+        "simulated_violation": false
+      },
+      {
+        "scenario_id": 1,
+        "type": "stress",
+        "parameters": {
+          "vehicle_speed_kmh": 50,
+          "road_condition": "dry",
+          "ecu_cpu_load_pct": 40
+        },
+        "event_chain_timing": [
+          {
+            "step": "sense",
+            "time_ms": 10
+          },
+          {
+            "step": "detect",
+            "time_ms": 20
+          },
+          {
+            "step": "decide",
+            "time_ms": 30
+          },
+          {
+            "step": "actuate",
+            "time_ms": 40
+          }
+        ],
+        "actual_delay_ms": 80,
+        "simulated_violation": false
+      },
+      {
+        "scenario_id": 1,
+        "type": "normal",
+        "parameters": {
+          "vehicle_speed_kmh": 50,
+          "road_condition": "dry",
+          "ecu_cpu_load_pct": 40
+        },
+        "event_chain_timing": [
+          {
+            "step": "sense",
+            "time_ms": 10
+          },
+          {
+            "step": "detect",
+            "time_ms": 20
+          },
+          {
+            "step": "decide",
+            "time_ms": 30
+          },
+          {
+            "step": "actuate",
+            "time_ms": 25
+          }
+        ],
+        "actual_delay_ms": 85,
+        "simulated_violation": false
+      },
+      {
+        "scenario_id": 1,
+        "type": "edge",
+        "parameters": {
+          "vehicle_speed_kmh": 50,
+          "road_condition": "dry",
+          "ecu_cpu_load_pct": 40
+        },
+        "event_chain_timing": [
+          {
+            "step": "sense",
+            "time_ms": 10
+          },
+          {
+            "step": "detect",
+            "time_ms": 20
+          },
+          {
+            "step": "decide",
+            "time_ms": 30
+          },
+          {
+            "step": "actuate",
+            "time_ms": 40
+          }
+        ],
+        "actual_delay_ms": 85,
+        "simulated_violation": false
+      },
+      {
+        "scenario_id": 2,
+        "type": "stress",
+        "parameters": {
+          "vehicle_speed_kmh": 60,
+          "road_condition": "wet",
+          "ecu_cpu_load_pct": 50
+        },
+        "event_chain_timing": [
+          {
+            "step": "sense",
+            "time_ms": 15
+          },
+          {
+            "step": "detect",
+            "time_ms": 25
+          },
+          {
+            "step": "decide",
+            "time_ms": 35
+          },
+          {
+            "step": "actuate",
+            "time_ms": 45
+          }
+        ],
+        "actual_delay_ms": 98,
+        "simulated_violation": false
+      }
+    ],
+    "evaluations": [
+      {
+        "violation": false,
+        "risk_score": 1.0,
+        "actual_delay_ms": 100,
+        "expected_delay_ms": 100,
+        "scenario_type": "normal",
+        "bottleneck_step": {
+          "step": "actuate",
+          "time_ms": 40
+        },
+        "road_condition": "dry",
+        "ecu_cpu_load": 40
+      },
+      {
+        "violation": false,
+        "risk_score": 0.95,
+        "actual_delay_ms": 95,
+        "expected_delay_ms": 100,
+        "scenario_type": "edge",
+        "bottleneck_step": {
+          "step": "actuate",
+          "time_ms": 65
+        },
+        "road_condition": "wet",
+        "ecu_cpu_load": 80
+      },
+      {
+        "violation": false,
+        "risk_score": 0.8,
+        "actual_delay_ms": 80,
+        "expected_delay_ms": 100,
+        "scenario_type": "normal",
+        "bottleneck_step": {
+          "step": "actuate",
+          "time_ms": 40
+        },
+        "road_condition": "dry",
+        "ecu_cpu_load": 40
+      },
+      {
+        "violation": false,
+        "risk_score": 0.9,
+        "actual_delay_ms": 90,
+        "expected_delay_ms": 100,
+        "scenario_type": "edge",
+        "bottleneck_step": {
+          "step": "actuate",
+          "time_ms": 40
+        },
+        "road_condition": "dry",
+        "ecu_cpu_load": 40
+      },
+      {
+        "violation": false,
+        "risk_score": 0.8,
+        "actual_delay_ms": 80,
+        "expected_delay_ms": 100,
+        "scenario_type": "stress",
+        "bottleneck_step": {
+          "step": "actuate",
+          "time_ms": 40
+        },
+        "road_condition": "dry",
+        "ecu_cpu_load": 40
+      },
+      {
+        "violation": false,
+        "risk_score": 0.85,
+        "actual_delay_ms": 85,
+        "expected_delay_ms": 100,
+        "scenario_type": "normal",
+        "bottleneck_step": {
+          "step": "decide",
+          "time_ms": 30
+        },
+        "road_condition": "dry",
+        "ecu_cpu_load": 40
+      },
+      {
+        "violation": false,
+        "risk_score": 0.85,
+        "actual_delay_ms": 85,
+        "expected_delay_ms": 100,
+        "scenario_type": "edge",
+        "bottleneck_step": {
+          "step": "actuate",
+          "time_ms": 40
+        },
+        "road_condition": "dry",
+        "ecu_cpu_load": 40
+      },
+      {
+        "violation": false,
+        "risk_score": 0.98,
+        "actual_delay_ms": 98,
+        "expected_delay_ms": 100,
+        "scenario_type": "stress",
+        "bottleneck_step": {
+          "step": "actuate",
+          "time_ms": 45
+        },
+        "road_condition": "wet",
+        "ecu_cpu_load": 50
+      }
+    ],
+    "threats": [
+      {
+        "attack_chain": [
+          {
+            "step": "Initial Compromise",
+            "description": "The attacker gains unauthorized access to the vehicle's system, possibly through a vulnerable component in the vehicle's network or by exploiting a software vulnerability in the infotainment system."
+          },
+          {
+            "step": "Lateral Movement",
+            "description": "Once inside the vehicle's network, the attacker moves laterally to gain access to the critical systems, including the braking system. This could involve exploiting vulnerabilities in the vehicle's internal network or using social engineering tactics against the vehicle's occupants."
+          },
+          {
+            "step": "Braking System Manipulation",
+            "description": "The attacker manipulates the braking system, introducing a 100ms delay in the response time. This delay could be enough to cause an accident, especially in situations requiring rapid braking, such as avoiding a pedestrian stepping into the road."
+          },
+          {
+            "step": "Execution and Impact",
+            "description": "The attacker executes the delay at a critical moment, potentially leading to a severe accident. The impact could range from damage to the vehicle to severe injury or loss of life for the occupants or other road users."
+          }
+        ],
+        "severity": "Critical",
+        "mitigation": "To mitigate this risk, vehicle manufacturers should implement robust security measures, including secure by design principles, regular software updates, intrusion detection systems, and secure communication protocols between vehicle components. Additionally, implementing a redundant braking system that can override compromised components could help prevent accidents."
+      },
+      {
+        "attack_chain": [
+          "Initial Compromise: Wireless/Physical Access",
+          "Lateral Movement: Navigating to Braking ECU",
+          "Exploitation: Introducing Delay/Malfunction in Braking System",
+          "Execution: Causing Accidents due to Braking Failure"
+        ],
+        "severity": "Critical",
+        "mitigation": "Implement robust security measures for vehicle systems, including regular software updates, intrusion detection systems, and physical security for access points like OBD-II ports. Additionally, ensuring vehicles are equipped with multiple redundancies for critical safety systems like brakes can mitigate the impact of such attacks."
+      },
+      {
+        "attack_chain": [
+          "Initial Compromise",
+          "Lateral Movement",
+          "Brake System Exploitation",
+          "Denial of Service (DoS)"
+        ],
+        "severity": "Critical",
+        "mitigation": "Regular security updates, network segmentation, intrusion detection systems, physical security measures, and driver awareness."
+      },
+      {
+        "attack_chain": [
+          "Initial Access: Exploiting software vulnerabilities or weak passwords to gain access to the control system.",
+          "Execution: Initiating the brake override command without operator input.",
+          "Persistence: Maintaining access to ensure the attack can be repeated or the system remains under the attacker's control."
+        ],
+        "severity": "High",
+        "mitigation": "Implementing robust access controls, regularly updating software, and conducting penetration testing to identify vulnerabilities. Additionally, ensuring that physical and cybersecurity measures are in place to prevent unauthorized access to critical systems."
+      },
+      {
+        "attack_chain": [
+          "Initial Compromise",
+          "Lateral Movement",
+          "Brake System Manipulation"
+        ],
+        "severity": "High",
+        "mitigation": "Implement robust cybersecurity measures including regular system updates, use of secure communication protocols, intrusion detection systems, and employee training on cybersecurity best practices."
+      },
+      {
+        "attack_chain": [
+          {
+            "step": "Initial Compromise",
+            "description": "The attacker gains access to the vehicle's onboard computer system through a vulnerability in the infotainment system or via a physically connected device."
+          },
+          {
+            "step": "Lateral Movement",
+            "description": "The attacker moves laterally within the vehicle's network to reach the Electronic Control Unit (ECU) responsible for controlling the braking system."
+          },
+          {
+            "step": "Exploitation of Brake System",
+            "description": "The attacker exploits a vulnerability or introduces a malicious delay of 85 milliseconds in the brake system's response time, potentially causing the vehicle to brake later than expected or in an unpredictable manner."
+          }
+        ],
+        "severity": "Critical",
+        "mitigation": "Immediate patching of known vulnerabilities in the vehicle's software, implementation of robust network segmentation to prevent lateral movement, and the use of intrusion detection systems to identify and respond to potential attacks. Additionally, regular security audits and penetration testing should be conducted to identify and fix vulnerabilities before they can be exploited."
+      },
+      {
+        "attack_chain": [
+          "Initial Compromise: An attacker gains access to the vehicle's or system's network through a vulnerability.",
+          "Lateral Movement: The attacker moves laterally within the network to access the braking system's control units.",
+          "Privilege Escalation: The attacker escalates privileges to gain control over the braking system.",
+          "Brake System Manipulation: The attacker manipulates the brake system to introduce an 85ms delay in the braking action, potentially causing accidents."
+        ],
+        "severity": "Critical",
+        "mitigation": "Implement robust network security measures, including intrusion detection and prevention systems, regularly update and patch vulnerabilities, and isolate critical systems like the braking system from the rest of the network. Additionally, implement physical and software safeguards to prevent unauthorized access to the braking system."
+      },
+      {
+        "attack_chain": [
+          "Reconnaissance: Identifying vulnerabilities in the vehicle's network or software.",
+          "Exploitation: Using the identified vulnerabilities to gain access to the vehicle's systems.",
+          "Manipulation: Altering the brake system's functionality to introduce a delay in the braking action.",
+          "Execution: Triggering the manipulated brake system at a critical moment to cause an accident or near-miss."
+        ],
+        "severity": "Critical",
+        "mitigation": "Implement robust security measures including regular software updates, intrusion detection systems, and secure communication protocols. Additionally, ensure that the vehicle's systems are designed with failsafes to prevent or mitigate the effects of such an attack."
+      }
+    ],
+    "explanation": "System safety refers to the process of identifying, analyzing, and mitigating hazards and risks associated with a system, product, or process to prevent accidents and ensure the safety of people, equipment, and the environment. It involves a proactive and systematic approach to identify potential hazards and implement controls to minimize or eliminate risks. System safety considerations include factors such as design, testing, maintenance, and operation, as well as human factors and environmental considerations. By implementing system safety principles and practices, organizations can reduce the likelihood of accidents, minimize damage, and protect their assets, reputation, and stakeholders."
+  },
+  "rl_summary": {
+    "total_tests": 24,
+    "violations": 8,
+    "max_delay_ms": 120,
+    "min_delay_ms": 80
+  },
+  "topology_threats": [
+    {
+      "topology_path": [
+        "Infotainment System",
+        "CAN Gateway",
+        "Safety ECU (braking_system)",
+        "Vehicle Braking"
+      ],
+      "attack_type": "tampering",
+      "attack_chain": [
+        "Malicious code injection into Infotainment System via OTA update",
+        "CAN bus message manipulation by compromised Infotainment System",
+        "Safety ECU processes tampered CAN message as legitimate",
+        "Tampered message causes unintended brake activation"
+      ],
+      "software_to_physical_impact": "Tampered brake signal causes vehicle to brake unexpectedly, potentially leading to accidents or injuries",
+      "severity": "MEDIUM",
+      "tara_score": 0.625,
+      "risk_assessment": "The vehicle is at risk of unintended braking due to a tampering attack on the braking system, which could result in accidents or injuries, with a moderate risk score of 0.5 and a TARA score of 0.625.",
+      "mitigation": "Implement secure OTA update mechanisms, utilize intrusion detection systems on the CAN bus, and enforce robust message authentication and validation on the Safety ECU",
+      "iso_21434_ref": "Clause 7: Risk assessment and Clause 8: Cybersecurity goals",
+      "matched_patterns": []
+    },
+    {
+      "topology_path": [
+        "Infotainment System",
+        "CAN Gateway",
+        "Safety ECU (braking_system)",
+        "Vehicle Braking"
+      ],
+      "attack_type": "injection",
+      "attack_chain": [
+        "Malicious code injection into Infotainment System via OTA update",
+        "Code execution and CAN bus message manipulation",
+        "Spoofed brake command sent to Safety ECU",
+        "Unintended brake activation"
+      ],
+      "software_to_physical_impact": "Malicious code injects false brake commands, causing unintended vehicle braking, potentially leading to accidents or injuries",
+      "severity": "MEDIUM",
+      "tara_score": 0.625,
+      "risk_assessment": "The attack scenario poses a moderate risk to vehicle safety, as it can cause unintended braking, potentially resulting in accidents or injuries. The risk is mitigated by the presence of safety mechanisms, such as redundancy in brake systems.",
+      "mitigation": "Implementing secure OTA update mechanisms, such as digital signatures and secure boot, and enhancing CAN bus message authentication and validation",
+      "iso_21434_ref": "Clause 7: Risk assessment and Clause 8: Cybersecurity goals",
+      "matched_patterns": []
+    },
+    {
+      "topology_path": [
+        "Infotainment System",
+        "CAN Gateway",
+        "Safety ECU (Braking System)",
+        "Vehicle Braking"
+      ],
+      "attack_type": "tampering",
+      "attack_chain": [
+        "Unauthorized access to Infotainment System via Wi-Fi",
+        "Sending malicious CAN frames to CAN Gateway",
+        "CAN Gateway forwards malicious frames to Safety ECU",
+        "Safety ECU executes malicious brake command"
+      ],
+      "software_to_physical_impact": "Malicious brake command causes unintended braking, potentially leading to accidents or injuries",
+      "severity": "MEDIUM",
+      "tara_score": 0.625,
+      "risk_assessment": "The vehicle is at risk of unintended braking due to tampering with the braking system, potentially causing accidents or injuries, with a moderate risk score of 0.5 and a TARA score of 0.625",
+      "mitigation": "Implementing secure CAN message authentication and intrusion detection on the CAN Gateway",
+      "iso_21434_ref": "Clause 7: Risk assessment",
+      "matched_patterns": []
+    },
+    {
+      "topology_path": [
+        "Infotainment",
+        "CAN Gateway",
+        "Safety ECU",
+        "braking_system"
+      ],
+      "attack_type": "tampering",
+      "attack_chain": [
+        "Unauthorized access to Infotainment via Wi-Fi",
+        "Sending malicious CAN messages to CAN Gateway",
+        "CAN Gateway forwards malicious messages to Safety ECU",
+        "Safety ECU applies incorrect brake pressure"
+      ],
+      "software_to_physical_impact": "Malicious software tampering with brake control signals results in unintended brake application, potentially leading to accidents or injuries",
+      "severity": "MEDIUM",
+      "tara_score": 0.625,
+      "risk_assessment": "The risk of this attack is moderate due to the potential for physical harm, but the likelihood is reduced by the requirement for unauthorized access to the Infotainment system and the CAN Gateway's filtering capabilities. Implementing secure authentication and authorization mechanisms for the Infotainment system and CAN Gateway can mitigate this risk",
+      "mitigation": "Implementing secure authentication and authorization mechanisms for the Infotainment system and CAN Gateway, such as secure boot and intrusion detection systems",
+      "iso_21434_ref": "Clause 7: Risk assessment and Clause 8: Cybersecurity goals",
+      "matched_patterns": []
+    },
+    {
+      "topology_path": [
+        "Infotainment",
+        "CAN Gateway",
+        "Safety ECU",
+        "Braking System"
+      ],
+      "attack_type": "tampering",
+      "attack_chain": [
+        "Malicious code injection into Infotainment system via OTA update",
+        "CAN Gateway compromise through Infotainment system",
+        "Safety ECU receives tampered brake signal from CAN Gateway",
+        "Braking System applies incorrect brake pressure"
+      ],
+      "software_to_physical_impact": "Tampered brake signal causes incorrect brake pressure, potentially leading to loss of vehicle control",
+      "severity": "MEDIUM",
+      "tara_score": 0.625,
+      "risk_assessment": "The risk of this attack is moderate due to the potential for loss of vehicle control, but the attack requires specific conditions and technical expertise. Implementing secure OTA update mechanisms and CAN Gateway security measures can mitigate this risk",
+      "mitigation": "Implementing secure boot and secure firmware update mechanisms for Infotainment and Safety ECU systems",
+      "iso_21434_ref": "Clause 7: Risk assessment and Clause 8: Cybersecurity goals",
+      "matched_patterns": []
+    },
+    {
+      "topology_path": [
+        "External (Wi-Fi)",
+        "Infotainment",
+        "CAN Gateway",
+        "Braking System"
+      ],
+      "attack_type": "injection",
+      "attack_chain": [
+        "Exploiting Infotainment Wi-Fi vulnerability",
+        "Gaining access to CAN Gateway",
+        "Sending malicious brake commands to Safety ECU",
+        "Causing unintended braking"
+      ],
+      "software_to_physical_impact": "Malicious brake commands are injected into the Safety ECU, causing the vehicle to brake unexpectedly, potentially leading to accidents or injuries",
+      "severity": "MEDIUM",
+      "tara_score": 0.625,
+      "risk_assessment": "The attack scenario poses a moderate risk to the vehicle's safety, as it can cause unintended braking, potentially leading to accidents or injuries. The risk is mitigated by the requirement for the attacker to have physical access to the vehicle's infotainment system",
+      "mitigation": "Implementing secure boot mechanisms and ensuring the infotainment system is isolated from the CAN Gateway",
+      "iso_21434_ref": "Clause 7: Risk assessment",
+      "matched_patterns": []
+    },
+    {
+      "topology_path": [
+        "Infotainment System",
+        "CAN Gateway",
+        "Safety ECU (Braking System)",
+        "Physical Braking"
+      ],
+      "attack_type": "injection",
+      "attack_chain": [
+        "Sending malicious CAN frames via Infotainment System",
+        "CAN Gateway forwards malicious frames to Safety ECU",
+        "Safety ECU processes malicious frames, altering brake control",
+        "Altered brake control leads to unintended physical braking"
+      ],
+      "software_to_physical_impact": "Malicious injection of CAN frames causes Safety ECU to apply brakes unexpectedly, potentially leading to loss of vehicle control",
+      "severity": "MEDIUM",
+      "tara_score": 0.625,
+      "risk_assessment": "The attack scenario poses a moderate risk due to potential loss of vehicle control, but the dry road condition and moderate ECU CPU load reduce the likelihood of severe consequences. Implementation of secure CAN frame validation and filtering can mitigate this risk.",
+      "mitigation": "Implementing secure CAN frame validation and filtering at the CAN Gateway and Safety ECU levels",
+      "iso_21434_ref": "Clause 7: Risk assessment",
+      "matched_patterns": []
+    },
+    {
+      "topology_path": [
+        "Infotainment",
+        "CAN Gateway",
+        "Safety ECU",
+        "Braking System"
+      ],
+      "attack_type": "tampering",
+      "attack_chain": [
+        "Exploiting Infotainment system vulnerability",
+        "Sending malicious CAN messages to CAN Gateway",
+        "Manipulating Safety ECU brake control signals",
+        "Causing unintended braking"
+      ],
+      "software_to_physical_impact": "Malicious brake control signals sent to the braking system, causing unintended vehicle braking, potentially leading to accidents or injuries",
+      "severity": "MEDIUM",
+      "tara_score": 0.625,
+      "risk_assessment": "The vehicle is at risk of unintended braking due to tampering with the Safety ECU, potentially causing accidents or injuries, with a moderate risk score of 0.5 and a TARA score of 0.625.",
+      "mitigation": "Implementing secure CAN message authentication and intrusion detection on the CAN Gateway",
+      "iso_21434_ref": "Clause 7: Risk assessment",
+      "matched_patterns": []
+    }
+  ],
+  "diagrams": [
+    {
+      "scenario": "normal",
+      "path": "outputs\\diagrams\\diagram_normal_0.puml",
+      "violation": false
+    },
+    {
+      "scenario": "edge",
+      "path": "outputs\\diagrams\\diagram_edge_1.puml",
+      "violation": false
+    },
+    {
+      "scenario": "normal",
+      "path": "outputs\\diagrams\\diagram_normal_2.puml",
+      "violation": false
+    },
+    {
+      "scenario": "edge",
+      "path": "outputs\\diagrams\\diagram_edge_3.puml",
+      "violation": false
+    },
+    {
+      "scenario": "stress",
+      "path": "outputs\\diagrams\\diagram_stress_4.puml",
+      "violation": false
+    },
+    {
+      "scenario": "normal",
+      "path": "outputs\\diagrams\\diagram_normal_5.puml",
+      "violation": false
+    },
+    {
+      "scenario": "edge",
+      "path": "outputs\\diagrams\\diagram_edge_6.puml",
+      "violation": false
+    },
+    {
+      "scenario": "stress",
+      "path": "outputs\\diagrams\\diagram_stress_7.puml",
+      "violation": false
+    }
+  ],
+  "adaptive_results": [
+    {
+      "scenario_type": "normal",
+      "original_delay": 100,
+      "iteration": 1,
+      "input_delay": 100,
+      "actual_delay": 100,
+      "violation": 0,
+      "delay_score": 1.0,
+      "next_delay": 110
+    },
+    {
+      "scenario_type": "normal",
+      "original_delay": 110,
+      "iteration": 2,
+      "input_delay": 110,
+      "actual_delay": 110,
+      "violation": 1,
+      "delay_score": 1.1,
+      "next_delay": 100
+    },
+    {
+      "scenario_type": "normal",
+      "original_delay": 100,
+      "iteration": 3,
+      "input_delay": 100,
+      "actual_delay": 100,
+      "violation": 0,
+      "delay_score": 1.0,
+      "next_delay": 110
+    },
+    {
+      "scenario_type": "edge",
+      "original_delay": 95,
+      "iteration": 1,
+      "input_delay": 95,
+      "actual_delay": 95,
+      "violation": 0,
+      "delay_score": 0.95,
+      "next_delay": 90
+    },
+    {
+      "scenario_type": "edge",
+      "original_delay": 90,
+      "iteration": 2,
+      "input_delay": 90,
+      "actual_delay": 90,
+      "violation": 0,
+      "delay_score": 0.9,
+      "next_delay": 110
+    },
+    {
+      "scenario_type": "edge",
+      "original_delay": 110,
+      "iteration": 3,
+      "input_delay": 110,
+      "actual_delay": 110,
+      "violation": 1,
+      "delay_score": 1.1,
+      "next_delay": 90
+    },
+    {
+      "scenario_type": "normal",
+      "original_delay": 80,
+      "iteration": 1,
+      "input_delay": 80,
+      "actual_delay": 80,
+      "violation": 0,
+      "delay_score": 0.8,
+      "next_delay": 110
+    },
+    {
+      "scenario_type": "normal",
+      "original_delay": 110,
+      "iteration": 2,
+      "input_delay": 110,
+      "actual_delay": 110,
+      "violation": 1,
+      "delay_score": 1.1,
+      "next_delay": 100
+    },
+    {
+      "scenario_type": "normal",
+      "original_delay": 100,
+      "iteration": 3,
+      "input_delay": 100,
+      "actual_delay": 100,
+      "violation": 0,
+      "delay_score": 1.0,
+      "next_delay": 95
+    },
+    {
+      "scenario_type": "edge",
+      "original_delay": 90,
+      "iteration": 1,
+      "input_delay": 90,
+      "actual_delay": 90,
+      "violation": 0,
+      "delay_score": 0.9,
+      "next_delay": 80
+    },
+    {
+      "scenario_type": "edge",
+      "original_delay": 80,
+      "iteration": 2,
+      "input_delay": 80,
+      "actual_delay": 80,
+      "violation": 0,
+      "delay_score": 0.8,
+      "next_delay": 120
+    },
+    {
+      "scenario_type": "edge",
+      "original_delay": 120,
+      "iteration": 3,
+      "input_delay": 120,
+      "actual_delay": 120,
+      "violation": 1,
+      "delay_score": 1.2,
+      "next_delay": 100
+    },
+    {
+      "scenario_type": "stress",
+      "original_delay": 80,
+      "iteration": 1,
+      "input_delay": 80,
+      "actual_delay": 80,
+      "violation": 0,
+      "delay_score": 0.8,
+      "next_delay": 120
+    },
+    {
+      "scenario_type": "stress",
+      "original_delay": 120,
+      "iteration": 2,
+      "input_delay": 120,
+      "actual_delay": 120,
+      "violation": 1,
+      "delay_score": 1.2,
+      "next_delay": 100
+    },
+    {
+      "scenario_type": "stress",
+      "original_delay": 100,
+      "iteration": 3,
+      "input_delay": 100,
+      "actual_delay": 100,
+      "violation": 0,
+      "delay_score": 1.0,
+      "next_delay": 90
+    },
+    {
+      "scenario_type": "normal",
+      "original_delay": 85,
+      "iteration": 1,
+      "input_delay": 85,
+      "actual_delay": 85,
+      "violation": 0,
+      "delay_score": 0.85,
+      "next_delay": 110
+    },
+    {
+      "scenario_type": "normal",
+      "original_delay": 110,
+      "iteration": 2,
+      "input_delay": 110,
+      "actual_delay": 110,
+      "violation": 1,
+      "delay_score": 1.1,
+      "next_delay": 90
+    },
+    {
+      "scenario_type": "normal",
+      "original_delay": 90,
+      "iteration": 3,
+      "input_delay": 90,
+      "actual_delay": 90,
+      "violation": 0,
+      "delay_score": 0.9,
+      "next_delay": 110
+    },
+    {
+      "scenario_type": "edge",
+      "original_delay": 85,
+      "iteration": 1,
+      "input_delay": 85,
+      "actual_delay": 85,
+      "violation": 0,
+      "delay_score": 0.85,
+      "next_delay": 120
+    },
+    {
+      "scenario_type": "edge",
+      "original_delay": 120,
+      "iteration": 2,
+      "input_delay": 120,
+      "actual_delay": 120,
+      "violation": 1,
+      "delay_score": 1.2,
+      "next_delay": 100
+    },
+    {
+      "scenario_type": "edge",
+      "original_delay": 100,
+      "iteration": 3,
+      "input_delay": 100,
+      "actual_delay": 100,
+      "violation": 0,
+      "delay_score": 1.0,
+      "next_delay": 110
+    },
+    {
+      "scenario_type": "stress",
+      "original_delay": 98,
+      "iteration": 1,
+      "input_delay": 98,
+      "actual_delay": 98,
+      "violation": 0,
+      "delay_score": 0.98,
+      "next_delay": 93
+    },
+    {
+      "scenario_type": "stress",
+      "original_delay": 93,
+      "iteration": 2,
+      "input_delay": 93,
+      "actual_delay": 93,
+      "violation": 0,
+      "delay_score": 0.93,
+      "next_delay": 110
+    },
+    {
+      "scenario_type": "stress",
+      "original_delay": 110,
+      "iteration": 3,
+      "input_delay": 110,
+      "actual_delay": 110,
+      "violation": 1,
+      "delay_score": 1.1,
+      "next_delay": 90
+    }
+  ],
+  "timestamp": "2026-04-05T11:29:27.197845"
+}

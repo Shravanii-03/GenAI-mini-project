@@ -1,0 +1,28 @@
+@startuml
+skinparam activity {
+  BackgroundColor #F8F9FA
+  BorderColor #343A40
+  FontSize 12
+}
+skinparam activityDiamond {
+  BackgroundColor #FFF3CD
+  BorderColor #856404
+}
+title SDV Brake — Stress Scenario
+start
+
+if (Obstacle Detection?) then (yes)
+  :Obstacle Detection = true;
+else (no)
+  :Obstacle Detection = false;
+endif
+↓
+:Signal Transmission;
+↓
+:Braking Command;
+↓
+:Braking Execution;
+↓
+
+stop
+@enduml

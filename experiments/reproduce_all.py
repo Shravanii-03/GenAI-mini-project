@@ -1,0 +1,82 @@
+"""
+Regenerate every experiment table from the repository, offline.
+
+E8 and E15 need the ROAD dataset (stored outside the repository, see sdv/realdata/road.py) and are run separately:
+    python experiments/e8_road_validation.py
+    python experiments/e15_road_defence_replay.py
+
+LLM-dependent experiments (E4, E6) run with --offline: they replay the cached model replies in
+outputs/llm_cache/ and never call the API, so no key is needed. The full run takes several minutes.
+
+    python experiments/reproduce_all.py            # everything
+    python experiments/reproduce_all.py --quick    # skip the slowest searches
+"""
+import argparse
+import os
+import subprocess
+import sys
+import time
+
+ROOT = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
+
+STEPS = [
+    ("Phase 1 demo (latency vs load, hazard vs distance)", ["experiments/phase1_demo.py"], True),
+    ("E1 detector comparison", ["experiments/e1_pilot.py", "--n", "300", "--seed", "1"], True),
+    ("E3 detector tuning sweep", ["experiments/e3_tuning_sweep.py", "--n", "60", "--seed", "1"], True),
+    ("Hazard volume per attack family", ["experiments/hazard_volume.py"], True),
+    ("E2 attack search", ["experiments/e2_search.py", "--budget", "50", "--trials", "20", "--seed", "1"], False),
+    ("E4 spec extraction (qwen, cached replies)",
+     ["experiments/e4_spec_extraction.py", "--model", "qwen/qwen3.8-27b", "--stride", "2", "--offline",
+      "--conditions", "baseline,eager,rag,rag_validator"], True),
+    ("E4 spec extraction (gpt-oss-120b, cached replies)",
+     ["experiments/e4_spec_extraction.py", "--model", "openai/gpt-oss-120b", "--offline", "--matched",
+      "--conditions", "baseline,eager,rag,rag_validator"], True),
+    ("E5 retrieval (hand-made KB)", ["experiments/e5_retrieval.py"], True),
+    ("E5 retrieval (real VSS v6.1)", ["experiments/e5_retrieval.py", "--real-vss"], True),
+    ("E6 red/blue loop (qwen, cached replies)",
+     ["experiments/e6_redblue.py", "--seeds", "1,2,3", "--n", "60", "--model", "qwen/qwen3.8-27b", "--offline"],
+     False),
+    ("E9 radar failover (collisions avoided, cost, adaptive attacker)",
+     ["experiments/e9_mitigation.py", "--scenarios", "6", "--samples", "120", "--benign", "100", "--es-budget", "150"],
+     False),
+    ("E10 analytic latency bound (soundness, tightness, proven-safe share)",
+     ["experiments/e10_bound_validation.py", "--scenarios", "6", "--samples", "120"], False),
+    ("E11 sensitivity to the assumed ECU timings",
+     ["experiments/e11_sensitivity.py", "--scenarios", "5", "--samples", "80"], False),
+    ("E12 defences: gateway guard + authentication (hazard, cost, adaptive attacker)",
+     ["experiments/e12_defences.py", "--scenarios", "6", "--samples", "100", "--benign", "100", "--es-budget", "100"],
+     False),
+    ("E12b adversarial search for a counter-example to the bound",
+     ["experiments/e12b_bound_adversarial.py", "--scenarios", "4", "--budget", "200"], False),
+    ("E14 sensitivity to the braking physics",
+     ["experiments/e14_plant_sensitivity.py", "--scenarios", "5", "--samples", "80"], False),
+    ("E16 embedded C port (reference checks; compiles and replays if a C compiler is on the PATH)",
+     ["experiments/e16_embedded_feasibility.py"], True),
+    ("End-to-end pipeline", ["-m", "sdv", "--blue", "enumerate", "--n", "40", "--out", "outputs/pipeline_run"], True),
+    ("End-to-end pipeline, CARLA-calibrated plant",
+     ["-m", "sdv", "--blue", "enumerate", "--n", "40", "--plant-profile", "experiments/profiles/carla_model3.json",
+      "--out", "outputs/pipeline_run_carla"], True),
+]
+
+
+def main():
+    ap = argparse.ArgumentParser()
+    ap.add_argument("--quick", action="store_true", help="skip steps marked slow (E2, E6)")
+    args = ap.parse_args()
+    failures = []
+    for title, argv, fast in STEPS:
+        if args.quick and not fast:
+            print(f"\n=== {title}: skipped (--quick)")
+            continue
+        print(f"\n{'=' * 78}\n=== {title}\n{'=' * 78}", flush=True)
+        start = time.time()
+        code = subprocess.call([sys.executable, *argv], cwd=ROOT)
+        print(f"--- {title}: {'ok' if code == 0 else f'FAILED (exit {code})'} in {time.time() - start:.0f}s", flush=True)
+        if code != 0:
+            failures.append(title)
+    print("\nAll steps completed." if not failures else f"\nFailed steps: {failures}")
+    return 1 if failures else 0
+
+
+if __name__ == "__main__":
+    raise SystemExit(main())

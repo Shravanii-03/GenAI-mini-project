@@ -1,0 +1,1 @@
+{"model": "openai/gpt-oss-120b", "reply": "{\n  \"deadline_ms\": 20,\n  \"unresolved\": false,\n  \"component\": \"other\",\n  \"trigger\": \"camera_detection\",\n  \"response\": \"fusion_output_available\",\n  \"vss_signals\": [\n    \"Vehicle.Cameras.Front.Detection\"\n  ],\n  \"can_ids\": [],\n  \"formula\": \"G(camera_detection -> F[0,20 ms] fusion_output_available)\"\n}"}

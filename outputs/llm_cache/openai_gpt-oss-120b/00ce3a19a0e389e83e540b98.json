@@ -1,0 +1,1 @@
+{"model": "openai/gpt-oss-120b", "reply": "{\n  \"deadline_ms\": 100,\n  \"unresolved\": false,\n  \"component\": \"braking_system\",\n  \"trigger\": \"brake_detection\",\n  \"response\": \"brake_command_transmitted\",\n  \"vss_signals\": [\"Vehicle.Brake.Command\"],\n  \"can_ids\": [\"0x1A0\"],\n  \"formula\": \"G(brake_detection -> F[0,100 ms] brake_command_transmitted)\"\n}"}

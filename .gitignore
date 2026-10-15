@@ -1,3 +1,20 @@
-.env
-__pycache__
+# Python environment and caches
+venv/
+.venv/
+__pycache__/
 *.pyc
+.pytest_cache/
+
+# Secrets (never commit)
+.env
+
+# Generated run outputs (regenerate with the experiment runner)
+outputs/live_*.json
+outputs/live_violation_*.json
+
+# Large local binaries
+*.jar
+*.mp4
+
+# built by embedded/verify.py
+embedded/build/

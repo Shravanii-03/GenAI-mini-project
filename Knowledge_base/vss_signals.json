@@ -1,0 +1,241 @@
+{
+  "version": "4.0",
+  "description": "Vehicle Signal Specification (VSS) catalog — automotive signals for SDV safety analysis",
+  "signals": [
+    {
+      "path": "Vehicle.ADAS.ABS.IsActive",
+      "type": "boolean",
+      "description": "Indicates if the Anti-lock Braking System is active",
+      "unit": null,
+      "safety_critical": true,
+      "iso_reference": "ISO_26262"
+    },
+    {
+      "path": "Vehicle.ADAS.ABS.IsEngaged",
+      "type": "boolean",
+      "description": "ABS is engaged and controlling brake pressure",
+      "unit": null,
+      "safety_critical": true,
+      "iso_reference": "ISO_26262"
+    },
+    {
+      "path": "Vehicle.ADAS.ActiveAutonomyLevel",
+      "type": "string",
+      "description": "Current SAE autonomy level of vehicle (SAE J3016)",
+      "allowed_values": ["SAE_0", "SAE_1", "SAE_2", "SAE_3", "SAE_4", "SAE_5"],
+      "safety_critical": true,
+      "iso_reference": "ISO_26262"
+    },
+    {
+      "path": "Vehicle.ADAS.CruiseControl.IsActive",
+      "type": "boolean",
+      "description": "Indicates if cruise control is currently active",
+      "unit": null,
+      "safety_critical": false,
+      "iso_reference": "ISO_26262"
+    },
+    {
+      "path": "Vehicle.ADAS.CruiseControl.SpeedSet",
+      "type": "float",
+      "description": "Set speed for cruise control",
+      "unit": "km/h",
+      "min": 0,
+      "max": 250,
+      "safety_critical": false,
+      "iso_reference": "ISO_26262"
+    },
+    {
+      "path": "Vehicle.ADAS.EBA.IsActive",
+      "type": "boolean",
+      "description": "Emergency Brake Assist is active",
+      "unit": null,
+      "safety_critical": true,
+      "iso_reference": "ISO_26262",
+      "timing_constraint_ms": 100
+    },
+    {
+      "path": "Vehicle.ADAS.EBA.IsEngaged",
+      "type": "boolean",
+      "description": "Emergency Brake Assist is engaged",
+      "unit": null,
+      "safety_critical": true,
+      "iso_reference": "ISO_26262",
+      "timing_constraint_ms": 100
+    },
+    {
+      "path": "Vehicle.ADAS.ESC.IsActive",
+      "type": "boolean",
+      "description": "Electronic Stability Control is active",
+      "unit": null,
+      "safety_critical": true,
+      "iso_reference": "ISO_26262"
+    },
+    {
+      "path": "Vehicle.ADAS.LaneDepartureDetection.IsWarning",
+      "type": "boolean",
+      "description": "Lane departure warning is active",
+      "unit": null,
+      "safety_critical": true,
+      "iso_reference": "ISO_26262",
+      "timing_constraint_ms": 200
+    },
+    {
+      "path": "Vehicle.ADAS.ObstacleDetection.IsWarning",
+      "type": "boolean",
+      "description": "Obstacle detection warning is active",
+      "unit": null,
+      "safety_critical": true,
+      "iso_reference": "ISO_26262",
+      "timing_constraint_ms": 150
+    },
+    {
+      "path": "Vehicle.Body.Lights.Brake.IsActive",
+      "type": "boolean",
+      "description": "Brake lights are active",
+      "unit": null,
+      "safety_critical": false,
+      "iso_reference": null
+    },
+    {
+      "path": "Vehicle.Chassis.Brake.IsDriverEmergencyBrakingDetected",
+      "type": "boolean",
+      "description": "Driver emergency braking detected",
+      "unit": null,
+      "safety_critical": true,
+      "iso_reference": "ISO_26262",
+      "timing_constraint_ms": 100
+    },
+    {
+      "path": "Vehicle.Chassis.Brake.PedalPosition",
+      "type": "uint8",
+      "description": "Brake pedal position as percentage",
+      "unit": "percent",
+      "min": 0,
+      "max": 100,
+      "safety_critical": true,
+      "iso_reference": "ISO_26262"
+    },
+    {
+      "path": "Vehicle.Chassis.SteeringWheel.Angle",
+      "type": "float",
+      "description": "Steering wheel angle",
+      "unit": "degrees",
+      "min": -900,
+      "max": 900,
+      "safety_critical": true,
+      "iso_reference": "ISO_26262",
+      "timing_constraint_ms": 200
+    },
+    {
+      "path": "Vehicle.CurrentLocation.Latitude",
+      "type": "double",
+      "description": "Current vehicle latitude",
+      "unit": "degrees",
+      "safety_critical": false,
+      "iso_reference": null
+    },
+    {
+      "path": "Vehicle.CurrentLocation.Longitude",
+      "type": "double",
+      "description": "Current vehicle longitude",
+      "unit": "degrees",
+      "safety_critical": false,
+      "iso_reference": null
+    },
+    {
+      "path": "Vehicle.Driver.AttentiveProbability",
+      "type": "float",
+      "description": "Probability that the driver is attentive (0-1)",
+      "unit": null,
+      "min": 0,
+      "max": 1,
+      "safety_critical": true,
+      "iso_reference": "ISO_26262"
+    },
+    {
+      "path": "Vehicle.OBD.Speed",
+      "type": "float",
+      "description": "Vehicle speed reported by OBD",
+      "unit": "km/h",
+      "min": 0,
+      "max": 250,
+      "safety_critical": true,
+      "iso_reference": "ISO_26262"
+    },
+    {
+      "path": "Vehicle.Speed",
+      "type": "float",
+      "description": "Vehicle speed",
+      "unit": "km/h",
+      "min": 0,
+      "max": 250,
+      "safety_critical": true,
+      "iso_reference": "ISO_26262",
+      "timing_constraint_ms": 50
+    },
+    {
+      "path": "Vehicle.Speed.Target",
+      "type": "float",
+      "description": "Target vehicle speed (commanded)",
+      "unit": "km/h",
+      "min": 0,
+      "max": 30,
+      "safety_critical": true,
+      "iso_reference": "ISO_26262",
+      "safety_limit": 30
+    },
+    {
+      "path": "Vehicle.Powertrain.Transmission.CurrentGear",
+      "type": "int8",
+      "description": "Current gear",
+      "unit": null,
+      "safety_critical": false,
+      "iso_reference": null
+    },
+    {
+      "path": "Vehicle.Powertrain.CombustionEngine.ECT",
+      "type": "float",
+      "description": "Engine Coolant Temperature",
+      "unit": "celsius",
+      "safety_critical": false,
+      "iso_reference": null
+    },
+    {
+      "path": "Vehicle.Cabin.HVAC.IsAirConditioningActive",
+      "type": "boolean",
+      "description": "Air conditioning is active",
+      "unit": null,
+      "safety_critical": false,
+      "iso_reference": null
+    },
+    {
+      "path": "Vehicle.ADAS.PedestrianDetection.IsDetected",
+      "type": "boolean",
+      "description": "Pedestrian detected in vehicle path",
+      "unit": null,
+      "safety_critical": true,
+      "iso_reference": "ISO_26262",
+      "timing_constraint_ms": 100
+    },
+    {
+      "path": "Vehicle.ADAS.PedestrianDetection.CameraConfidence",
+      "type": "float",
+      "description": "Camera-based pedestrian detection confidence (0-1)",
+      "unit": null,
+      "min": 0,
+      "max": 1,
+      "safety_critical": true,
+      "iso_reference": "ISO_26262"
+    },
+    {
+      "path": "Vehicle.ADAS.PedestrianDetection.LidarConfidence",
+      "type": "float",
+      "description": "LIDAR-based pedestrian detection confidence (0-1)",
+      "unit": null,
+      "min": 0,
+      "max": 1,
+      "safety_critical": true,
+      "iso_reference": "ISO_26262"
+    }
+  ]
+}

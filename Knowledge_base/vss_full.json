@@ -1,0 +1,582 @@
+{
+  "Vehicle": {
+    "description": "High-level vehicle data",
+    "type": "branch",
+    "children": {
+      "Speed": {
+        "datatype": "float",
+        "description": "Vehicle speed, as sensed by the gearbox",
+        "type": "sensor",
+        "unit": "km/h",
+        "min": 0,
+        "max": 250,
+        "safety_critical": true,
+        "iso_reference": "ISO_26262",
+        "timing_constraint_ms": 50
+      },
+      "TraveledDistance": {
+        "datatype": "float",
+        "description": "Odometer reading",
+        "type": "sensor",
+        "unit": "km"
+      },
+      "TripDuration": {
+        "datatype": "float",
+        "description": "Duration of current trip",
+        "type": "sensor",
+        "unit": "s"
+      },
+      "CurrentLocation": {
+        "description": "Current location of vehicle",
+        "type": "branch",
+        "children": {
+          "Latitude": {
+            "datatype": "double",
+            "description": "Current latitude of vehicle",
+            "type": "sensor",
+            "unit": "degrees"
+          },
+          "Longitude": {
+            "datatype": "double",
+            "description": "Current longitude of vehicle",
+            "type": "sensor",
+            "unit": "degrees"
+          },
+          "Altitude": {
+            "datatype": "float",
+            "description": "Current altitude of vehicle",
+            "type": "sensor",
+            "unit": "m"
+          },
+          "Heading": {
+            "datatype": "double",
+            "description": "Current heading of vehicle",
+            "type": "sensor",
+            "unit": "degrees"
+          },
+          "Speed": {
+            "datatype": "float",
+            "description": "Vehicle speed from GPS",
+            "type": "sensor",
+            "unit": "km/h"
+          }
+        }
+      },
+      "ADAS": {
+        "description": "All Advanced Driver Assistance Systems",
+        "type": "branch",
+        "children": {
+          "ActiveAutonomyLevel": {
+            "datatype": "string",
+            "description": "Current SAE automation level",
+            "type": "sensor",
+            "allowed": ["SAE_0","SAE_1","SAE_2","SAE_3","SAE_4","SAE_5"],
+            "safety_critical": true
+          },
+          "SupportedAutonomyLevel": {
+            "datatype": "string",
+            "description": "Supported SAE automation level",
+            "type": "attribute"
+          },
+          "CruiseControl": {
+            "description": "Cruise control system",
+            "type": "branch",
+            "children": {
+              "IsActive": {
+                "datatype": "boolean",
+                "description": "Cruise control active",
+                "type": "actuator",
+                "safety_critical": false
+              },
+              "SpeedSet": {
+                "datatype": "float",
+                "description": "Set speed for cruise control",
+                "type": "actuator",
+                "unit": "km/h",
+                "min": 0,
+                "max": 250
+              },
+              "IsError": {
+                "datatype": "boolean",
+                "description": "Cruise control error",
+                "type": "sensor"
+              }
+            }
+          },
+          "LaneDepartureDetection": {
+            "description": "Lane departure detection system",
+            "type": "branch",
+            "children": {
+              "IsWarning": {
+                "datatype": "boolean",
+                "description": "Lane departure warning active",
+                "type": "sensor",
+                "safety_critical": true,
+                "timing_constraint_ms": 200
+              },
+              "IsError": {
+                "datatype": "boolean",
+                "description": "Lane departure system error",
+                "type": "sensor"
+              }
+            }
+          },
+          "ObstacleDetection": {
+            "description": "Obstacle detection system",
+            "type": "branch",
+            "children": {
+              "IsWarning": {
+                "datatype": "boolean",
+                "description": "Obstacle detected ahead",
+                "type": "sensor",
+                "safety_critical": true,
+                "timing_constraint_ms": 150
+              },
+              "IsError": {
+                "datatype": "boolean",
+                "description": "Obstacle detection system error",
+                "type": "sensor"
+              }
+            }
+          },
+          "PedestrianDetection": {
+            "description": "Pedestrian detection system",
+            "type": "branch",
+            "children": {
+              "IsDetected": {
+                "datatype": "boolean",
+                "description": "Pedestrian detected in vehicle path",
+                "type": "sensor",
+                "safety_critical": true,
+                "timing_constraint_ms": 100
+              },
+              "IsWarning": {
+                "datatype": "boolean",
+                "description": "Pedestrian warning active",
+                "type": "sensor",
+                "safety_critical": true
+              },
+              "CameraConfidence": {
+                "datatype": "float",
+                "description": "Camera-based pedestrian confidence 0-1",
+                "type": "sensor",
+                "min": 0,
+                "max": 1
+              },
+              "LidarConfidence": {
+                "datatype": "float",
+                "description": "Lidar-based pedestrian confidence 0-1",
+                "type": "sensor",
+                "min": 0,
+                "max": 1
+              }
+            }
+          },
+          "ABS": {
+            "description": "Anti-lock Braking System",
+            "type": "branch",
+            "children": {
+              "IsActive": {
+                "datatype": "boolean",
+                "description": "ABS is active",
+                "type": "sensor",
+                "safety_critical": true
+              },
+              "IsEngaged": {
+                "datatype": "boolean",
+                "description": "ABS is engaged",
+                "type": "sensor",
+                "safety_critical": true
+              },
+              "IsError": {
+                "datatype": "boolean",
+                "description": "ABS error",
+                "type": "sensor"
+              }
+            }
+          },
+          "EBA": {
+            "description": "Emergency Brake Assist",
+            "type": "branch",
+            "children": {
+              "IsActive": {
+                "datatype": "boolean",
+                "description": "EBA is active",
+                "type": "sensor",
+                "safety_critical": true,
+                "timing_constraint_ms": 100
+              },
+              "IsEngaged": {
+                "datatype": "boolean",
+                "description": "EBA is engaged",
+                "type": "sensor",
+                "safety_critical": true,
+                "timing_constraint_ms": 100
+              },
+              "IsError": {
+                "datatype": "boolean",
+                "description": "EBA error",
+                "type": "sensor"
+              }
+            }
+          },
+          "ESC": {
+            "description": "Electronic Stability Control",
+            "type": "branch",
+            "children": {
+              "IsActive": {
+                "datatype": "boolean",
+                "description": "ESC is active",
+                "type": "sensor",
+                "safety_critical": true
+              },
+              "IsEngaged": {
+                "datatype": "boolean",
+                "description": "ESC is engaged",
+                "type": "sensor",
+                "safety_critical": true
+              },
+              "IsError": {
+                "datatype": "boolean",
+                "description": "ESC error",
+                "type": "sensor"
+              },
+              "IsStrongCrossWindDetected": {
+                "datatype": "boolean",
+                "description": "Strong cross wind detected",
+                "type": "sensor"
+              }
+            }
+          },
+          "TCS": {
+            "description": "Traction Control System",
+            "type": "branch",
+            "children": {
+              "IsActive": {
+                "datatype": "boolean",
+                "description": "TCS is active",
+                "type": "sensor",
+                "safety_critical": true
+              },
+              "IsEngaged": {
+                "datatype": "boolean",
+                "description": "TCS is engaged",
+                "type": "sensor"
+              },
+              "IsError": {
+                "datatype": "boolean",
+                "description": "TCS error",
+                "type": "sensor"
+              }
+            }
+          }
+        }
+      },
+      "Chassis": {
+        "description": "Chassis signals",
+        "type": "branch",
+        "children": {
+          "Brake": {
+            "description": "Brake system signals",
+            "type": "branch",
+            "children": {
+              "PedalPosition": {
+                "datatype": "uint8",
+                "description": "Brake pedal position as percent",
+                "type": "sensor",
+                "unit": "percent",
+                "min": 0,
+                "max": 100,
+                "safety_critical": true
+              },
+              "IsDriverEmergencyBrakingDetected": {
+                "datatype": "boolean",
+                "description": "Driver emergency braking detected",
+                "type": "sensor",
+                "safety_critical": true,
+                "timing_constraint_ms": 100
+              }
+            }
+          },
+          "Accelerator": {
+            "description": "Accelerator signals",
+            "type": "branch",
+            "children": {
+              "PedalPosition": {
+                "datatype": "uint8",
+                "description": "Accelerator pedal position as percent",
+                "type": "sensor",
+                "unit": "percent",
+                "min": 0,
+                "max": 100
+              }
+            }
+          },
+          "SteeringWheel": {
+            "description": "Steering wheel signals",
+            "type": "branch",
+            "children": {
+              "Angle": {
+                "datatype": "float",
+                "description": "Steering wheel angle",
+                "type": "sensor",
+                "unit": "degrees",
+                "min": -900,
+                "max": 900,
+                "safety_critical": true,
+                "timing_constraint_ms": 200
+              },
+              "Tilt": {
+                "datatype": "float",
+                "description": "Steering wheel tilt",
+                "type": "actuator",
+                "unit": "degrees"
+              }
+            }
+          },
+          "Axle": {
+            "description": "Axle signals",
+            "type": "branch",
+            "children": {
+              "Row1": {
+                "description": "Front axle",
+                "type": "branch",
+                "children": {
+                  "Wheel": {
+                    "description": "Front wheel",
+                    "type": "branch",
+                    "children": {
+                      "Left": {
+                        "description": "Left front wheel",
+                        "type": "branch",
+                        "children": {
+                          "Speed": {
+                            "datatype": "float",
+                            "description": "Left front wheel speed",
+                            "type": "sensor",
+                            "unit": "km/h"
+                          },
+                          "Brake": {
+                            "description": "Left front brake",
+                            "type": "branch",
+                            "children": {
+                              "IsActive": {
+                                "datatype": "boolean",
+                                "description": "Brake active",
+                                "type": "sensor"
+                              }
+                            }
+                          }
+                        }
+                      },
+                      "Right": {
+                        "description": "Right front wheel",
+                        "type": "branch",
+                        "children": {
+                          "Speed": {
+                            "datatype": "float",
+                            "description": "Right front wheel speed",
+                            "type": "sensor",
+                            "unit": "km/h"
+                          }
+                        }
+                      }
+                    }
+                  }
+                }
+              }
+            }
+          }
+        }
+      },
+      "Powertrain": {
+        "description": "Powertrain signals",
+        "type": "branch",
+        "children": {
+          "Transmission": {
+            "description": "Transmission signals",
+            "type": "branch",
+            "children": {
+              "CurrentGear": {
+                "datatype": "int8",
+                "description": "Current gear",
+                "type": "sensor",
+                "min": -1,
+                "max": 16
+              },
+              "SelectedGear": {
+                "datatype": "int8",
+                "description": "Selected gear",
+                "type": "actuator"
+              },
+              "IsParkLockEngaged": {
+                "datatype": "boolean",
+                "description": "Park lock engaged",
+                "type": "sensor"
+              }
+            }
+          },
+          "CombustionEngine": {
+            "description": "Engine signals",
+            "type": "branch",
+            "children": {
+              "Speed": {
+                "datatype": "uint32",
+                "description": "Engine speed in RPM",
+                "type": "sensor",
+                "unit": "rpm",
+                "min": 0,
+                "max": 20000
+              },
+              "ECT": {
+                "datatype": "int16",
+                "description": "Engine coolant temperature",
+                "type": "sensor",
+                "unit": "celsius"
+              },
+              "IsRunning": {
+                "datatype": "boolean",
+                "description": "Engine is running",
+                "type": "sensor"
+              }
+            }
+          },
+          "ElectricMotor": {
+            "description": "Electric motor signals",
+            "type": "branch",
+            "children": {
+              "Torque": {
+                "datatype": "int16",
+                "description": "Motor torque",
+                "type": "sensor",
+                "unit": "Nm"
+              },
+              "Speed": {
+                "datatype": "int32",
+                "description": "Motor speed",
+                "type": "sensor",
+                "unit": "rpm"
+              }
+            }
+          },
+          "TractionBattery": {
+            "description": "Traction battery signals",
+            "type": "branch",
+            "children": {
+              "StateOfCharge": {
+                "description": "State of charge",
+                "type": "branch",
+                "children": {
+                  "Current": {
+                    "datatype": "float",
+                    "description": "Current state of charge",
+                    "type": "sensor",
+                    "unit": "percent",
+                    "min": 0,
+                    "max": 100
+                  }
+                }
+              }
+            }
+          }
+        }
+      },
+      "Body": {
+        "description": "Body signals",
+        "type": "branch",
+        "children": {
+          "Lights": {
+            "description": "Lights signals",
+            "type": "branch",
+            "children": {
+              "Brake": {
+                "description": "Brake lights",
+                "type": "branch",
+                "children": {
+                  "IsActive": {
+                    "datatype": "boolean",
+                    "description": "Brake lights active",
+                    "type": "actuator"
+                  }
+                }
+              },
+              "Hazard": {
+                "description": "Hazard lights",
+                "type": "branch",
+                "children": {
+                  "IsSignaling": {
+                    "datatype": "boolean",
+                    "description": "Hazard lights signaling",
+                    "type": "actuator"
+                  }
+                }
+              }
+            }
+          },
+          "Horn": {
+            "description": "Horn signals",
+            "type": "branch",
+            "children": {
+              "IsActive": {
+                "datatype": "boolean",
+                "description": "Horn is active",
+                "type": "actuator"
+              }
+            }
+          }
+        }
+      },
+      "Driver": {
+        "description": "Driver signals",
+        "type": "branch",
+        "children": {
+          "AttentiveProbability": {
+            "datatype": "float",
+            "description": "Driver attentiveness probability 0-1",
+            "type": "sensor",
+            "min": 0,
+            "max": 1,
+            "safety_critical": true
+          },
+          "IsEyesOnRoad": {
+            "datatype": "boolean",
+            "description": "Driver eyes on road",
+            "type": "sensor",
+            "safety_critical": true
+          },
+          "DistractionLevel": {
+            "datatype": "float",
+            "description": "Driver distraction level 0-1",
+            "type": "sensor",
+            "min": 0,
+            "max": 1
+          }
+        }
+      },
+      "OBD": {
+        "description": "OBD signals",
+        "type": "branch",
+        "children": {
+          "Speed": {
+            "datatype": "float",
+            "description": "Vehicle speed from OBD",
+            "type": "sensor",
+            "unit": "km/h"
+          },
+          "EngineLoad": {
+            "datatype": "float",
+            "description": "Engine load percent",
+            "type": "sensor",
+            "unit": "percent"
+          },
+          "ThrottlePosition": {
+            "datatype": "float",
+            "description": "Throttle position percent",
+            "type": "sensor",
+            "unit": "percent"
+          }
+        }
+      }
+    }
+  }
+}

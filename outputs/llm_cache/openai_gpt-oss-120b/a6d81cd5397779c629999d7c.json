@@ -1,0 +1,1 @@
+{"model": "openai/gpt-oss-120b", "reply": "{\n  \"deadline_ms\": 33,\n  \"unresolved\": false,\n  \"component\": \"other\",\n  \"trigger\": \"lidar_data_generated\",\n  \"response\": \"lidar_data_delivered\",\n  \"vss_signals\": [],\n  \"can_ids\": [],\n  \"formula\": \"G(lidar_data_generated -> F[0,33 ms] lidar_data_delivered)\"\n}"}

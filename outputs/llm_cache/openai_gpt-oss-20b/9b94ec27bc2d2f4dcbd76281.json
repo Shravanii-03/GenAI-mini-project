@@ -1,0 +1,1 @@
+{"model": "openai/gpt-oss-20b", "reply": "{\n  \"deadline_ms\": 20,\n  \"unresolved\": false,\n  \"component\": \"lane_departure_system\",\n  \"trigger\": \"camera_detected\",\n  \"response\": \"fusion_output_available\",\n  \"vss_signals\": [],\n  \"can_ids\": [],\n  \"formula\": \"G(camera_detected -> F[0,20 ms] fusion_output_available)\"\n}"}

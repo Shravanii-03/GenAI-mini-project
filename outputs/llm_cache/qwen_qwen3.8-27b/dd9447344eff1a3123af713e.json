@@ -1,0 +1,1 @@
+{"model": "qwen/qwen3.8-27b", "reply": "{\n  \"deadline_ms\": 15,\n  \"unresolved\": false,\n  \"component\": \"other\",\n  \"trigger\": \"sensor_frame_start\",\n  \"response\": \"airbag_deployed\",\n  \"vss_signals\": [],\n  \"can_ids\": [],\n  \"formula\": \"G(sensor_frame_start -> F[0,15 ms] airbag_deployed)\"\n}"}

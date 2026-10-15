@@ -1,0 +1,1 @@
+{"model": "qwen/qwen3.8-27b", "reply": "{\n  \"deadline_ms\": null,\n  \"unresolved\": false,\n  \"component\": \"other\",\n  \"trigger\": \"infotainment_traffic_detected\",\n  \"response\": \"safety_can_traffic_intact\",\n  \"vss_signals\": [],\n  \"can_ids\": [\n    \"0x400\"\n  ],\n  \"formula\": null\n}"}

@@ -1,0 +1,164 @@
+{
+  "standard": "ISO 26262",
+  "version": "2018",
+  "description": "Functional safety rules and timing constraints for road vehicles",
+  "asil_levels": {
+    "ASIL_A": {"description": "Lowest integrity level", "max_failure_rate": 1e-6},
+    "ASIL_B": {"description": "Moderate integrity level", "max_failure_rate": 1e-7},
+    "ASIL_C": {"description": "High integrity level", "max_failure_rate": 1e-8},
+    "ASIL_D": {"description": "Highest integrity level", "max_failure_rate": 1e-9}
+  },
+  "timing_rules": [
+    {
+      "rule_id": "ISO26262-6-8.4.5",
+      "name": "Emergency Brake Response Time",
+      "description": "From obstacle detection to full brake application, total latency must not exceed threshold",
+      "component": "braking_system",
+      "max_latency_ms": 100,
+      "asil_level": "ASIL_D",
+      "breakdown": {
+        "sensor_acquisition_ms": 10,
+        "perception_processing_ms": 30,
+        "decision_making_ms": 20,
+        "actuator_command_ms": 10,
+        "actuator_response_ms": 30
+      },
+      "violation_consequence": "Vehicle may fail to stop before collision"
+    },
+    {
+      "rule_id": "ISO26262-6-8.4.6",
+      "name": "Steering Override Response",
+      "description": "Emergency steering command must complete within threshold",
+      "component": "steering_ecu",
+      "max_latency_ms": 200,
+      "asil_level": "ASIL_C",
+      "breakdown": {
+        "sensor_acquisition_ms": 15,
+        "perception_processing_ms": 50,
+        "decision_making_ms": 50,
+        "actuator_command_ms": 20,
+        "actuator_response_ms": 65
+      },
+      "violation_consequence": "Vehicle may not avoid lane departure or obstacle"
+    },
+    {
+      "rule_id": "ISO26262-6-8.4.7",
+      "name": "Driver Alert Response",
+      "description": "Warning alert must reach driver within threshold",
+      "component": "alert_module",
+      "max_latency_ms": 50,
+      "asil_level": "ASIL_B",
+      "breakdown": {
+        "sensor_acquisition_ms": 5,
+        "perception_processing_ms": 15,
+        "decision_making_ms": 10,
+        "alert_output_ms": 20
+      },
+      "violation_consequence": "Driver may not have sufficient time to react"
+    },
+    {
+      "rule_id": "ISO26262-3-7.4.2",
+      "name": "Pedestrian Detection to Brake",
+      "description": "From pedestrian detection signal to brake actuation command",
+      "component": "braking_system",
+      "max_latency_ms": 100,
+      "asil_level": "ASIL_D",
+      "breakdown": {
+        "pedestrian_detection_ms": 10,
+        "decision_ms": 50,
+        "brake_actuate_ms": 40
+      },
+      "event_chain_order": [
+        "pedestrian_detected",
+        "brake_decision",
+        "brake_actuated"
+      ],
+      "violation_consequence": "Pedestrian collision risk"
+    },
+    {
+      "rule_id": "ISO26262-3-7.4.3",
+      "name": "Lane Departure Warning",
+      "description": "From lane marking detection to driver warning",
+      "component": "lane_departure_system",
+      "max_latency_ms": 200,
+      "asil_level": "ASIL_B",
+      "breakdown": {
+        "camera_detection_ms": 20,
+        "lane_analysis_ms": 80,
+        "warning_trigger_ms": 100
+      },
+      "violation_consequence": "Driver not warned in time of lane departure"
+    },
+    {
+      "rule_id": "ISO26262-3-7.4.4",
+      "name": "Adaptive Cruise Control Response",
+      "description": "ACC must respond to speed changes within threshold",
+      "component": "acc_system",
+      "max_latency_ms": 300,
+      "asil_level": "ASIL_B",
+      "breakdown": {
+        "speed_sensor_ms": 10,
+        "gap_calculation_ms": 100,
+        "throttle_adjustment_ms": 190
+      },
+      "violation_consequence": "Unsafe following distance"
+    },
+    {
+      "rule_id": "ISO26262-4-6.4.1",
+      "name": "Safety Mechanism Activation",
+      "description": "Hardware safety mechanisms must activate within fault tolerance time interval",
+      "component": "safety_monitor",
+      "max_latency_ms": 50,
+      "asil_level": "ASIL_D",
+      "violation_consequence": "Safety state not reached in time"
+    },
+    {
+      "rule_id": "ISO26262-6-9.4.3",
+      "name": "ECU Watchdog Timeout",
+      "description": "ECU watchdog must detect software failure within timeout period",
+      "component": "ecu_watchdog",
+      "max_latency_ms": 500,
+      "asil_level": "ASIL_C",
+      "violation_consequence": "Software fault not detected, hazardous state persists"
+    }
+  ],
+  "event_chain_rules": [
+    {
+      "rule_id": "EC-001",
+      "name": "Sensor Before Decision",
+      "description": "Sensing must complete before any decision is made",
+      "rule": "sense BEFORE decide",
+      "applies_to": ["braking_system", "steering_ecu", "alert_module"]
+    },
+    {
+      "rule_id": "EC-002",
+      "name": "Detection Before Actuation",
+      "description": "Object detection must precede any actuation command",
+      "rule": "detect BEFORE actuate",
+      "applies_to": ["braking_system", "steering_ecu"]
+    },
+    {
+      "rule_id": "EC-003",
+      "name": "No Accelerate After Pedestrian",
+      "description": "Vehicle must not accelerate after pedestrian is detected",
+      "rule": "accelerate NOT AFTER pedestrian_detected",
+      "applies_to": ["braking_system", "acc_system"]
+    },
+    {
+      "rule_id": "EC-004",
+      "name": "Brake After Detection",
+      "description": "Brake must occur only after pedestrian/obstacle detection",
+      "rule": "brake AFTER pedestrian_detected OR obstacle_detected",
+      "applies_to": ["braking_system"]
+    }
+  ],
+  "asil_decomposition": {
+    "description": "For systems where ASIL D requirements are met through decomposition",
+    "example": {
+      "original_asil": "ASIL_D",
+      "channel_1_asil": "ASIL_B",
+      "channel_2_asil": "ASIL_B",
+      "independent": true
+    }
+  }
+}

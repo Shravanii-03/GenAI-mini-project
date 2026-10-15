@@ -1,0 +1,11 @@
+.git
+.venv
+venv
+__pycache__
+*.pyc
+.pytest_cache
+.env
+outputs/logs
+outputs/pipeline_run
+*.mp4
+*.jar

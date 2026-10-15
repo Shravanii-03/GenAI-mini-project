@@ -1,0 +1,1778 @@
+{
+ "c000_benign_none_plain": {
+  "reference": {
+   "code": 1,
+   "t_us": 506196,
+   "rejected": 0
+  },
+  "emulator": {
+   "code": 1,
+   "t_us": 506196,
+   "collision": false
+  },
+  "intent": null
+ },
+ "c001_benign_radar_or_plain": {
+  "reference": {
+   "code": 1,
+   "t_us": 500553,
+   "rejected": 0
+  },
+  "emulator": {
+   "code": 1,
+   "t_us": 500553,
+   "collision": false
+  },
+  "intent": null
+ },
+ "c002_benign_disagree_brake_plain": {
+  "reference": {
+   "code": 2,
+   "t_us": 502782,
+   "rejected": 0
+  },
+  "emulator": {
+   "code": 2,
+   "t_us": 502782,
+   "collision": false
+  },
+  "intent": null
+ },
+ "c003_benign_none_auth": {
+  "reference": {
+   "code": 1,
+   "t_us": 502613,
+   "rejected": 0
+  },
+  "emulator": {
+   "code": 1,
+   "t_us": 502613,
+   "collision": false
+  },
+  "intent": null
+ },
+ "c004_benign_radar_or_auth": {
+  "reference": {
+   "code": 1,
+   "t_us": 502489,
+   "rejected": 0
+  },
+  "emulator": {
+   "code": 1,
+   "t_us": 502489,
+   "collision": false
+  },
+  "intent": null
+ },
+ "c005_benign_disagree_brake_auth": {
+  "reference": {
+   "code": 2,
+   "t_us": 503564,
+   "rejected": 0
+  },
+  "emulator": {
+   "code": 2,
+   "t_us": 503564,
+   "collision": false
+  },
+  "intent": null
+ },
+ "c006_masquerade_none_plain": {
+  "reference": {
+   "code": 1,
+   "t_us": 507971,
+   "rejected": 0
+  },
+  "emulator": {
+   "code": 1,
+   "t_us": 507971,
+   "collision": false
+  },
+  "intent": null
+ },
+ "c007_masquerade_radar_or_plain": {
+  "reference": {
+   "code": 2,
+   "t_us": 504038,
+   "rejected": 0
+  },
+  "emulator": {
+   "code": 2,
+   "t_us": 504038,
+   "collision": false
+  },
+  "intent": null
+ },
+ "c008_masquerade_disagree_brake_plain": {
+  "reference": {
+   "code": 2,
+   "t_us": 500331,
+   "rejected": 0
+  },
+  "emulator": {
+   "code": 2,
+   "t_us": 500331,
+   "collision": false
+  },
+  "intent": null
+ },
+ "c009_masquerade_none_auth": {
+  "reference": {
+   "code": 4,
+   "t_us": 531436,
+   "rejected": 3
+  },
+  "emulator": {
+   "code": 4,
+   "t_us": 531436,
+   "collision": false
+  },
+  "intent": null
+ },
+ "c010_masquerade_radar_or_auth": {
+  "reference": {
+   "code": 2,
+   "t_us": 503963,
+   "rejected": 0
+  },
+  "emulator": {
+   "code": 2,
+   "t_us": 503963,
+   "collision": false
+  },
+  "intent": null
+ },
+ "c011_masquerade_disagree_brake_auth": {
+  "reference": {
+   "code": 2,
+   "t_us": 508240,
+   "rejected": 0
+  },
+  "emulator": {
+   "code": 2,
+   "t_us": 508240,
+   "collision": false
+  },
+  "intent": null
+ },
+ "c012_dual_masquerade_none_plain": {
+  "reference": {
+   "code": 1,
+   "t_us": 506284,
+   "rejected": 0
+  },
+  "emulator": {
+   "code": 1,
+   "t_us": 506284,
+   "collision": false
+  },
+  "intent": null
+ },
+ "c013_dual_masquerade_radar_or_plain": {
+  "reference": {
+   "code": 1,
+   "t_us": 961572,
+   "rejected": 0
+  },
+  "emulator": {
+   "code": 1,
+   "t_us": 961572,
+   "collision": true
+  },
+  "intent": null
+ },
+ "c014_dual_masquerade_disagree_brake_plain": {
+  "reference": {
+   "code": 2,
+   "t_us": 506228,
+   "rejected": 0
+  },
+  "emulator": {
+   "code": 2,
+   "t_us": 506228,
+   "collision": false
+  },
+  "intent": null
+ },
+ "c015_dual_masquerade_none_auth": {
+  "reference": {
+   "code": 4,
+   "t_us": 535268,
+   "rejected": 3
+  },
+  "emulator": {
+   "code": 4,
+   "t_us": 535268,
+   "collision": true
+  },
+  "intent": null
+ },
+ "c016_dual_masquerade_radar_or_auth": {
+  "reference": {
+   "code": 2,
+   "t_us": 502352,
+   "rejected": 0
+  },
+  "emulator": {
+   "code": 2,
+   "t_us": 502352,
+   "collision": false
+  },
+  "intent": null
+ },
+ "c017_dual_masquerade_disagree_brake_auth": {
+  "reference": {
+   "code": 4,
+   "t_us": 529111,
+   "rejected": 6
+  },
+  "emulator": {
+   "code": 4,
+   "t_us": 529111,
+   "collision": false
+  },
+  "intent": null
+ },
+ "c018_dual_masquerade_none_plain": {
+  "reference": {
+   "code": 1,
+   "t_us": 582984,
+   "rejected": 0
+  },
+  "emulator": {
+   "code": 1,
+   "t_us": 582984,
+   "collision": false
+  },
+  "intent": null
+ },
+ "c019_dual_masquerade_radar_or_plain": {
+  "reference": {
+   "code": 1,
+   "t_us": 602874,
+   "rejected": 0
+  },
+  "emulator": {
+   "code": 1,
+   "t_us": 602874,
+   "collision": false
+  },
+  "intent": null
+ },
+ "c020_dual_masquerade_disagree_brake_plain": {
+  "reference": {
+   "code": 1,
+   "t_us": 501963,
+   "rejected": 0
+  },
+  "emulator": {
+   "code": 1,
+   "t_us": 501963,
+   "collision": false
+  },
+  "intent": null
+ },
+ "c021_dual_masquerade_none_auth": {
+  "reference": {
+   "code": 1,
+   "t_us": 502630,
+   "rejected": 0
+  },
+  "emulator": {
+   "code": 1,
+   "t_us": 502630,
+   "collision": false
+  },
+  "intent": null
+ },
+ "c022_dual_masquerade_radar_or_auth": {
+  "reference": {
+   "code": 1,
+   "t_us": 502587,
+   "rejected": 0
+  },
+  "emulator": {
+   "code": 1,
+   "t_us": 502587,
+   "collision": false
+  },
+  "intent": null
+ },
+ "c023_dual_masquerade_disagree_brake_auth": {
+  "reference": {
+   "code": 2,
+   "t_us": 502717,
+   "rejected": 0
+  },
+  "emulator": {
+   "code": 2,
+   "t_us": 502717,
+   "collision": false
+  },
+  "intent": null
+ },
+ "c024_sensor_drift_spoof_none_plain": {
+  "reference": {
+   "code": 1,
+   "t_us": 507335,
+   "rejected": 0
+  },
+  "emulator": {
+   "code": 1,
+   "t_us": 507335,
+   "collision": false
+  },
+  "intent": null
+ },
+ "c025_sensor_drift_spoof_radar_or_plain": {
+  "reference": {
+   "code": 1,
+   "t_us": 503329,
+   "rejected": 0
+  },
+  "emulator": {
+   "code": 1,
+   "t_us": 503329,
+   "collision": false
+  },
+  "intent": null
+ },
+ "c026_sensor_drift_spoof_disagree_brake_plain": {
+  "reference": {
+   "code": 2,
+   "t_us": 502438,
+   "rejected": 0
+  },
+  "emulator": {
+   "code": 2,
+   "t_us": 502438,
+   "collision": false
+  },
+  "intent": null
+ },
+ "c027_sensor_drift_spoof_none_auth": {
+  "reference": {
+   "code": 1,
+   "t_us": 502103,
+   "rejected": 0
+  },
+  "emulator": {
+   "code": 1,
+   "t_us": 502103,
+   "collision": false
+  },
+  "intent": null
+ },
+ "c028_sensor_drift_spoof_radar_or_auth": {
+  "reference": {
+   "code": 2,
+   "t_us": 506676,
+   "rejected": 0
+  },
+  "emulator": {
+   "code": 2,
+   "t_us": 506676,
+   "collision": false
+  },
+  "intent": null
+ },
+ "c029_sensor_drift_spoof_disagree_brake_auth": {
+  "reference": {
+   "code": 2,
+   "t_us": 502153,
+   "rejected": 0
+  },
+  "emulator": {
+   "code": 2,
+   "t_us": 502153,
+   "collision": false
+  },
+  "intent": null
+ },
+ "c030_selective_suppression_none_plain": {
+  "reference": {
+   "code": 1,
+   "t_us": 504885,
+   "rejected": 0
+  },
+  "emulator": {
+   "code": 1,
+   "t_us": 504885,
+   "collision": false
+  },
+  "intent": null
+ },
+ "c031_selective_suppression_radar_or_plain": {
+  "reference": {
+   "code": 1,
+   "t_us": 507676,
+   "rejected": 0
+  },
+  "emulator": {
+   "code": 1,
+   "t_us": 507676,
+   "collision": false
+  },
+  "intent": null
+ },
+ "c032_selective_suppression_disagree_brake_plain": {
+  "reference": {
+   "code": 1,
+   "t_us": 505540,
+   "rejected": 0
+  },
+  "emulator": {
+   "code": 1,
+   "t_us": 505540,
+   "collision": false
+  },
+  "intent": null
+ },
+ "c033_selective_suppression_none_auth": {
+  "reference": {
+   "code": 1,
+   "t_us": 506577,
+   "rejected": 0
+  },
+  "emulator": {
+   "code": 1,
+   "t_us": 506577,
+   "collision": false
+  },
+  "intent": null
+ },
+ "c034_selective_suppression_radar_or_auth": {
+  "reference": {
+   "code": 1,
+   "t_us": 501215,
+   "rejected": 0
+  },
+  "emulator": {
+   "code": 1,
+   "t_us": 501215,
+   "collision": false
+  },
+  "intent": null
+ },
+ "c035_selective_suppression_disagree_brake_auth": {
+  "reference": {
+   "code": 2,
+   "t_us": 508464,
+   "rejected": 0
+  },
+  "emulator": {
+   "code": 2,
+   "t_us": 508464,
+   "collision": false
+  },
+  "intent": null
+ },
+ "c036_gateway_delay_none_plain": {
+  "reference": {
+   "code": 1,
+   "t_us": 507574,
+   "rejected": 0
+  },
+  "emulator": {
+   "code": 1,
+   "t_us": 507574,
+   "collision": false
+  },
+  "intent": null
+ },
+ "c037_gateway_delay_radar_or_plain": {
+  "reference": {
+   "code": 2,
+   "t_us": 506977,
+   "rejected": 0
+  },
+  "emulator": {
+   "code": 2,
+   "t_us": 506977,
+   "collision": false
+  },
+  "intent": null
+ },
+ "c038_gateway_delay_disagree_brake_plain": {
+  "reference": {
+   "code": 2,
+   "t_us": 509733,
+   "rejected": 0
+  },
+  "emulator": {
+   "code": 2,
+   "t_us": 509733,
+   "collision": false
+  },
+  "intent": null
+ },
+ "c039_gateway_delay_none_auth": {
+  "reference": {
+   "code": 1,
+   "t_us": 508416,
+   "rejected": 0
+  },
+  "emulator": {
+   "code": 1,
+   "t_us": 508416,
+   "collision": false
+  },
+  "intent": null
+ },
+ "c040_gateway_delay_radar_or_auth": {
+  "reference": {
+   "code": 2,
+   "t_us": 502702,
+   "rejected": 0
+  },
+  "emulator": {
+   "code": 2,
+   "t_us": 502702,
+   "collision": false
+  },
+  "intent": null
+ },
+ "c041_gateway_delay_disagree_brake_auth": {
+  "reference": {
+   "code": 2,
+   "t_us": 506835,
+   "rejected": 0
+  },
+  "emulator": {
+   "code": 2,
+   "t_us": 506835,
+   "collision": false
+  },
+  "intent": null
+ },
+ "c042_dos_flood_none_plain": {
+  "reference": {
+   "code": 1,
+   "t_us": 500567,
+   "rejected": 0
+  },
+  "emulator": {
+   "code": 1,
+   "t_us": 500567,
+   "collision": false
+  },
+  "intent": null
+ },
+ "c043_dos_flood_radar_or_plain": {
+  "reference": {
+   "code": 2,
+   "t_us": 501293,
+   "rejected": 0
+  },
+  "emulator": {
+   "code": 2,
+   "t_us": 501293,
+   "collision": false
+  },
+  "intent": null
+ },
+ "c044_dos_flood_disagree_brake_plain": {
+  "reference": {
+   "code": 1,
+   "t_us": 505407,
+   "rejected": 0
+  },
+  "emulator": {
+   "code": 1,
+   "t_us": 505407,
+   "collision": false
+  },
+  "intent": null
+ },
+ "c045_dos_flood_none_auth": {
+  "reference": {
+   "code": 4,
+   "t_us": 482704,
+   "rejected": 0
+  },
+  "emulator": {
+   "code": 4,
+   "t_us": 482704,
+   "collision": false
+  },
+  "intent": null
+ },
+ "c046_dos_flood_radar_or_auth": {
+  "reference": {
+   "code": 4,
+   "t_us": 455959,
+   "rejected": 0
+  },
+  "emulator": {
+   "code": 4,
+   "t_us": 455959,
+   "collision": false
+  },
+  "intent": null
+ },
+ "c047_dos_flood_disagree_brake_auth": {
+  "reference": {
+   "code": 1,
+   "t_us": 501294,
+   "rejected": 0
+  },
+  "emulator": {
+   "code": 1,
+   "t_us": 501294,
+   "collision": false
+  },
+  "intent": null
+ },
+ "c048_jitter_injection_none_plain": {
+  "reference": {
+   "code": 1,
+   "t_us": 542179,
+   "rejected": 0
+  },
+  "emulator": {
+   "code": 1,
+   "t_us": 542179,
+   "collision": true
+  },
+  "intent": null
+ },
+ "c049_jitter_injection_radar_or_plain": {
+  "reference": {
+   "code": 2,
+   "t_us": 500785,
+   "rejected": 0
+  },
+  "emulator": {
+   "code": 2,
+   "t_us": 500785,
+   "collision": false
+  },
+  "intent": null
+ },
+ "c050_jitter_injection_disagree_brake_plain": {
+  "reference": {
+   "code": 1,
+   "t_us": 501122,
+   "rejected": 0
+  },
+  "emulator": {
+   "code": 1,
+   "t_us": 501122,
+   "collision": false
+  },
+  "intent": null
+ },
+ "c051_jitter_injection_none_auth": {
+  "reference": {
+   "code": 4,
+   "t_us": 462584,
+   "rejected": 0
+  },
+  "emulator": {
+   "code": 4,
+   "t_us": 462584,
+   "collision": false
+  },
+  "intent": null
+ },
+ "c052_jitter_injection_radar_or_auth": {
+  "reference": {
+   "code": 2,
+   "t_us": 509359,
+   "rejected": 0
+  },
+  "emulator": {
+   "code": 2,
+   "t_us": 509359,
+   "collision": false
+  },
+  "intent": null
+ },
+ "c053_jitter_injection_disagree_brake_auth": {
+  "reference": {
+   "code": 1,
+   "t_us": 500637,
+   "rejected": 0
+  },
+  "emulator": {
+   "code": 1,
+   "t_us": 500637,
+   "collision": false
+  },
+  "intent": null
+ },
+ "c054_dos_flood_none_plain": {
+  "reference": {
+   "code": 1,
+   "t_us": 509633,
+   "rejected": 0
+  },
+  "emulator": {
+   "code": 1,
+   "t_us": 509633,
+   "collision": false
+  },
+  "intent": null
+ },
+ "c055_dos_flood_radar_or_plain": {
+  "reference": {
+   "code": 2,
+   "t_us": 507552,
+   "rejected": 0
+  },
+  "emulator": {
+   "code": 2,
+   "t_us": 507552,
+   "collision": false
+  },
+  "intent": null
+ },
+ "c056_dos_flood_disagree_brake_plain": {
+  "reference": {
+   "code": 1,
+   "t_us": 500946,
+   "rejected": 0
+  },
+  "emulator": {
+   "code": 1,
+   "t_us": 500946,
+   "collision": false
+  },
+  "intent": null
+ },
+ "c057_dos_flood_none_auth": {
+  "reference": {
+   "code": 1,
+   "t_us": 500466,
+   "rejected": 0
+  },
+  "emulator": {
+   "code": 1,
+   "t_us": 500466,
+   "collision": false
+  },
+  "intent": null
+ },
+ "c058_dos_flood_radar_or_auth": {
+  "reference": {
+   "code": 2,
+   "t_us": 501447,
+   "rejected": 0
+  },
+  "emulator": {
+   "code": 2,
+   "t_us": 501447,
+   "collision": false
+  },
+  "intent": null
+ },
+ "c059_dos_flood_disagree_brake_auth": {
+  "reference": {
+   "code": 1,
+   "t_us": 504052,
+   "rejected": 0
+  },
+  "emulator": {
+   "code": 1,
+   "t_us": 504052,
+   "collision": false
+  },
+  "intent": null
+ },
+ "c060_benign_none_plain": {
+  "reference": {
+   "code": 1,
+   "t_us": 506928,
+   "rejected": 0
+  },
+  "emulator": {
+   "code": 1,
+   "t_us": 506928,
+   "collision": false
+  },
+  "intent": null
+ },
+ "c061_benign_radar_or_plain": {
+  "reference": {
+   "code": 2,
+   "t_us": 502557,
+   "rejected": 0
+  },
+  "emulator": {
+   "code": 2,
+   "t_us": 502557,
+   "collision": false
+  },
+  "intent": null
+ },
+ "c062_benign_disagree_brake_plain": {
+  "reference": {
+   "code": 2,
+   "t_us": 503139,
+   "rejected": 0
+  },
+  "emulator": {
+   "code": 2,
+   "t_us": 503139,
+   "collision": false
+  },
+  "intent": null
+ },
+ "c063_benign_none_auth": {
+  "reference": {
+   "code": 1,
+   "t_us": 506552,
+   "rejected": 0
+  },
+  "emulator": {
+   "code": 1,
+   "t_us": 506552,
+   "collision": false
+  },
+  "intent": null
+ },
+ "c064_benign_radar_or_auth": {
+  "reference": {
+   "code": 1,
+   "t_us": 502283,
+   "rejected": 0
+  },
+  "emulator": {
+   "code": 1,
+   "t_us": 502283,
+   "collision": false
+  },
+  "intent": null
+ },
+ "c065_benign_disagree_brake_auth": {
+  "reference": {
+   "code": 1,
+   "t_us": 500989,
+   "rejected": 0
+  },
+  "emulator": {
+   "code": 1,
+   "t_us": 500989,
+   "collision": false
+  },
+  "intent": null
+ },
+ "c066_masquerade_none_plain": {
+  "reference": {
+   "code": 1,
+   "t_us": 505430,
+   "rejected": 0
+  },
+  "emulator": {
+   "code": 1,
+   "t_us": 505430,
+   "collision": false
+  },
+  "intent": null
+ },
+ "c067_masquerade_radar_or_plain": {
+  "reference": {
+   "code": 2,
+   "t_us": 502145,
+   "rejected": 0
+  },
+  "emulator": {
+   "code": 2,
+   "t_us": 502145,
+   "collision": false
+  },
+  "intent": null
+ },
+ "c068_masquerade_disagree_brake_plain": {
+  "reference": {
+   "code": 2,
+   "t_us": 507704,
+   "rejected": 0
+  },
+  "emulator": {
+   "code": 2,
+   "t_us": 507704,
+   "collision": false
+  },
+  "intent": null
+ },
+ "c069_masquerade_none_auth": {
+  "reference": {
+   "code": 4,
+   "t_us": 533558,
+   "rejected": 3
+  },
+  "emulator": {
+   "code": 4,
+   "t_us": 533558,
+   "collision": false
+  },
+  "intent": null
+ },
+ "c070_masquerade_radar_or_auth": {
+  "reference": {
+   "code": 1,
+   "t_us": 504388,
+   "rejected": 0
+  },
+  "emulator": {
+   "code": 1,
+   "t_us": 504388,
+   "collision": false
+  },
+  "intent": null
+ },
+ "c071_masquerade_disagree_brake_auth": {
+  "reference": {
+   "code": 2,
+   "t_us": 506145,
+   "rejected": 1
+  },
+  "emulator": {
+   "code": 2,
+   "t_us": 506145,
+   "collision": false
+  },
+  "intent": null
+ },
+ "c072_dual_masquerade_none_plain": {
+  "reference": {
+   "code": 1,
+   "t_us": 510030,
+   "rejected": 0
+  },
+  "emulator": {
+   "code": 1,
+   "t_us": 510030,
+   "collision": false
+  },
+  "intent": null
+ },
+ "c073_dual_masquerade_radar_or_plain": {
+  "reference": {
+   "code": 1,
+   "t_us": 503001,
+   "rejected": 0
+  },
+  "emulator": {
+   "code": 1,
+   "t_us": 503001,
+   "collision": false
+  },
+  "intent": null
+ },
+ "c074_dual_masquerade_disagree_brake_plain": {
+  "reference": {
+   "code": 2,
+   "t_us": 736745,
+   "rejected": 0
+  },
+  "emulator": {
+   "code": 2,
+   "t_us": 736745,
+   "collision": true
+  },
+  "intent": null
+ },
+ "c075_dual_masquerade_none_auth": {
+  "reference": {
+   "code": 4,
+   "t_us": 532190,
+   "rejected": 3
+  },
+  "emulator": {
+   "code": 4,
+   "t_us": 532190,
+   "collision": false
+  },
+  "intent": null
+ },
+ "c076_dual_masquerade_radar_or_auth": {
+  "reference": {
+   "code": 1,
+   "t_us": 501101,
+   "rejected": 0
+  },
+  "emulator": {
+   "code": 1,
+   "t_us": 501101,
+   "collision": false
+  },
+  "intent": null
+ },
+ "c077_dual_masquerade_disagree_brake_auth": {
+  "reference": {
+   "code": 4,
+   "t_us": 531270,
+   "rejected": 6
+  },
+  "emulator": {
+   "code": 4,
+   "t_us": 531270,
+   "collision": false
+  },
+  "intent": null
+ },
+ "c078_dual_masquerade_none_plain": {
+  "reference": {
+   "code": 1,
+   "t_us": 507991,
+   "rejected": 0
+  },
+  "emulator": {
+   "code": 1,
+   "t_us": 507991,
+   "collision": false
+  },
+  "intent": null
+ },
+ "c079_dual_masquerade_radar_or_plain": {
+  "reference": {
+   "code": 2,
+   "t_us": 504121,
+   "rejected": 0
+  },
+  "emulator": {
+   "code": 2,
+   "t_us": 504121,
+   "collision": false
+  },
+  "intent": null
+ },
+ "c080_dual_masquerade_disagree_brake_plain": {
+  "reference": {
+   "code": 2,
+   "t_us": 509666,
+   "rejected": 0
+  },
+  "emulator": {
+   "code": 2,
+   "t_us": 509666,
+   "collision": false
+  },
+  "intent": null
+ },
+ "c081_dual_masquerade_none_auth": {
+  "reference": {
+   "code": 1,
+   "t_us": 899328,
+   "rejected": 0
+  },
+  "emulator": {
+   "code": 1,
+   "t_us": 899328,
+   "collision": true
+  },
+  "intent": null
+ },
+ "c082_dual_masquerade_radar_or_auth": {
+  "reference": {
+   "code": 2,
+   "t_us": 502027,
+   "rejected": 0
+  },
+  "emulator": {
+   "code": 2,
+   "t_us": 502027,
+   "collision": false
+  },
+  "intent": null
+ },
+ "c083_dual_masquerade_disagree_brake_auth": {
+  "reference": {
+   "code": 1,
+   "t_us": 600816,
+   "rejected": 0
+  },
+  "emulator": {
+   "code": 1,
+   "t_us": 600816,
+   "collision": false
+  },
+  "intent": null
+ },
+ "c084_sensor_drift_spoof_none_plain": {
+  "reference": {
+   "code": 1,
+   "t_us": 507662,
+   "rejected": 0
+  },
+  "emulator": {
+   "code": 1,
+   "t_us": 507662,
+   "collision": false
+  },
+  "intent": null
+ },
+ "c085_sensor_drift_spoof_radar_or_plain": {
+  "reference": {
+   "code": 2,
+   "t_us": 505239,
+   "rejected": 0
+  },
+  "emulator": {
+   "code": 2,
+   "t_us": 505239,
+   "collision": false
+  },
+  "intent": null
+ },
+ "c086_sensor_drift_spoof_disagree_brake_plain": {
+  "reference": {
+   "code": 2,
+   "t_us": 502959,
+   "rejected": 0
+  },
+  "emulator": {
+   "code": 2,
+   "t_us": 502959,
+   "collision": false
+  },
+  "intent": null
+ },
+ "c087_sensor_drift_spoof_none_auth": {
+  "reference": {
+   "code": 1,
+   "t_us": 501542,
+   "rejected": 0
+  },
+  "emulator": {
+   "code": 1,
+   "t_us": 501542,
+   "collision": false
+  },
+  "intent": null
+ },
+ "c088_sensor_drift_spoof_radar_or_auth": {
+  "reference": {
+   "code": 2,
+   "t_us": 502956,
+   "rejected": 0
+  },
+  "emulator": {
+   "code": 2,
+   "t_us": 502956,
+   "collision": false
+  },
+  "intent": null
+ },
+ "c089_sensor_drift_spoof_disagree_brake_auth": {
+  "reference": {
+   "code": 2,
+   "t_us": 508131,
+   "rejected": 1
+  },
+  "emulator": {
+   "code": 2,
+   "t_us": 508131,
+   "collision": false
+  },
+  "intent": null
+ },
+ "c090_selective_suppression_none_plain": {
+  "reference": {
+   "code": 1,
+   "t_us": 502917,
+   "rejected": 0
+  },
+  "emulator": {
+   "code": 1,
+   "t_us": 502917,
+   "collision": false
+  },
+  "intent": null
+ },
+ "c091_selective_suppression_radar_or_plain": {
+  "reference": {
+   "code": 1,
+   "t_us": 502706,
+   "rejected": 0
+  },
+  "emulator": {
+   "code": 1,
+   "t_us": 502706,
+   "collision": false
+  },
+  "intent": null
+ },
+ "c092_selective_suppression_disagree_brake_plain": {
+  "reference": {
+   "code": 1,
+   "t_us": 505043,
+   "rejected": 0
+  },
+  "emulator": {
+   "code": 1,
+   "t_us": 505043,
+   "collision": false
+  },
+  "intent": null
+ },
+ "c093_selective_suppression_none_auth": {
+  "reference": {
+   "code": 1,
+   "t_us": 510599,
+   "rejected": 0
+  },
+  "emulator": {
+   "code": 1,
+   "t_us": 510599,
+   "collision": false
+  },
+  "intent": null
+ },
+ "c094_selective_suppression_radar_or_auth": {
+  "reference": {
+   "code": 2,
+   "t_us": 507869,
+   "rejected": 0
+  },
+  "emulator": {
+   "code": 2,
+   "t_us": 507869,
+   "collision": false
+  },
+  "intent": null
+ },
+ "c095_selective_suppression_disagree_brake_auth": {
+  "reference": {
+   "code": 2,
+   "t_us": 504206,
+   "rejected": 0
+  },
+  "emulator": {
+   "code": 2,
+   "t_us": 504206,
+   "collision": false
+  },
+  "intent": null
+ },
+ "c096_gateway_delay_none_plain": {
+  "reference": {
+   "code": 1,
+   "t_us": 503415,
+   "rejected": 0
+  },
+  "emulator": {
+   "code": 1,
+   "t_us": 503415,
+   "collision": false
+  },
+  "intent": null
+ },
+ "c097_gateway_delay_radar_or_plain": {
+  "reference": {
+   "code": 2,
+   "t_us": 508920,
+   "rejected": 0
+  },
+  "emulator": {
+   "code": 2,
+   "t_us": 508920,
+   "collision": false
+  },
+  "intent": null
+ },
+ "c098_gateway_delay_disagree_brake_plain": {
+  "reference": {
+   "code": 2,
+   "t_us": 509228,
+   "rejected": 0
+  },
+  "emulator": {
+   "code": 2,
+   "t_us": 509228,
+   "collision": false
+  },
+  "intent": null
+ },
+ "c099_gateway_delay_none_auth": {
+  "reference": {
+   "code": 1,
+   "t_us": 509653,
+   "rejected": 0
+  },
+  "emulator": {
+   "code": 1,
+   "t_us": 509653,
+   "collision": false
+  },
+  "intent": null
+ },
+ "c100_gateway_delay_radar_or_auth": {
+  "reference": {
+   "code": 1,
+   "t_us": 504829,
+   "rejected": 0
+  },
+  "emulator": {
+   "code": 1,
+   "t_us": 504829,
+   "collision": false
+  },
+  "intent": null
+ },
+ "c101_gateway_delay_disagree_brake_auth": {
+  "reference": {
+   "code": 2,
+   "t_us": 502888,
+   "rejected": 0
+  },
+  "emulator": {
+   "code": 2,
+   "t_us": 502888,
+   "collision": false
+  },
+  "intent": null
+ },
+ "c102_dos_flood_none_plain": {
+  "reference": {
+   "code": 1,
+   "t_us": 505571,
+   "rejected": 0
+  },
+  "emulator": {
+   "code": 1,
+   "t_us": 505571,
+   "collision": false
+  },
+  "intent": null
+ },
+ "c103_dos_flood_radar_or_plain": {
+  "reference": {
+   "code": 1,
+   "t_us": 509167,
+   "rejected": 0
+  },
+  "emulator": {
+   "code": 1,
+   "t_us": 509167,
+   "collision": true
+  },
+  "intent": null
+ },
+ "c104_dos_flood_disagree_brake_plain": {
+  "reference": {
+   "code": 1,
+   "t_us": 536281,
+   "rejected": 0
+  },
+  "emulator": {
+   "code": 1,
+   "t_us": 536281,
+   "collision": false
+  },
+  "intent": null
+ },
+ "c105_dos_flood_none_auth": {
+  "reference": {
+   "code": 1,
+   "t_us": 507782,
+   "rejected": 0
+  },
+  "emulator": {
+   "code": 1,
+   "t_us": 507782,
+   "collision": false
+  },
+  "intent": null
+ },
+ "c106_dos_flood_radar_or_auth": {
+  "reference": {
+   "code": 2,
+   "t_us": 506671,
+   "rejected": 0
+  },
+  "emulator": {
+   "code": 2,
+   "t_us": 506671,
+   "collision": false
+  },
+  "intent": null
+ },
+ "c107_dos_flood_disagree_brake_auth": {
+  "reference": {
+   "code": 2,
+   "t_us": 501620,
+   "rejected": 0
+  },
+  "emulator": {
+   "code": 2,
+   "t_us": 501620,
+   "collision": false
+  },
+  "intent": null
+ },
+ "c108_jitter_injection_none_plain": {
+  "reference": {
+   "code": 1,
+   "t_us": 554228,
+   "rejected": 0
+  },
+  "emulator": {
+   "code": 1,
+   "t_us": 554228,
+   "collision": false
+  },
+  "intent": null
+ },
+ "c109_jitter_injection_radar_or_plain": {
+  "reference": {
+   "code": 1,
+   "t_us": 504779,
+   "rejected": 0
+  },
+  "emulator": {
+   "code": 1,
+   "t_us": 504779,
+   "collision": false
+  },
+  "intent": null
+ },
+ "c110_jitter_injection_disagree_brake_plain": {
+  "reference": {
+   "code": 1,
+   "t_us": 503581,
+   "rejected": 0
+  },
+  "emulator": {
+   "code": 1,
+   "t_us": 503581,
+   "collision": false
+  },
+  "intent": null
+ },
+ "c111_jitter_injection_none_auth": {
+  "reference": {
+   "code": 4,
+   "t_us": 502667,
+   "rejected": 0
+  },
+  "emulator": {
+   "code": 4,
+   "t_us": 502667,
+   "collision": false
+  },
+  "intent": null
+ },
+ "c112_jitter_injection_radar_or_auth": {
+  "reference": {
+   "code": 1,
+   "t_us": 504171,
+   "rejected": 0
+  },
+  "emulator": {
+   "code": 1,
+   "t_us": 504171,
+   "collision": false
+  },
+  "intent": null
+ },
+ "c113_jitter_injection_disagree_brake_auth": {
+  "reference": {
+   "code": 2,
+   "t_us": 507197,
+   "rejected": 0
+  },
+  "emulator": {
+   "code": 2,
+   "t_us": 507197,
+   "collision": false
+  },
+  "intent": null
+ },
+ "c114_dos_flood_none_plain": {
+  "reference": {
+   "code": 1,
+   "t_us": 500906,
+   "rejected": 0
+  },
+  "emulator": {
+   "code": 1,
+   "t_us": 500906,
+   "collision": false
+  },
+  "intent": null
+ },
+ "c115_dos_flood_radar_or_plain": {
+  "reference": {
+   "code": 1,
+   "t_us": 507741,
+   "rejected": 0
+  },
+  "emulator": {
+   "code": 1,
+   "t_us": 507741,
+   "collision": false
+  },
+  "intent": null
+ },
+ "c116_dos_flood_disagree_brake_plain": {
+  "reference": {
+   "code": 1,
+   "t_us": 615442,
+   "rejected": 0
+  },
+  "emulator": {
+   "code": 1,
+   "t_us": 615442,
+   "collision": true
+  },
+  "intent": null
+ },
+ "c117_dos_flood_none_auth": {
+  "reference": {
+   "code": 4,
+   "t_us": 493536,
+   "rejected": 0
+  },
+  "emulator": {
+   "code": 4,
+   "t_us": 493536,
+   "collision": true
+  },
+  "intent": null
+ },
+ "c118_dos_flood_radar_or_auth": {
+  "reference": {
+   "code": 4,
+   "t_us": 530850,
+   "rejected": 0
+  },
+  "emulator": {
+   "code": 4,
+   "t_us": 530850,
+   "collision": true
+  },
+  "intent": null
+ },
+ "c119_dos_flood_disagree_brake_auth": {
+  "reference": {
+   "code": 2,
+   "t_us": 504973,
+   "rejected": 0
+  },
+  "emulator": {
+   "code": 2,
+   "t_us": 504973,
+   "collision": false
+  },
+  "intent": null
+ },
+ "s_disagreement_triggers": {
+  "reference": {
+   "code": 3,
+   "t_us": 1005,
+   "rejected": 0
+  },
+  "emulator": null,
+  "intent": {
+   "code": 3,
+   "t_us": 1005
+  }
+ },
+ "s_disagreement_needs_the_policy": {
+  "reference": {
+   "code": 0,
+   "t_us": -1,
+   "rejected": 0
+  },
+  "emulator": null,
+  "intent": {
+   "code": 0,
+   "t_us": -1
+  }
+ },
+ "s_disagreement_needs_fresh_data": {
+  "reference": {
+   "code": 0,
+   "t_us": -1,
+   "rejected": 0
+  },
+  "emulator": null,
+  "intent": {
+   "code": 0,
+   "t_us": -1
+  }
+ },
+ "s_disagreement_below_tolerance": {
+  "reference": {
+   "code": 0,
+   "t_us": -1,
+   "rejected": 0
+  },
+  "emulator": null,
+  "intent": {
+   "code": 0,
+   "t_us": -1
+  }
+ },
+ "s_radar_ignored_by_the_baseline_policy": {
+  "reference": {
+   "code": 0,
+   "t_us": -1,
+   "rejected": 0
+  },
+  "emulator": null,
+  "intent": {
+   "code": 0,
+   "t_us": -1
+  }
+ },
+ "s_radar_triggers_under_failover": {
+  "reference": {
+   "code": 2,
+   "t_us": 1000,
+   "rejected": 0
+  },
+  "emulator": null,
+  "intent": {
+   "code": 2,
+   "t_us": 1000
+  }
+ },
+ "s_sensor_triggers": {
+  "reference": {
+   "code": 1,
+   "t_us": 1000,
+   "rejected": 0
+  },
+  "emulator": null,
+  "intent": {
+   "code": 1,
+   "t_us": 1000
+  }
+ },
+ "s_forged_frame_is_used_without_auth": {
+  "reference": {
+   "code": 1,
+   "t_us": 1000,
+   "rejected": 0
+  },
+  "emulator": null,
+  "intent": {
+   "code": 1,
+   "t_us": 1000
+  }
+ },
+ "s_forged_frame_is_rejected_with_auth": {
+  "reference": {
+   "code": 0,
+   "t_us": -1,
+   "rejected": 1
+  },
+  "emulator": null,
+  "intent": {
+   "code": 0,
+   "t_us": -1
+  }
+ },
+ "s_exactly_at_the_ttc_threshold_triggers": {
+  "reference": {
+   "code": 1,
+   "t_us": 1000,
+   "rejected": 0
+  },
+  "emulator": null,
+  "intent": {
+   "code": 1,
+   "t_us": 1000
+  }
+ },
+ "s_one_millimetre_above_does_not": {
+  "reference": {
+   "code": 0,
+   "t_us": -1,
+   "rejected": 0
+  },
+  "emulator": null,
+  "intent": {
+   "code": 0,
+   "t_us": -1
+  }
+ },
+ "s_zero_speed_never_triggers": {
+  "reference": {
+   "code": 0,
+   "t_us": -1,
+   "rejected": 0
+  },
+  "emulator": null,
+  "intent": {
+   "code": 0,
+   "t_us": -1
+  }
+ },
+ "s_no_obstacle_no_trigger": {
+  "reference": {
+   "code": 0,
+   "t_us": -1,
+   "rejected": 0
+  },
+  "emulator": null,
+  "intent": {
+   "code": 0,
+   "t_us": -1
+  }
+ },
+ "s_watchdog_silence_exactly_at_the_limit_is_tolerated": {
+  "reference": {
+   "code": 0,
+   "t_us": -1,
+   "rejected": 0
+  },
+  "emulator": null,
+  "intent": {
+   "code": 0,
+   "t_us": -1
+  }
+ },
+ "s_watchdog_fires_just_after_the_limit": {
+  "reference": {
+   "code": 4,
+   "t_us": 36000,
+   "rejected": 0
+  },
+  "emulator": null,
+  "intent": {
+   "code": 4,
+   "t_us": 36000
+  }
+ },
+ "s_watchdog_stays_quiet_while_frames_arrive": {
+  "reference": {
+   "code": 0,
+   "t_us": -1,
+   "rejected": 0
+  },
+  "emulator": null,
+  "intent": {
+   "code": 0,
+   "t_us": -1
+  }
+ },
+ "s_watchdog_needs_auth": {
+  "reference": {
+   "code": 0,
+   "t_us": -1,
+   "rejected": 0
+  },
+  "emulator": null,
+  "intent": {
+   "code": 0,
+   "t_us": -1
+  }
+ },
+ "s_forged_frames_do_not_feed_the_watchdog": {
+  "reference": {
+   "code": 4,
+   "t_us": 36000,
+   "rejected": 2
+  },
+  "emulator": null,
+  "intent": {
+   "code": 4,
+   "t_us": 36000
+  }
+ }
+}
