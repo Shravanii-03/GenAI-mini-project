@@ -509,8 +509,8 @@ inconclusive**, and the reasons are part of the result.
   from this vehicle's own measured traffic (bus load 0.52) with a periodic flood: the longest silence exceeds it for 22 of 26 IDs at a
   0.5 ms flood and 6 of 26 at the documented 0.3 ms flood (the highest-priority IDs: bound 16 to 71 ms against 1.1 to 1.6 s observed).
   For a saturating flood (one frame right after another) the bound is about the burst length (4.9 to 11 s) and 1 of 26 IDs exceeds it
-  (ID 0x5a0, a 1 s message, silent for 9 s). So **the capture is not consistent with a periodic 0.3 ms flood model**; it is
-  consistent with a saturating flood, but equally with logger loss. What it does support: an unguarded flood removes 10 ms control
+  (ID 0xa1, a 100 ms message: silent 5.4 s against a 5.1 s bound, a 0.3 s overshoot, well inside the 1-2 s recovery tail seen in (b2), so recovery or logger loss could account for it). So **the capture is not consistent with a periodic 0.3 ms flood model**; it is
+  consistent with a saturating flood (the backlog model that the production bound `latency_bound_ms` uses for every flood, whatever its rate), but equally with logger loss. What it does support: an unguarded flood removes 10 ms control
   traffic for 1 to 2 s at a time inside a 4.5 s burst, about thirteen times a 100 ms brake deadline (median over IDs), which is the worst case the model already assumes and the
   reason the gateway guard (keeping a flood off the safety bus) matters. The flood model's *rate* assumption is a weakness: a real
   attacker may saturate the bus, and the bound should be quoted for a saturating flood when the attacker's rate is not known.
