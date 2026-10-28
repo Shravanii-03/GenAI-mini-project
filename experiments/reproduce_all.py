@@ -1,9 +1,10 @@
 """
 Regenerate every experiment table from the repository, offline.
 
-E8 and E15 need the ROAD dataset (stored outside the repository, see sdv/realdata/road.py) and are run separately:
+E8 and E15 need the ROAD dataset, E18 the HCRL Car-Hacking dataset (stored outside the repository, see sdv/realdata/road.py) and are run separately:
     python experiments/e8_road_validation.py
     python experiments/e15_road_defence_replay.py
+    python experiments/e18_hcrl_replay.py
 
 LLM-dependent experiments (E4, E6) run with --offline: they replay the cached model replies in
 outputs/llm_cache/ and never call the API, so no key is needed. The full run takes several minutes.

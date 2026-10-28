@@ -495,6 +495,44 @@ the key re-signs; replayed or reordered frames are rejected.
   provisioning is not modelled, the verification time (0.5 ms) is still assumed, and the analytic bound's authentication assumption
   now reads "unless a forged frame collides with the truncated MAC (2^-bits per frame)".
 
+## E18 - a second real vehicle: HCRL Car-Hacking against the flood model and the silence watchdog (`experiments/e18_hcrl_replay.py`)
+
+Data: HCRL Car-Hacking (Song, Woo and Kim, *Vehicular Communications* 21, 2020; released for academic use), stored outside the
+repository (`sdv/realdata/hcrl.py`; `HCRL_DIR`). Files used: attack-free driving (988,871 frames, 506 s, 27 IDs), DoS (300 bursts of ID 0x000),
+fuzzy, RPM spoofing and gear spoofing. The bit rate is not stated in the release; 500 kbit/s is assumed. This experiment is **mostly
+inconclusive**, and the reasons are part of the result.
+
+* **The captures are lossy.** The DoS file logs 427 injected frames/s against the documented 3,333/s (about 13%): the logger loses
+  frames when the bus is busy. So a long silence in the log can be bus starvation or logger loss, and the data cannot tell them apart.
+* **(a) Real DoS against the flood bound: not validated.** 300 bursts, 4.56 s median (4.85 s longest), one every 7.6 s. Normal 10 ms
+  frames are missing for 1.3 s on median per ID (up to 2.2 s), 100 ms and slower IDs up to 5 s or more. The analytic bound, computed
+  from this vehicle's own measured traffic (bus load 0.52) with a periodic flood: the longest silence exceeds it for 22 of 26 IDs at a
+  0.5 ms flood and 6 of 26 at the documented 0.3 ms flood (the highest-priority IDs: bound 16 to 71 ms against 1.1 to 1.6 s observed).
+  For a saturating flood (one frame right after another) the bound is about the burst length (4.9 to 11 s) and 1 of 26 IDs exceeds it
+  (ID 0x5a0, a 1 s message, silent for 9 s). So **the capture is not consistent with a periodic 0.3 ms flood model**; it is
+  consistent with a saturating flood, but equally with logger loss. What it does support: an unguarded flood removes 10 ms control
+  traffic for 1 to 2 s at a time inside a 4.5 s burst, about thirteen times a 100 ms brake deadline (median over IDs), which is the worst case the model already assumes and the
+  reason the gateway guard (keeping a flood off the safety bus) matters. The flood model's *rate* assumption is a weakness: a real
+  attacker may saturate the bus, and the bound should be quoted for a saturating flood when the attacker's rate is not known.
+* **(b) Silence watchdog on a second vehicle.** Learned on the first 253 s of attack-free driving (27 periodic IDs), tested on the next 253 s:
+  0 false events at k = 2, 3, 5 and 10; the 95% upper bound is 43 per hour (rule of three; 253 s is too short to say more; ROAD gave about
+  6/h on a real road). The silence of a DoS burst is noticed in 300 of 300 bursts, 127 ms median after the burst starts (95th percentile
+  181 ms, max 245 ms), earlier than the bus alone might show because of the logger loss.
+* **(b2) Recovery.** In 46 of 299 windows 1-2 s after a burst ended the watchdog still sees a silence, so the stretches between bursts
+  are not clean normal driving and **no false-trigger rate is taken from the attack files**.
+* **(c) Injection attacks do not selectively silence the spoofed ID.** Inside the bursts the share of genuine-frame gaps longer than the
+  watchdog threshold is 4.7% for the spoofed RPM ID (other IDs 5.3% on median) and 7.8% for the gear ID (others 7.3%); fuzzy 31.7% across IDs.
+  The spoofed stream is no worse off than the rest, which supports the premise that injection leaves the genuine stream running. But
+  every ID has a far higher share than in attack-free driving (0%), so the genuine stream is degraded in these files (bus load and
+  logger), and a watchdog would trip on that during sustained injection: availability cost, not detection.
+* **Data quality.** Each file has one recording pause where recordings were joined (22 s to 7,745 s); outside the bursts the genuine rate
+  is 1,800 to 1,840 frames/s against 1,953/s attack-free.
+* **A bug found by the test, not the data:** the parser appended a timestamp before the ID of a malformed line failed to parse. The real
+  files parse cleanly, so no result changed; fixed and covered by `tests/test_hcrl.py`.
+* What this adds to the paper: a second vehicle's attack-free timing (the watchdog's thresholds transfer without retuning, zero false
+  events in a short window), a real record of DoS burst length, and an honest negative result on validating the flood bound with
+  lossy logs. What it does not add: a validation of the bound's tightness, or a false-trigger rate for injection attacks.
+
 ## Evidence chain and pipeline (`python -m sdv`, `sdv/evidence`)
 
 * One command takes a requirement in plain English through spec extraction, red team, blue team, a second red
