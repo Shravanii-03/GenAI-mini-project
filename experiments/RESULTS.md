@@ -408,7 +408,7 @@ all defences` (radar failover, gateway guard, authentication):
 | 0.90 g | 42 / 0 / 0 | 26 / 0 / 0 | 26 / 26 / 0 | 39 / 38 / 4 | 23 / 23 / 21 | 40 / 40 / 40 |
 
 * The ranking of defences and the list of residual holes do not change with braking strength: failover removes single-channel
-  attacks, the guard removes untrusted-segment floods, authentication plus the watchdog removes dual forgery (1-2% left), and the
+  attacks, the guard removes untrusted-segment floods, authentication plus the watchdog removes dual forgery (3-4% left in the table), and the
   safety-bus flood and the key holder remain (20-27% and 40-52%).
 * Weaker braking raises the absolute hazard volumes (for example masquerade without defences 42% at 0.9 g, 59% at 0.54 g). The
   absolute percentages therefore depend on the assumed braking and should not be quoted as real-world rates.
